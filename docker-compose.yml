@@ -50,6 +50,28 @@ services:
     networks:
       - spartan_network
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: spartan_mailhog
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+    networks:
+      - spartan_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: spartan_pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@gym-spartan.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - spartan_network
+
 volumes:
   postgres_data:
 
