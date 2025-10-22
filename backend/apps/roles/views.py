@@ -249,7 +249,7 @@ class HasRoleSuperUser(permissions.BasePermission):
             return False
         if getattr(u, "is_superuser", False):
             return True
-        # OJO: el modelo correcto es UsuarioRol (no UserRole)
+        # Verifica si el usuario tiene uno de los roles permitidos
         return UserRole.objects.filter(
             usuario=u, rol__nombre__in=self.allowed_role_names
         ).exists()
