@@ -54,3 +54,17 @@ class LogoutSerializer(serializers.Serializer):
         # invalidar refresh (requiere app 'token_blacklist' habilitada)
         RefreshToken(self.token).blacklist()
 # --- /CU2 --------------------------------------------------------------------
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.UUIDField()
+    new_password = serializers.CharField(write_only=True, min_length=6, trim_whitespace=False)
+
+    def validate_new_password(self, value):
+        # Ajusta tus reglas (longitud, complejidad, etc.)
+        if len(value) < 8:
+            raise serializers.ValidationError("La contraseña debe tener al menos 8 caracteres.")
+        return value
+# --- /Password Reset ---------------------------------------------------------
