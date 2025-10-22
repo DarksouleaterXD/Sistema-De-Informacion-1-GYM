@@ -181,7 +181,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Email settings (for MailHog)
@@ -196,13 +196,13 @@ DEFAULT_FROM_EMAIL = 'noreply@gym-spartan.com'
 # Media files
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# DRF primo swagger pa la documentacion
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
 
+# DRF Spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Gym Spartan API', 
     'DESCRIPTION': 'Gym Spartan API',
     'VERSION': '1.0.0',
-}   
+}
+
+# Password reset token TTL (hours)
+PASSWORD_RESET_TOKEN_TTL_HOURS = 24   

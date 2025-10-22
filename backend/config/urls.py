@@ -2,6 +2,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from apps.users.views import CreateAdminView, LoginView, LogoutView, PasswordResetConfirmView, PasswordResetRequestView
+from apps.roles.views import RoleAssignView, RoleDetailView, RoleListCreateView, RoleRemoveView
 
 urlpatterns = [
    
@@ -24,4 +25,9 @@ urlpatterns = [
     path("api/auth/password/reset/request/", PasswordResetRequestView.as_view(), name="password-reset-request"),
     path("api/auth/password/reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     #CU4: Rutas de usuarios (CRUD)
+     # Roles
+    path("api/roles/", RoleListCreateView.as_view(), name="role-list-create"),
+    path("api/roles/<int:pk>/", RoleDetailView.as_view(), name="role-detail"),
+    path("api/roles/assign/", RoleAssignView.as_view(), name="role-assign"),
+    path("api/roles/remove/", RoleRemoveView.as_view(), name="role-remove"),
 ]
