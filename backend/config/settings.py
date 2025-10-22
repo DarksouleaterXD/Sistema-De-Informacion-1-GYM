@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'drf_spectacular',
     'django_filters',
+    "rest_framework_simplejwt.token_blacklist",  # para invalidar refresh en logout
     
     # Local apps
     'apps.core',
@@ -166,6 +167,7 @@ AUTH_USER_MODEL = 'users.User'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    #"BLACKLIST_AFTER_ROTATION": True,
 }
 
 # REST Framework settings
@@ -179,6 +181,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Email settings (for MailHog)
