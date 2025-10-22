@@ -5,43 +5,31 @@ from rest_framework.response import Response
 from rest_framework import permissions, throttling, status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-#Swagger docs
+# Swagger docs
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from django.contrib.auth import get_user_model,authenticate
+from django.contrib.auth import get_user_model, authenticate
 
-#Modelos
+# Modelos
 from apps.roles.models import Role, UserRole
 from apps.audit.models import HistorialActividad as Bitacora
-from .models import PasswordResetToken  # tu modelo existente
-#Serializers
+from .models import PasswordResetToken
+
+# Serializers
 from .serializers import AdminCreateSerializer
 from .serializers import LoginSerializer, LogoutSerializer
 from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
-#Utilidades
+
+# Utilidades
 from django.conf import settings
 from django.utils import timezone
 from django.core.mail import send_mail
+
+# Permisos personalizados
+from apps.roles.views import HasRoleSuperUser
+
 User = get_user_model()
 
-class HasRoleSuperUser(permissions.BasePermission):
-    """
-    Permite solo al 'Superusuario (Dueño)' o a Django superuser.
-    Asume que el nombre del rol es exactamente 'Superusuario' o 'Superusuario (Dueño)'.
-    Ajusta la lista según tu semántica real.
-    """
-    allowed_role_names = {"Superusuario", "Superusuario (Dueño)"}
-
-    def has_permission(self, request, view):
-        user = request.user
-        if not (user and user.is_authenticated):
-            return False
-        if user.is_superuser:
-            return True
-        # UsuarioRol.related_name="roles" en tu modelo UsuarioRol
-        return UserRole.objects.filter(
-            usuario=user,
-            rol__nombre__in=self.allowed_role_names
-        ).exists()
+   
 
 
 @extend_schema(

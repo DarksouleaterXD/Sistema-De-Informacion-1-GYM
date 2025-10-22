@@ -78,3 +78,49 @@ class UsuarioRolSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = ["id", "usuario", "rol", "usuario_nombre", "rol_nombre"]
+class PermisoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permiso
+        fields = "__all__"
+
+class RolSerializer(serializers.ModelSerializer):
+    permisos = serializers.SerializerMethodField()
+    usuarios_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Role
+        fields = [
+            "id", "nombre", "descripcion", "activo", "fecha_creacion",
+            "permisos", "usuarios_count",
+        ]
+        read_only_fields = ["id", "fecha_creacion"]
+
+    def validate_nombre(self, value):
+        v = value.strip()
+        qs = Role.objects.exclude(pk=getattr(self.instance, "pk", None))
+        if qs.filter(nombre__iexact=v).exists():
+            raise serializers.ValidationError("Ya existe un rol con ese nombre.")
+        return v
+
+    def get_permisos(self, obj):
+        # Prefiere prefetch en la vista: Rol.objects.prefetch_related("permisos__permiso")
+        permisos = [rp.permiso for rp in obj.permisos.select_related("permiso").all()]
+        return PermisoSerializer(permisos, many=True).data
+
+    def get_usuarios_count(self, obj):
+        return UserRole.objects.filter(rol=obj).count()
+
+class RolPermisoSerializer(serializers.ModelSerializer):
+    rol_nombre = serializers.ReadOnlyField(source="rol.nombre")
+    permiso_nombre = serializers.ReadOnlyField(source="permiso.nombre")
+
+    class Meta:
+        model = RolPermiso
+        fields = ["id", "rol", "permiso", "rol_nombre", "permiso_nombre"]
+
+# Pequeños serializers para asignar/remover
+class RolePermissionSerializer(serializers.Serializer):
+    permiso_id = serializers.IntegerField()
+
+class RolePermissionSetSerializer(serializers.Serializer):
+    permisos = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
