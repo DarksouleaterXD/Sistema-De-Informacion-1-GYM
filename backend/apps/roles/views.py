@@ -62,13 +62,11 @@ class RoleListCreateView(generics.ListCreateAPIView):
         resp = super().post(request, *args, **kwargs)
         if resp.status_code == 201:
             Bitacora.log_activity(
-                usuario=request.user,
+                request=request,
                 tipo_accion="create_role",
                 accion="Crear Rol",
                 descripcion=f"Rol creado: {resp.data.get('nombre')}",
                 nivel="info",
-                ip_address=_ip(request),
-                user_agent=_ua(request),
                 datos_adicionales={"rol_id": resp.data.get("id")},
             )
         return resp
@@ -100,14 +98,13 @@ class RoleDetailView(generics.RetrieveUpdateDestroyAPIView):
         resp = super().put(request, *args, **kwargs)
         if resp.status_code == 200:
             Bitacora.log_activity(
-                usuario=request.user,
+                request=request,
                 tipo_accion="update_role",
                 accion="Actualizar Rol",
                 descripcion=f"Rol actualizado: {resp.data.get('nombre')}",
                 nivel="info",
-                ip_address=_ip(request),
-                user_agent=_ua(request),
-                datos_adicionales={"rol_id": resp.data.get("id")},
+                datos_adicionales={"rol_id": resp.data.get("id"
+            )},
             )
         return resp
 
@@ -115,14 +112,13 @@ class RoleDetailView(generics.RetrieveUpdateDestroyAPIView):
         resp = super().patch(request, *args, **kwargs)
         if resp.status_code == 200:
             Bitacora.log_activity(
-                usuario=request.user,
+                request=request,
                 tipo_accion="update_role",
                 accion="Actualizar Rol (parcial)",
                 descripcion=f"Rol actualizado: {resp.data.get('nombre')}",
                 nivel="info",
-                ip_address=_ip(request),
-                user_agent=_ua(request),
-                datos_adicionales={"rol_id": resp.data.get("id")},
+                datos_adicionales={"rol_id": resp.data.get("id"
+            )},
             )
         return resp
 
@@ -133,14 +129,13 @@ class RoleDetailView(generics.RetrieveUpdateDestroyAPIView):
         resp = super().delete(request, *args, **kwargs)
         if resp.status_code == 204:
             Bitacora.log_activity(
-                usuario=request.user,
+                request=request,
                 tipo_accion="delete_role",
                 accion="Eliminar Rol",
                 descripcion=f"Rol eliminado: {rol_nombre}",
                 nivel="info",
-                ip_address=_ip(request),
-                user_agent=_ua(request),
                 datos_adicionales={"rol_id": rol_id},
+            
             )
         return resp
 
@@ -183,15 +178,14 @@ class RoleAssignView(APIView):
         UserRole.objects.get_or_create(usuario=user, rol=rol)
 
         Bitacora.log_activity(
-            usuario=request.user,
-            tipo_accion="assign_role",
-            accion="Asignar Rol",
-            descripcion=f"Asignado {rol.nombre} a {user.username}",
-            nivel="info",
-            ip_address=_ip(request),
-            user_agent=_ua(request),
-            datos_adicionales={"user_id": user.id, "role_id": rol.id},
-        )
+                request=request,
+                tipo_accion="assign_role",
+                accion="Asignar Rol",
+                descripcion=f"Asignado {rol.nombre} a {user.username}",
+                nivel="info",
+                datos_adicionales={"user_id": user.id, "role_id": rol.id},
+        
+            )
         return Response(status=204)
 
 
@@ -225,15 +219,14 @@ class RoleRemoveView(APIView):
         qs.delete()
 
         Bitacora.log_activity(
-            usuario=request.user,
-            tipo_accion="remove_role",
-            accion="Remover Rol",
-            descripcion=f"Removido {rol.nombre} de {user.username}",
-            nivel="info",
-            ip_address=_ip(request),
-            user_agent=_ua(request),
-            datos_adicionales={"user_id": user.id, "role_id": rol.id},
-        )
+                request=request,
+                tipo_accion="remove_role",
+                accion="Remover Rol",
+                descripcion=f"Removido {rol.nombre} de {user.username}",
+                nivel="info",
+                datos_adicionales={"user_id": user.id, "role_id": rol.id},
+        
+            )
         return Response(status=204)
 # ---------- Permiso reutilizable SOLO-SUPERUSUARIO ----------
 class HasRoleSuperUser(permissions.BasePermission):
@@ -276,10 +269,13 @@ class PermissionListCreateView(generics.ListCreateAPIView):
         resp = super().post(request, *args, **kwargs)
         if resp.status_code == 201:
             Bitacora.log_activity(
-                usuario=request.user, tipo_accion="create_permission", accion="Crear Permiso",
+                request=request,
+                tipo_accion="create_permission",
+                accion="Crear Permiso",
                 descripcion=f"Permiso creado: {resp.data.get('nombre')}",
-                nivel="info", ip_address=_ip(request), user_agent=_ua(request),
-                datos_adicionales={"permiso_id": resp.data.get("id")},
+                nivel="info",
+                datos_adicionales={"permiso_id": resp.data.get("id"
+            )},
             )
         return resp
 
@@ -294,10 +290,13 @@ class PermissionDetailView(generics.RetrieveUpdateDestroyAPIView):
         resp = super().put(request, *args, **kwargs)
         if resp.status_code == 200:
             Bitacora.log_activity(
-                usuario=request.user, tipo_accion="update_permission", accion="Actualizar Permiso",
+                request=request,
+                tipo_accion="update_permission",
+                accion="Actualizar Permiso",
                 descripcion=f"Permiso actualizado: {resp.data.get('nombre')}",
-                nivel="info", ip_address=_ip(request), user_agent=_ua(request),
-                datos_adicionales={"permiso_id": resp.data.get("id")},
+                nivel="info",
+                datos_adicionales={"permiso_id": resp.data.get("id"
+            )},
             )
         return resp
 
@@ -305,10 +304,13 @@ class PermissionDetailView(generics.RetrieveUpdateDestroyAPIView):
         resp = super().patch(request, *args, **kwargs)
         if resp.status_code == 200:
             Bitacora.log_activity(
-                usuario=request.user, tipo_accion="update_permission", accion="Actualizar Permiso (parcial)",
+                request=request,
+                tipo_accion="update_permission",
+                accion="Actualizar Permiso (parcial)",
                 descripcion=f"Permiso actualizado: {resp.data.get('nombre')}",
-                nivel="info", ip_address=_ip(request), user_agent=_ua(request),
-                datos_adicionales={"permiso_id": resp.data.get("id")},
+                nivel="info",
+                datos_adicionales={"permiso_id": resp.data.get("id"
+            )},
             )
         return resp
 
@@ -319,10 +321,13 @@ class PermissionDetailView(generics.RetrieveUpdateDestroyAPIView):
         resp = super().delete(request, *args, **kwargs)
         if resp.status_code == 204:
             Bitacora.log_activity(
-                usuario=request.user, tipo_accion="delete_permission", accion="Eliminar Permiso",
+                request=request,
+                tipo_accion="delete_permission",
+                accion="Eliminar Permiso",
                 descripcion=f"Permiso eliminado: {pname}",
-                nivel="info", ip_address=_ip(request), user_agent=_ua(request),
+                nivel="info",
                 datos_adicionales={"permiso_id": pid},
+            
             )
         return resp
 
@@ -345,11 +350,14 @@ class RolePermissionAssignView(APIView):
         RolPermiso.objects.get_or_create(rol=rol, permiso=perm)
 
         Bitacora.log_activity(
-            usuario=request.user, tipo_accion="assign_role", accion="Asignar Permiso a Rol",
-            descripcion=f"{perm.nombre} -> {rol.nombre}",
-            nivel="info", ip_address=_ip(request), user_agent=_ua(request),
-            datos_adicionales={"role_id": rol.id, "permiso_id": perm.id},
-        )
+                request=request,
+                tipo_accion="assign_role",
+                accion="Asignar Permiso a Rol",
+                descripcion=f"{perm.nombre} -> {rol.nombre}",
+                nivel="info",
+                datos_adicionales={"role_id": rol.id, "permiso_id": perm.id},
+        
+            )
         return Response(status=204)
 
 @extend_schema(
@@ -369,11 +377,14 @@ class RolePermissionRemoveView(APIView):
             return Response({"detail": "Relación rol-permiso no existe."}, status=404)
 
         Bitacora.log_activity(
-            usuario=request.user, tipo_accion="remove_role", accion="Remover Permiso de Rol",
-            descripcion=f"permiso_id={s.validated_data['permiso_id']} de rol_id={role_id}",
-            nivel="info", ip_address=_ip(request), user_agent=_ua(request),
-            datos_adicionales={"role_id": role_id, "permiso_id": s.validated_data["permiso_id"]},
-        )
+                request=request,
+                tipo_accion="remove_role",
+                accion="Remover Permiso de Rol",
+                descripcion=f"permiso_id={s.validated_data['permiso_id']} de rol_id={role_id}",
+                nivel="info",
+                datos_adicionales={"role_id": role_id, "permiso_id": s.validated_data["permiso_id"]},
+        
+            )
         return Response(status=204)
 
 @extend_schema(
@@ -401,9 +412,12 @@ class RolePermissionSetView(APIView):
                 RolPermiso.objects.get_or_create(rol=rol, permiso=perm)
 
         Bitacora.log_activity(
-            usuario=request.user, tipo_accion="update_role", accion="Actualizar Set de Permisos de Rol",
-            descripcion=f"rol={rol.nombre} -> {sorted(list(nuevos))}",
-            nivel="info", ip_address=_ip(request), user_agent=_ua(request),
-            datos_adicionales={"role_id": rol.id, "permisos": sorted(list(nuevos))},
+                request=request,
+                tipo_accion="update_role",
+                accion="Actualizar Set de Permisos de Rol",
+                descripcion=f"rol={rol.nombre} -> {sorted(list(nuevos))}",
+                nivel="info",
+                datos_adicionales={"role_id": rol.id, "permisos": sorted(list(nuevos
+            ))},
         )
         return Response(status=204)

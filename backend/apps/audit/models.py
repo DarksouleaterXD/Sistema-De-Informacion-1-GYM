@@ -10,19 +10,51 @@ class HistorialActividad(TimeStampedModel):
     """
     
     TIPO_ACCION_CHOICES = [
+        # Autenticación
         ('login', 'Inicio de sesión'),
         ('logout', 'Cierre de sesión'),
+        ('login_failed', 'Fallo de inicio de sesión'),
+        
+        # Usuarios
+        ('create', 'Crear registro'),
+        ('update', 'Actualizar registro'),
+        ('delete', 'Eliminar registro'),
         ('create_user', 'Crear usuario'),
         ('update_user', 'Actualizar usuario'),
         ('delete_user', 'Eliminar usuario'),
+        
+        # Roles y Permisos
         ('create_role', 'Crear rol'),
         ('update_role', 'Actualizar rol'),
         ('delete_role', 'Eliminar rol'),
         ('assign_role', 'Asignar rol'),
         ('remove_role', 'Remover rol'),
+        ('assign_permission', 'Asignar permiso'),
+        ('remove_permission', 'Remover permiso'),
+        
+        # Clientes
         ('create_client', 'Crear cliente'),
         ('update_client', 'Actualizar cliente'),
         ('delete_client', 'Eliminar cliente'),
+        
+        # Membresías
+        ('create_membership', 'Crear membresía'),
+        ('update_membership', 'Actualizar membresía'),
+        ('delete_membership', 'Eliminar membresía'),
+        ('subscribe_membership', 'Inscribir a membresía'),
+        ('cancel_membership', 'Cancelar membresía'),
+        
+        # Promociones
+        ('create_promotion', 'Crear promoción'),
+        ('update_promotion', 'Actualizar promoción'),
+        ('delete_promotion', 'Eliminar promoción'),
+        
+        # Configuración
+        ('config_change', 'Cambio de configuración'),
+        ('password_reset', 'Restablecimiento de contraseña'),
+        
+        # Sistema
+        ('error', 'Error del sistema'),
         ('other', 'Otra acción'),
     ]
     
@@ -103,25 +135,32 @@ class HistorialActividad(TimeStampedModel):
         super().save(*args, **kwargs)
     
     @classmethod
-    def log_activity(cls, usuario, tipo_accion, accion, descripcion="", nivel="info", 
-                     ip_address=None, user_agent=None, datos_adicionales=None):
+    def log_activity(cls, request, tipo_accion, accion, descripcion="", nivel="info", 
+                     usuario=None, datos_adicionales=None):
         """
         Método helper para registrar actividades fácilmente.
+        Extrae usuario, IP y user_agent directamente del objeto request.
         
         Uso:
-            Bitacora.log_activity(
-                usuario=request.user,
+            HistorialActividad.log_activity(
+                request=request,
                 tipo_accion="login",
                 accion="Inicio de sesión",
-                descripcion="Usuario ingresó al sistema",
-                nivel="info",
-                ip_address="192.168.1.1",
-                user_agent="Mozilla/5.0...",
                 datos_adicionales={"some": "data"}
             )
         """
+        # El middleware ya nos da la IP correcta en request.client_ip
+        ip_address = getattr(request, 'client_ip', None)
+        user_agent = request.META.get('HTTP_USER_AGENT')
+        
+        # Si no se pasa un usuario explícitamente, intenta obtenerlo del request
+        if usuario is None and hasattr(request, 'user') and request.user.is_authenticated:
+            usuario_obj = request.user
+        else:
+            usuario_obj = usuario
+
         return cls.objects.create(
-            usuario=usuario,
+            usuario=usuario_obj,
             tipo_accion=tipo_accion,
             accion=accion,
             descripcion=descripcion,

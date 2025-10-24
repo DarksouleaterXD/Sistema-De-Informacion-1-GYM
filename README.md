@@ -14,7 +14,51 @@ Proyecto Full Stack con Django, Next.js y PostgreSQL usando Docker.
 - Docker Desktop instalado
 - Docker Compose
 
-## 🛠️ Configuración inicial
+## � Variables de Entorno
+
+### Configuración Inicial (IMPORTANTE)
+
+Antes de iniciar el proyecto, debes copiar los archivos de ejemplo y configurar tus variables de entorno:
+
+```bash
+# Backend
+cp backend/.env.example backend/.env
+
+# Frontend
+cp frontend/.env.example frontend/.env.local
+```
+
+### Backend (.env)
+
+Edita `backend/.env` y configura:
+
+```bash
+# Genera una clave secreta segura para producción
+SECRET_KEY=tu-clave-secreta-generada
+
+# En desarrollo usa DEBUG=True, en producción DEBUG=False
+DEBUG=True
+
+# Base de datos (los valores por defecto funcionan con Docker)
+DATABASE_ENGINE=postgresql
+DATABASE_NAME=spartan_db
+DATABASE_USER=spartan_user
+DATABASE_PASSWORD=spartan_pass  # ⚠️ Cambiar en producción
+DATABASE_HOST=db
+DATABASE_PORT=5432
+```
+
+### Frontend (.env.local)
+
+El archivo `frontend/.env.local` ya tiene la configuración correcta:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+> ⚠️ **IMPORTANTE**: Los archivos `.env` y `.env.local` están en `.gitignore` y NO se suben al repositorio por seguridad.
+
+## �🛠️ Configuración inicial
 
 ### 1. Inicializar el proyecto Django
 

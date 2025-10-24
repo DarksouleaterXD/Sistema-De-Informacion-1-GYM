@@ -1,7 +1,7 @@
 """
 Seeder para crear clientes de prueba
 """
-from apps.clients.models import Client, InscripcionMembresia
+from apps.clients.models import Client
 from .base_seeder import BaseSeeder
 
 
@@ -21,57 +21,39 @@ class ClientsSeeder(BaseSeeder):
             {
                 'nombre': 'Pedro',
                 'apellido': 'Ramírez',
+                'ci': '12345678',
                 'telefono': '70111111',
-                'peso': 75.5,
-                'altura': 1.75,
-                'experiencia': 'Principiante',
-                'monto_inscripcion': 250.00
+                'email': 'pedro.ramirez@gmail.com'
             },
             {
                 'nombre': 'Ana',
                 'apellido': 'Martínez',
+                'ci': '87654321',
                 'telefono': '70222222',
-                'peso': 60.0,
-                'altura': 1.65,
-                'experiencia': 'Avanzado',
-                'monto_inscripcion': 1500.00
+                'email': 'ana.martinez@gmail.com'
             },
             {
                 'nombre': 'Luis',
                 'apellido': 'Flores',
+                'ci': '11223344',
                 'telefono': '70333333',
-                'peso': 80.0,
-                'altura': 1.80,
-                'experiencia': 'Intermedio',
-                'monto_inscripcion': 150.00
+                'email': 'luis.flores@gmail.com'
             },
             {
                 'nombre': 'Sofia',
                 'apellido': 'Vargas',
+                'ci': '55667788',
                 'telefono': '70444444',
-                'peso': 55.0,
-                'altura': 1.60,
-                'experiencia': 'Principiante',
-                'monto_inscripcion': 400.00
+                'email': 'sofia.vargas@gmail.com'
             },
         ]
         
-        # Crear clientes e inscripciones
+        # Crear clientes
         for cliente_data in clientes_data:
-            monto_inscripcion = cliente_data.pop('monto_inscripcion')
-            
-            if Client.objects.filter(telefono=cliente_data['telefono']).exists():
-                print(f"   ⚠️  Cliente ya existe: {cliente_data['telefono']}")
+            if Client.objects.filter(ci=cliente_data['ci']).exists():
+                print(f"   ⚠️  Cliente ya existe: {cliente_data['ci']}")
                 self.updated_count += 1
             else:
                 cliente = Client.objects.create(**cliente_data)
-                
-                # Crear inscripción a membresía
-                InscripcionMembresia.objects.create(
-                    cliente=cliente,
-                    monto=monto_inscripcion,
-                    metodo_de_pago='Efectivo'
-                )
-                
                 print(f"   ✅ Cliente creado: {cliente_data['nombre']} {cliente_data['apellido']}")
                 self.created_count += 1
