@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import { Users, CreditCard, TrendingUp, Activity } from "lucide-react";
-
-interface DashboardStats {
-  totalClients: number;
-  activeMembresias: number;
-  monthlyRevenue: number;
-  todayCheckIns: number;
-}
+import {
+  dashboardService,
+  DashboardStats,
+  RecentInscription,
+  ExpiringMembresia,
+} from "@/lib/services/dashboard.service";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -19,20 +18,35 @@ export default function DashboardPage() {
     todayCheckIns: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [recentInscriptions, setRecentInscriptions] = useState<
+    RecentInscription[]
+  >([]);
+  const [expiringMembresias, setExpiringMembresias] = useState<
+    ExpiringMembresia[]
+  >([]);
 
   useEffect(() => {
-    // Simulación de carga de datos
-    // En producción, aquí harías llamadas a tu API
-    setTimeout(() => {
-      setStats({
-        totalClients: 156,
-        activeMembresias: 128,
-        monthlyRevenue: 45600,
-        todayCheckIns: 42,
-      });
-      setLoading(false);
-    }, 1000);
+    loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await dashboardService.getDashboardData();
+
+      setStats(data.stats);
+      setRecentInscriptions(data.recentInscriptions);
+      setExpiringMembresias(data.expiringMembresias);
+    } catch (err) {
+      console.error("Error al cargar datos del dashboard:", err);
+      setError("Error al cargar los datos. Por favor, intenta nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statCards = [
     {
@@ -69,12 +83,30 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Bienvenido al panel de administración de Gym Spartan
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-1">
+              Bienvenido al panel de administración de Gym Spartan
+            </p>
+          </div>
+          <button
+            onClick={loadDashboardData}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
+            <Activity className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            {loading ? "Cargando..." : "Actualizar"}
+          </button>
         </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <p className="font-medium">Error</p>
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Stats Grid */}
         {loading ? (
@@ -143,42 +175,32 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {[
-                    {
-                      name: "Juan Pérez",
-                      plan: "Plan Mensual",
-                      date: "Hoy, 10:30 AM",
-                    },
-                    {
-                      name: "María López",
-                      plan: "Plan Trimestral",
-                      date: "Hoy, 09:15 AM",
-                    },
-                    {
-                      name: "Carlos García",
-                      plan: "Plan Anual",
-                      date: "Ayer, 04:20 PM",
-                    },
-                  ].map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-semibold">
-                          {item.name.charAt(0)}
-                        </span>
+                  {recentInscriptions.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No hay inscripciones recientes
+                    </p>
+                  ) : (
+                    recentInscriptions.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold">
+                            {item.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {item.plan} • {item.date}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {item.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {item.plan} • {item.date}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -207,31 +229,33 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {[
-                    { name: "Ana Martínez", days: 3, plan: "Plan Mensual" },
-                    { name: "Pedro Rojas", days: 5, plan: "Plan Trimestral" },
-                    { name: "Luis Fernández", days: 7, plan: "Plan Mensual" },
-                  ].map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                        <span className="text-red-600 font-semibold">
-                          {item.name.charAt(0)}
+                  {expiringMembresias.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No hay membresías próximas a vencer
+                    </p>
+                  ) : (
+                    expiringMembresias.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
+                          <span className="text-red-600 font-semibold">
+                            {item.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-gray-500">{item.plan}</p>
+                        </div>
+                        <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
+                          {item.daysRemaining}d
                         </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {item.name}
-                        </p>
-                        <p className="text-xs text-gray-500">{item.plan}</p>
-                      </div>
-                      <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
-                        {item.days}d
-                      </span>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               )}
             </div>
