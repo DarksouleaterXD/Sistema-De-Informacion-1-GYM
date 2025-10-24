@@ -10,7 +10,7 @@ const isBrowser = typeof window !== "undefined";
 
 /**
  * Detecta el entorno actual y retorna la URL base de la API
- * 
+ *
  * LÓGICA:
  * 1. En Azure con Nginx: usa /api (ruta relativa, Nginx hace proxy)
  * 2. En local sin Nginx: usa http://localhost:8000 (directo al backend)
@@ -21,19 +21,19 @@ export const detectEnvironment = () => {
   if (!isBrowser) {
     // Primero verificar variable de entorno
     const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
-    
+
     // Si es ruta relativa, en SSR necesitamos la URL completa del contenedor
     if (envApiUrl === "/api") {
       return "http://backend:8000"; // Nombre del contenedor Docker
     }
-    
+
     return envApiUrl || "http://backend:8000";
   }
 
   // CLIENT SIDE (navegador)
   // Siempre usar la variable de entorno del cliente
   const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
-  
+
   if (envApiUrl) {
     // Si es ruta relativa (/api), usar directamente
     if (envApiUrl.startsWith("/")) {
@@ -63,6 +63,7 @@ export const API_BASE_URL = detectEnvironment();
 /**
  * Endpoints de la API (solo rutas relativas)
  * La URL base se concatena en el HttpClient
+ * NOTA: No incluir /api aquí, ya está en API_BASE_URL cuando es necesario
  */
 export const API_ENDPOINTS = {
   // Autenticación

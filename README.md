@@ -1,14 +1,8 @@
 # 🏋️ SI1-Spartan - Sistema de Gestión de Gimnasio# SI1-Spartan
 
-
-
 Sistema completo de gestión para gimnasios desarrollado con Django REST Framework y Next.js.Proyecto Full Stack con Django, Next.js y PostgreSQL usando Docker.
 
-
-
 ## 🚀 Instalación Rápida## 🚀 Tecnologías
-
-
 
 ### Requisitos- **Backend**: Django 5.0 + Django REST Framework
 
@@ -22,7 +16,7 @@ Sistema completo de gestión para gimnasios desarrollado con Django REST Framewo
 
 ## 📋 Prerequisitos
 
-```bash
+````bash
 
 # 1. Clonar repositorio- Docker Desktop instalado
 
@@ -94,7 +88,7 @@ DATABASE_NAME=spartan_db
 
 - **Admin**: http://TU_IP/admin/DATABASE_PORT=5432
 
-```
+````
 
 ## ⚙️ Configuración por Entorno
 
@@ -106,13 +100,13 @@ El archivo `frontend/.env.local` ya tiene la configuración correcta:
 
 **backend/.env**
 
-```env```bash
+`env`bash
 
 ALLOWED_HOSTS=localhost,127.0.0.1,backendNEXT_PUBLIC_API_URL=http://localhost:8000
 
 CORS_ALLOWED_ORIGINS=http://localhost:3000```
 
-```
+```````
 
 > ⚠️ **IMPORTANTE**: Los archivos `.env` y `.env.local` están en `.gitignore` y NO se suben al repositorio por seguridad.
 
@@ -152,13 +146,13 @@ docker-compose run --rm backend django-admin startproject config .
 
 NEXT_PUBLIC_API_URL=/api### 2. Configurar Django para PostgreSQL
 
-```
+```````
 
 Edita el archivo `backend/config/settings.py` y reemplaza la configuración de DATABASES con:
 
 ## 📦 Stack Tecnológico
 
-```python
+````python
 
 - **Backend**: Django 5.0 + Django REST Frameworkimport os
 
@@ -220,7 +214,7 @@ docker compose restart backend    "http://localhost:3000",
 
 ## 📚 API DocumentationALLOWED_HOSTS = ['*']
 
-```
+````
 
 La documentación de la API está disponible en:
 
@@ -246,7 +240,7 @@ Después de ejecutar `python manage.py seed`:
 
 ```
 
-```
+```````
 
 SI1-Spartan/### 5. Crear superusuario de Django (opcional)
 
@@ -302,7 +296,7 @@ docker-compose up
 
 ```bash
 docker-compose logs -f
-```
+```````
 
 ### Detener los servicios
 
