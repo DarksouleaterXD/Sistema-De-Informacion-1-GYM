@@ -25,12 +25,15 @@ out/
 build/
 dist/
 
-# Environment variables
+# Environment variables (CRÍTICO: NO SUBIR)
 .env
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
+backend/.env
+frontend/.env.local
 
 # IDE
 .vscode/
@@ -45,3 +48,13 @@ Thumbs.db
 
 # Docker
 *.log
+
+# Backups
+*.sql
+*.dump
+backup*.sql
+
+# Certificates (si se usan localmente)
+*.pem
+*.key
+*.crt

@@ -9,15 +9,41 @@
 const isBrowser = typeof window !== "undefined";
 
 /**
- * Detecta el entorno actual
+ * Detecta el entorno actual y retorna la URL base de la API
+ * 
+ * LÓGICA:
+ * 1. En Azure con Nginx: usa /api (ruta relativa, Nginx hace proxy)
+ * 2. En local sin Nginx: usa http://localhost:8000 (directo al backend)
+ * 3. Server-side: usa http://backend:8000 (nombre del contenedor)
  */
 export const detectEnvironment = () => {
+  // SERVER SIDE (durante SSR/SSG)
   if (!isBrowser) {
-    // Servidor: usar variable de entorno
-    return process.env.NEXT_PUBLIC_API_URL || "http://backend:8000";
+    // Primero verificar variable de entorno
+    const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
+    
+    // Si es ruta relativa, en SSR necesitamos la URL completa del contenedor
+    if (envApiUrl === "/api") {
+      return "http://backend:8000"; // Nombre del contenedor Docker
+    }
+    
+    return envApiUrl || "http://backend:8000";
   }
 
-  // Navegador: detectar automáticamente
+  // CLIENT SIDE (navegador)
+  // Siempre usar la variable de entorno del cliente
+  const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (envApiUrl) {
+    // Si es ruta relativa (/api), usar directamente
+    if (envApiUrl.startsWith("/")) {
+      return envApiUrl;
+    }
+    // Si es URL completa, usarla
+    return envApiUrl;
+  }
+
+  // FALLBACK: detectar por hostname (solo si no hay variable de entorno)
   const hostname = window.location.hostname;
 
   // Desarrollo local
@@ -25,11 +51,8 @@ export const detectEnvironment = () => {
     return "http://localhost:8000";
   }
 
-  // Producción: usar mismo dominio o variable de entorno
-  return (
-    process.env.NEXT_PUBLIC_API_URL ||
-    `${window.location.protocol}//${hostname}:8000`
-  );
+  // Producción: intentar con /api primero (asume Nginx)
+  return "/api";
 };
 
 /**
