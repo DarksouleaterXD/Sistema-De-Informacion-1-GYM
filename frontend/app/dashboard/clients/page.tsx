@@ -31,6 +31,9 @@ export default function ClientsPage() {
     ci: "",
     telefono: "",
     email: "",
+    peso: "",
+    altura: "",
+    experiencia: "PRINCIPIANTE",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +68,16 @@ export default function ClientsPage() {
 
   const handleCreate = () => {
     setModalMode("create");
-    setFormData({ nombre: "", apellido: "", ci: "", telefono: "", email: "" });
+    setFormData({ 
+      nombre: "", 
+      apellido: "", 
+      ci: "", 
+      telefono: "", 
+      email: "",
+      peso: "",
+      altura: "",
+      experiencia: "PRINCIPIANTE"
+    });
     setFormErrors({});
     setSelectedClient(null);
   };
@@ -79,6 +91,9 @@ export default function ClientsPage() {
       ci: client.ci,
       telefono: client.telefono || "",
       email: client.email || "",
+      peso: client.peso || "",
+      altura: client.altura || "",
+      experiencia: client.experiencia || "PRINCIPIANTE",
     });
     setFormErrors({});
   };
@@ -86,7 +101,16 @@ export default function ClientsPage() {
   const handleCloseModal = () => {
     setModalMode(null);
     setSelectedClient(null);
-    setFormData({ nombre: "", apellido: "", ci: "", telefono: "", email: "" });
+    setFormData({ 
+      nombre: "", 
+      apellido: "", 
+      ci: "", 
+      telefono: "", 
+      email: "",
+      peso: "",
+      altura: "",
+      experiencia: "PRINCIPIANTE"
+    });
     setFormErrors({});
   };
 
@@ -106,6 +130,12 @@ export default function ClientsPage() {
     }
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = "El email no es válido";
+    }
+    if (formData.peso && (parseFloat(formData.peso.toString()) < 20 || parseFloat(formData.peso.toString()) > 300)) {
+      errors.peso = "El peso debe estar entre 20 y 300 kg";
+    }
+    if (formData.altura && (parseFloat(formData.altura.toString()) < 0.5 || parseFloat(formData.altura.toString()) > 2.5)) {
+      errors.altura = "La altura debe estar entre 0.5 y 2.5 metros";
     }
 
     setFormErrors(errors);
@@ -448,6 +478,75 @@ export default function ClientsPage() {
                       {formErrors.email}
                     </p>
                   )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Peso (kg)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="20"
+                      max="300"
+                      value={formData.peso}
+                      onChange={(e) =>
+                        setFormData({ ...formData, peso: e.target.value })
+                      }
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
+                        formErrors.peso ? "border-red-500" : "border-gray-300"
+                      }`}
+                      placeholder="ej: 75.5"
+                    />
+                    {formErrors.peso && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.peso}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Altura (m)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.5"
+                      max="2.5"
+                      value={formData.altura}
+                      onChange={(e) =>
+                        setFormData({ ...formData, altura: e.target.value })
+                      }
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
+                        formErrors.altura ? "border-red-500" : "border-gray-300"
+                      }`}
+                      placeholder="ej: 1.75"
+                    />
+                    {formErrors.altura && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.altura}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nivel de Experiencia
+                  </label>
+                  <select
+                    value={formData.experiencia}
+                    onChange={(e) =>
+                      setFormData({ ...formData, experiencia: e.target.value as any })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="PRINCIPIANTE">Principiante</option>
+                    <option value="INTERMEDIO">Intermedio</option>
+                    <option value="AVANZADO">Avanzado</option>
+                  </select>
                 </div>
               </div>
 

@@ -6,12 +6,13 @@ from django.db.models import Q, Count, Sum
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from datetime import date
 
-from .models import Membresia, InscripcionMembresia
+from .models import Membresia, InscripcionMembresia, PlanMembresia
 from .serializers import (
     MembresiaSerializer,
     MembresiaListSerializer,
     MembresiaCreateSerializer,
-    InscripcionMembresiaSerializer
+    InscripcionMembresiaSerializer,
+    PlanMembresiaSerializer
 )
 
 
@@ -269,3 +270,20 @@ class MembresiaStatsView(APIView):
             "ingresos_totales": float(ingresos),
             "ingresos_mes_actual": float(ingresos_mes)
         })
+
+
+@extend_schema(
+    tags=["Planes de Membresía"],
+    responses={200: PlanMembresiaSerializer(many=True)}
+)
+class PlanMembresiaListView(APIView):
+    """
+    GET: Lista todos los planes de membresía disponibles
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Listar todos los planes de membresía"""
+        planes = PlanMembresia.objects.all().order_by('duracion')
+        serializer = PlanMembresiaSerializer(planes, many=True)
+        return Response(serializer.data)

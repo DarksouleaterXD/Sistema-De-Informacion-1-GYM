@@ -23,12 +23,13 @@ import membresiaService, {
   MembresiaCreate,
 } from "@/lib/services/membresia.service";
 import { clientService } from "@/lib/services/client.service";
-import { Client } from "@/lib/types";
+import { Client, PlanMembresia } from "@/lib/types";
 
 export default function MembresiasPage() {
   const [membresias, setMembresias] = useState<MembresiaList[]>([]);
   const [stats, setStats] = useState<MembresiaStats | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
+  const [planes, setPlanes] = useState<PlanMembresia[]>([]); // ✨ NUEVO
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("");
@@ -47,9 +48,10 @@ export default function MembresiasPage() {
   // Formulario
   const [formData, setFormData] = useState<MembresiaCreate>({
     cliente: 0,
+    plan: 0, // ✨ NUEVO campo requerido
     monto: 0,
     metodo_de_pago: "efectivo",
-    estado: "activo",
+    estado: "ACTIVO",
     fecha_inicio: new Date().toISOString().split("T")[0],
     fecha_fin: "",
   });
@@ -58,6 +60,7 @@ export default function MembresiasPage() {
     fetchMembresias();
     fetchStats();
     fetchClients();
+    fetchPlanes(); // ✨ NUEVO
   }, [currentPage, estadoFilter]);
 
   const fetchMembresias = async () => {
@@ -96,6 +99,15 @@ export default function MembresiasPage() {
     }
   };
 
+  const fetchPlanes = async () => {
+    try {
+      const data = await membresiaService.getPlanes();
+      setPlanes(data);
+    } catch (error) {
+      console.error("Error al cargar planes:", error);
+    }
+  };
+
   const handleSearch = () => {
     setCurrentPage(1);
     fetchMembresias();
@@ -119,8 +131,8 @@ export default function MembresiasPage() {
   // CRUD Functions
   const handleCreate = async () => {
     try {
-      if (!formData.cliente || !formData.monto || !formData.fecha_fin) {
-        alert("Por favor complete todos los campos obligatorios");
+      if (!formData.cliente || !formData.plan || !formData.monto || !formData.fecha_fin) {
+        alert("Por favor complete todos los campos obligatorios (cliente, plan, monto, fecha fin)");
         return;
       }
 
@@ -152,9 +164,10 @@ export default function MembresiasPage() {
       const data = await membresiaService.getById(id);
       setSelectedMembresia(data);
       setFormData({
-        cliente: data.inscripcion_info?.cliente || 0,
-        monto: data.inscripcion_info?.monto || 0,
-        metodo_de_pago: data.inscripcion_info?.metodo_de_pago || "efectivo",
+        cliente: typeof data.inscripcion === 'number' ? data.inscripcion : data.inscripcion?.cliente || 0,
+        plan: typeof data.plan === 'number' ? data.plan : data.plan?.id || 0,
+        monto: typeof data.inscripcion === 'number' ? 0 : data.inscripcion?.monto || 0,
+        metodo_de_pago: typeof data.inscripcion === 'number' ? "efectivo" : data.inscripcion?.metodo_de_pago || "efectivo",
         estado: data.estado,
         fecha_inicio: data.fecha_inicio,
         fecha_fin: data.fecha_fin,
@@ -204,9 +217,10 @@ export default function MembresiasPage() {
   const resetForm = () => {
     setFormData({
       cliente: 0,
+      plan: 0, // ✨ NUEVO
       monto: 0,
       metodo_de_pago: "efectivo",
-      estado: "activo",
+      estado: "ACTIVO",
       fecha_inicio: new Date().toISOString().split("T")[0],
       fecha_fin: "",
     });
@@ -560,6 +574,36 @@ export default function MembresiasPage() {
                       {clients.map((client) => (
                         <option key={client.id} value={client.id}>
                           {client.nombre} {client.apellido} - CI: {client.ci}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Plan de Membresía *
+                    </label>
+                    <select
+                      value={formData.plan}
+                      onChange={(e) => {
+                        const planId = Number(e.target.value);
+                        const plan = planes.find(p => p.id === planId);
+                        setFormData({
+                          ...formData,
+                          plan: planId,
+                          monto: plan ? Number(plan.precio_base) : formData.monto,
+                          fecha_fin: plan && formData.fecha_inicio 
+                            ? calculateFechaFin(formData.fecha_inicio, plan.duracion)
+                            : formData.fecha_fin
+                        });
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      required
+                    >
+                      <option value={0}>Seleccione un plan</option>
+                      {planes.map((plan) => (
+                        <option key={plan.id} value={plan.id}>
+                          {plan.nombre} - Bs. {plan.precio_base} ({plan.duracion} días)
                         </option>
                       ))}
                     </select>

@@ -16,6 +16,9 @@ class ClientSerializer(serializers.ModelSerializer):
             'ci',
             'telefono',
             'email',
+            'peso',
+            'altura',
+            'experiencia',
             'fecha_registro',
             'created_at',
             'updated_at'

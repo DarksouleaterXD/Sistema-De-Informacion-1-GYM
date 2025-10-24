@@ -24,6 +24,9 @@ export interface Client {
   telefono: string;
   email: string;
   fecha_registro: string;
+  peso: string; // DecimalField
+  altura: string; // DecimalField
+  experiencia: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO';
   nombre_completo?: string;
   created_at: string;
   updated_at: string;
@@ -49,6 +52,17 @@ export interface Permiso {
   updated_at: string;
 }
 
+// Plan de Membresía
+export interface PlanMembresia {
+  id: number;
+  nombre: string;
+  duracion: number; // días
+  precio_base: string; // DecimalField
+  descripcion: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Inscripción Membresía
 export interface InscripcionMembresia {
   id: number;
@@ -64,7 +78,9 @@ export interface Membresia {
   id: number;
   inscripcion: number | InscripcionMembresia;
   usuario_registro: number | User;
-  estado: "activo" | "inactivo" | "vencido" | "suspendido";
+  plan: number | PlanMembresia; // Nueva relación FK
+  promociones?: number[] | Promocion[]; // Nueva relación M2M
+  estado: "ACTIVO" | "INACTIVO" | "VENCIDO" | "SUSPENDIDO";
   fecha_inicio: string;
   fecha_fin: string;
   dias_restantes?: number;
@@ -74,15 +90,26 @@ export interface Membresia {
   updated_at: string;
 }
 
+// Membresía-Promoción (tabla intermedia M2M)
+export interface MembresiaPromocion {
+  id: number;
+  membresia: number | Membresia;
+  promocion: number | Promocion;
+  fecha_aplicacion: string;
+  descuento_aplicado: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Promoción
 export interface Promocion {
   id: number;
   nombre: string;
-  descripcion: string;
-  descuento: string;
+  meses: number; // Duración en meses
+  descuento: string; // DecimalField (porcentaje)
   fecha_inicio: string;
   fecha_fin: string;
-  activo: boolean;
+  estado: 'ACTIVA' | 'INACTIVA' | 'VENCIDA';
   created_at: string;
   updated_at: string;
 }
@@ -122,5 +149,7 @@ export interface BaseFilters {
 }
 
 // Estados
-export type EstadoMembresia = "activo" | "inactivo" | "vencido" | "suspendido";
+export type EstadoMembresia = "ACTIVO" | "INACTIVO" | "VENCIDO" | "SUSPENDIDO";
+export type EstadoPromocion = "ACTIVA" | "INACTIVA" | "VENCIDA";
+export type ExperienciaCliente = "PRINCIPIANTE" | "INTERMEDIO" | "AVANZADO";
 export type MetodoPago = "efectivo" | "tarjeta" | "transferencia" | "qr";

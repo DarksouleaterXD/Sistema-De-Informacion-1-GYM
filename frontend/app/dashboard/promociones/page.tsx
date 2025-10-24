@@ -34,24 +34,20 @@ export default function PromocionesPage() {
 
   const [formData, setFormData] = useState<PromocionCreate>({
     nombre: "",
-    descripcion: "",
-    tipo_descuento: "PORCENTAJE",
-    valor_descuento: 0,
+    meses: 1,
+    descuento: 0,
     fecha_inicio: "",
     fecha_fin: "",
-    activo: true,
-    codigo: "",
+    estado: "ACTIVA",
   });
 
   const [updateData, setUpdateData] = useState<PromocionUpdate>({
     nombre: "",
-    descripcion: "",
-    tipo_descuento: "PORCENTAJE",
-    valor_descuento: 0,
+    meses: 1,
+    descuento: 0,
     fecha_inicio: "",
     fecha_fin: "",
-    activo: true,
-    codigo: "",
+    estado: "ACTIVA",
   });
 
   useEffect(() => {
@@ -79,13 +75,11 @@ export default function PromocionesPage() {
       setShowCreateModal(false);
       setFormData({
         nombre: "",
-        descripcion: "",
-        tipo_descuento: "PORCENTAJE",
-        valor_descuento: 0,
+        meses: 1,
+        descuento: 0,
         fecha_inicio: "",
         fecha_fin: "",
-        activo: true,
-        codigo: "",
+        estado: "ACTIVA",
       });
       loadPromociones();
     } catch (error: any) {
@@ -142,13 +136,11 @@ export default function PromocionesPage() {
     setSelectedPromocion(promocion);
     setUpdateData({
       nombre: promocion.nombre,
-      descripcion: promocion.descripcion || "",
-      tipo_descuento: promocion.tipo_descuento,
-      valor_descuento: promocion.valor_descuento,
+      meses: promocion.meses,
+      descuento: parseFloat(promocion.descuento),
       fecha_inicio: promocion.fecha_inicio,
       fecha_fin: promocion.fecha_fin,
-      activo: promocion.activo,
-      codigo: promocion.codigo || "",
+      estado: promocion.estado,
     });
     setShowEditModal(true);
   };
@@ -197,10 +189,10 @@ export default function PromocionesPage() {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Promociones Activas</p>
+                <p className="text-sm text-gray-600">Activas</p>
                 <p className="text-3xl font-bold text-green-600 mt-1">
                   {Array.isArray(promociones)
-                    ? promociones.filter((p) => p.activo).length
+                    ? promociones.filter((p) => p.estado === 'ACTIVA').length
                     : 0}
                 </p>
               </div>
@@ -236,7 +228,7 @@ export default function PromocionesPage() {
                     Descuento
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Código
+                    Duración
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Vigencia
@@ -260,41 +252,21 @@ export default function PromocionesPage() {
                             <div className="text-sm font-medium text-gray-900">
                               {promocion.nombre}
                             </div>
-                            {promocion.descripcion && (
-                              <div className="text-sm text-gray-500 max-w-xs truncate">
-                                {promocion.descripcion}
-                              </div>
-                            )}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {promocion.tipo_descuento === "PORCENTAJE" ? (
-                            <>
-                              <Percent className="h-4 w-4 text-green-600 mr-1" />
-                              <span className="text-sm font-semibold text-green-600">
-                                {promocion.valor_descuento}%
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <DollarSign className="h-4 w-4 text-blue-600 mr-1" />
-                              <span className="text-sm font-semibold text-blue-600">
-                                {promocion.valor_descuento} Bs.
-                              </span>
-                            </>
-                          )}
+                          <Percent className="h-4 w-4 text-green-600 mr-1" />
+                          <span className="text-sm font-semibold text-green-600">
+                            {promocion.descuento}%
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {promocion.codigo ? (
-                          <span className="px-2 py-1 text-xs font-mono bg-gray-100 text-gray-800 rounded">
-                            {promocion.codigo}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-gray-400">-</span>
-                        )}
+                        <span className="text-sm text-gray-900">
+                          {promocion.meses} {promocion.meses === 1 ? 'mes' : 'meses'}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-xs text-gray-600">
@@ -305,15 +277,20 @@ export default function PromocionesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
-                          {promocion.activo ? (
+                          {promocion.estado === 'ACTIVA' ? (
                             <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
                               <CheckCircle className="h-3 w-3 mr-1" />
-                              Activo
+                              Activa
+                            </span>
+                          ) : promocion.estado === 'VENCIDA' ? (
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Vencida
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
                               <XCircle className="h-3 w-3 mr-1" />
-                              Inactivo
+                              Inactiva
                             </span>
                           )}
                           {promocion.esta_vigente && (
@@ -410,67 +387,46 @@ export default function PromocionesPage() {
                     />
                   </div>
 
-                  <div className="md:col-span-2">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descripción
+                      Meses de Duración <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      value={formData.descripcion}
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      step="1"
+                      value={formData.meses}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          descripcion: e.target.value,
+                          meses: parseInt(e.target.value) || 1,
                         })
                       }
-                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Describe la promoción..."
+                      placeholder="6"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tipo de Descuento <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      required
-                      value={formData.tipo_descuento}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          tipo_descuento: e.target.value as
-                            | "PORCENTAJE"
-                            | "MONTO_FIJO",
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="PORCENTAJE">Porcentaje (%)</option>
-                      <option value="MONTO_FIJO">Monto Fijo (Bs.)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Valor del Descuento{" "}
-                      <span className="text-red-500">*</span>
+                      Descuento (%) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       required
                       min="0"
+                      max="100"
                       step="0.01"
-                      value={formData.valor_descuento}
+                      value={formData.descuento}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          valor_descuento: parseFloat(e.target.value),
+                          descuento: parseFloat(e.target.value) || 0,
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder={
-                        formData.tipo_descuento === "PORCENTAJE" ? "10" : "50"
-                      }
+                      placeholder="15.00"
                     />
                   </div>
 
@@ -509,39 +465,23 @@ export default function PromocionesPage() {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Código Promocional
+                      Estado <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={formData.codigo}
+                    <select
+                      required
+                      value={formData.estado}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          codigo: e.target.value.toUpperCase(),
+                          estado: e.target.value as 'ACTIVA' | 'INACTIVA' | 'VENCIDA',
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                      placeholder="VERANO2025"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Opcional - Se convierte automáticamente a mayúsculas
-                    </p>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.activo}
-                        onChange={(e) =>
-                          setFormData({ ...formData, activo: e.target.checked })
-                        }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">
-                        Promoción activa
-                      </span>
-                    </label>
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="ACTIVA">Activa</option>
+                      <option value="INACTIVA">Inactiva</option>
+                      <option value="VENCIDA">Vencida</option>
+                    </select>
                   </div>
                 </div>
 
@@ -601,60 +541,41 @@ export default function PromocionesPage() {
                     />
                   </div>
 
-                  <div className="md:col-span-2">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descripción
+                      Meses de Duración <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      value={updateData.descripcion}
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      step="1"
+                      value={updateData.meses}
                       onChange={(e) =>
                         setUpdateData({
                           ...updateData,
-                          descripcion: e.target.value,
+                          meses: parseInt(e.target.value) || 1,
                         })
                       }
-                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tipo de Descuento <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      required
-                      value={updateData.tipo_descuento}
-                      onChange={(e) =>
-                        setUpdateData({
-                          ...updateData,
-                          tipo_descuento: e.target.value as
-                            | "PORCENTAJE"
-                            | "MONTO_FIJO",
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="PORCENTAJE">Porcentaje (%)</option>
-                      <option value="MONTO_FIJO">Monto Fijo (Bs.)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Valor del Descuento{" "}
-                      <span className="text-red-500">*</span>
+                      Descuento (%) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       required
                       min="0"
+                      max="100"
                       step="0.01"
-                      value={updateData.valor_descuento}
+                      value={updateData.descuento}
                       onChange={(e) =>
                         setUpdateData({
                           ...updateData,
-                          valor_descuento: parseFloat(e.target.value),
+                          descuento: parseFloat(e.target.value) || 0,
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -699,38 +620,23 @@ export default function PromocionesPage() {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Código Promocional
+                      Estado <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={updateData.codigo}
+                    <select
+                      required
+                      value={updateData.estado}
                       onChange={(e) =>
                         setUpdateData({
                           ...updateData,
-                          codigo: e.target.value.toUpperCase(),
+                          estado: e.target.value as 'ACTIVA' | 'INACTIVA' | 'VENCIDA',
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={updateData.activo}
-                        onChange={(e) =>
-                          setUpdateData({
-                            ...updateData,
-                            activo: e.target.checked,
-                          })
-                        }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">
-                        Promoción activa
-                      </span>
-                    </label>
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="ACTIVA">Activa</option>
+                      <option value="INACTIVA">Inactiva</option>
+                      <option value="VENCIDA">Vencida</option>
+                    </select>
                   </div>
                 </div>
 
@@ -787,36 +693,21 @@ export default function PromocionesPage() {
                     </p>
                   </div>
 
-                  {selectedPromocion.descripcion && (
-                    <div className="col-span-2">
-                      <label className="text-sm font-medium text-gray-500">
-                        Descripción
-                      </label>
-                      <p className="text-gray-700">
-                        {selectedPromocion.descripcion}
-                      </p>
-                    </div>
-                  )}
-
                   <div>
                     <label className="text-sm font-medium text-gray-500">
-                      Tipo de Descuento
+                      Descuento
                     </label>
-                    <p className="text-gray-900">
-                      {selectedPromocion.tipo_descuento === "PORCENTAJE"
-                        ? "Porcentaje"
-                        : "Monto Fijo"}
+                    <p className="text-lg font-bold text-green-600">
+                      {selectedPromocion.descuento}%
                     </p>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-gray-500">
-                      Valor
+                      Duración
                     </label>
-                    <p className="text-lg font-bold text-green-600">
-                      {selectedPromocion.tipo_descuento === "PORCENTAJE"
-                        ? `${selectedPromocion.valor_descuento}%`
-                        : `${selectedPromocion.valor_descuento} Bs.`}
+                    <p className="text-gray-900">
+                      {selectedPromocion.meses} {selectedPromocion.meses === 1 ? 'mes' : 'meses'}
                     </p>
                   </div>
 
@@ -838,31 +729,25 @@ export default function PromocionesPage() {
                     </p>
                   </div>
 
-                  {selectedPromocion.codigo && (
-                    <div className="col-span-2">
-                      <label className="text-sm font-medium text-gray-500">
-                        Código Promocional
-                      </label>
-                      <p className="text-lg font-mono bg-gray-100 px-3 py-2 rounded inline-block">
-                        {selectedPromocion.codigo}
-                      </p>
-                    </div>
-                  )}
-
                   <div>
                     <label className="text-sm font-medium text-gray-500">
                       Estado
                     </label>
                     <div className="flex gap-2 mt-1">
-                      {selectedPromocion.activo ? (
+                      {selectedPromocion.estado === 'ACTIVA' ? (
                         <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
                           <CheckCircle className="h-4 w-4 mr-1" />
-                          Activo
+                          Activa
+                        </span>
+                      ) : selectedPromocion.estado === 'VENCIDA' ? (
+                        <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full">
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Vencida
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-gray-800 bg-gray-100 rounded-full">
                           <XCircle className="h-4 w-4 mr-1" />
-                          Inactivo
+                          Inactiva
                         </span>
                       )}
                     </div>

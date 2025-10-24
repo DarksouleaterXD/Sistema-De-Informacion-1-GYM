@@ -3,20 +3,21 @@ from apps.promociones.models import Promocion
 
 
 class PromocionSerializer(serializers.ModelSerializer):
+    """Serializer para Promoción según PUML"""
     esta_vigente = serializers.BooleanField(read_only=True)
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
     
     class Meta:
         model = Promocion
         fields = [
             'id',
             'nombre',
-            'descripcion',
-            'tipo_descuento',
-            'valor_descuento',
+            'meses',
+            'descuento',
             'fecha_inicio',
             'fecha_fin',
-            'activo',
-            'codigo',
+            'estado',
+            'estado_display',
             'esta_vigente',
             'created_at',
             'updated_at'
@@ -32,20 +33,16 @@ class PromocionSerializer(serializers.ModelSerializer):
                 })
         return data
 
-    def validate_valor_descuento(self, value):
-        """Validar valor de descuento según el tipo"""
+    def validate_descuento(self, value):
+        """Validar valor de descuento (porcentaje)"""
         if value <= 0:
-            raise serializers.ValidationError("El valor del descuento debe ser mayor a 0")
+            raise serializers.ValidationError("El descuento debe ser mayor a 0")
+        if value > 100:
+            raise serializers.ValidationError("El descuento no puede ser mayor a 100%")
         return value
-
-    def validate_codigo(self, value):
-        """Validar código promocional único (si se proporciona)"""
-        if value:
-            instance = self.instance
-            qs = Promocion.objects.filter(codigo__iexact=value.strip())
-            if instance:
-                qs = qs.exclude(pk=instance.pk)
-            if qs.exists():
-                raise serializers.ValidationError("Ya existe una promoción con este código")
-            return value.strip().upper()
+    
+    def validate_meses(self, value):
+        """Validar que los meses sean positivos"""
+        if value <= 0:
+            raise serializers.ValidationError("Los meses deben ser mayor a 0")
         return value

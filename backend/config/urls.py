@@ -6,7 +6,7 @@ from apps.users.views import CreateAdminView, CurrentUserView, LoginView, Logout
 from apps.roles.views import PermissionDetailView, PermissionListCreateView, RoleAssignView, RoleDetailView, RoleListCreateView, RolePermissionAssignView, RolePermissionRemoveView, RolePermissionSetView, RoleRemoveView
 from apps.audit.views import AuditLogDetailView, AuditLogListView
 from apps.clients.views import ClientListCreateView, ClientDetailView
-from apps.membresias.views import MembresiaListCreateView, MembresiaDetailView, MembresiaStatsView
+from apps.membresias.views import MembresiaListCreateView, MembresiaDetailView, MembresiaStatsView, PlanMembresiaListView
 from apps.promociones.views import PromocionListCreateView, PromocionDetailView
 
 urlpatterns = [
@@ -62,6 +62,9 @@ urlpatterns = [
     path("api/membresias/", MembresiaListCreateView.as_view(), name="membresia-list-create"),
     path("api/membresias/<int:pk>/", MembresiaDetailView.as_view(), name="membresia-detail"),
     path("api/membresias/stats/", MembresiaStatsView.as_view(), name="membresia-stats"),
+    
+    # Planes de Membresía
+    path("api/planes-membresia/", PlanMembresiaListView.as_view(), name="plan-membresia-list"),
     
     # Promociones CRUD
     path("api/promociones/", PromocionListCreateView.as_view(), name="promocion-list-create"),

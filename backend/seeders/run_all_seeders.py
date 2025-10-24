@@ -5,6 +5,8 @@ from .superuser_seeder import SuperUserSeeder
 from .roles_seeder import RolesSeeder
 from .users_seeder import UsersSeeder
 from .clients_seeder import ClientsSeeder
+from .plan_membresia_seeder import PlanMembresiaSeeder
+from .promocion_seeder import PromocionSeeder
 
 
 def run_all_seeders():
@@ -20,6 +22,8 @@ def run_all_seeders():
         RolesSeeder(),
         UsersSeeder(),
         ClientsSeeder(),
+        PlanMembresiaSeeder(),
+        PromocionSeeder(),
     ]
     
     success_count = 0

@@ -1,44 +1,11 @@
 import { httpClient } from "../config/http-client";
-
-export interface InscripcionMembresia {
-  id: number;
-  cliente: number;
-  cliente_info?: {
-    id: number;
-    nombre: string;
-    apellido: string;
-    ci: string;
-    email: string;
-    celular: string;
-  };
-  monto: number;
-  metodo_de_pago: string;
-  metodo_de_pago_display?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Membresia {
-  id: number;
-  inscripcion: number;
-  inscripcion_info?: InscripcionMembresia;
-  usuario_registro: number;
-  usuario_registro_nombre?: string;
-  estado: string;
-  estado_display?: string;
-  fecha_inicio: string;
-  fecha_fin: string;
-  dias_restantes?: number;
-  esta_activa?: boolean;
-  duracion_dias?: number;
-  created_at: string;
-  updated_at: string;
-}
+import { Membresia, PlanMembresia, InscripcionMembresia, MembresiaPromocion } from "../types";
 
 export interface MembresiaList {
   id: number;
   cliente_nombre: string;
   cliente_ci: string;
+  plan_nombre?: string; // Nuevo campo
   estado: string;
   estado_display: string;
   fecha_inicio: string;
@@ -47,10 +14,13 @@ export interface MembresiaList {
   metodo_pago: string;
   dias_restantes: number;
   esta_activa: boolean;
+  promociones_aplicadas?: number; // Cantidad de promociones
 }
 
 export interface MembresiaCreate {
   cliente: number;
+  plan: number; // Nuevo campo requerido
+  promociones?: number[]; // Nuevo campo opcional para M2M
   monto: number;
   metodo_de_pago: string;
   estado: string;
@@ -137,6 +107,32 @@ class MembresiaService {
    */
   async getStats(): Promise<MembresiaStats> {
     return httpClient.get<MembresiaStats>(`${this.baseURL}/stats/`);
+  }
+
+  /**
+   * Obtener todos los planes de membresía
+   */
+  async getPlanes(): Promise<PlanMembresia[]> {
+    return httpClient.get<PlanMembresia[]>("/api/planes-membresia/");
+  }
+
+  /**
+   * Aplicar promoción a una membresía
+   */
+  async aplicarPromocion(membresiaId: number, promocionId: number): Promise<MembresiaPromocion> {
+    return httpClient.post<MembresiaPromocion>(
+      `${this.baseURL}/${membresiaId}/aplicar-promocion/`,
+      { promocion_id: promocionId }
+    );
+  }
+
+  /**
+   * Remover promoción de una membresía
+   */
+  async removerPromocion(membresiaId: number, promocionId: number): Promise<void> {
+    return httpClient.delete(
+      `${this.baseURL}/${membresiaId}/remover-promocion/${promocionId}/`
+    );
   }
 }
 

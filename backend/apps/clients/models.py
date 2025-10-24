@@ -7,13 +7,40 @@ from apps.core.utils import validar_ci, normalizar_telefono
 class Client(TimeStampedModel):
     """
     Cliente - Tabla según PUML
-    Campos: ID (PK), Nombre, Apellido, CI, Telefono, Email, Fecha_Registro
+    Campos: ID (PK), Nombre, Apellido, Telefono, Peso, Altura, Experiencia
     """
-    nombre = models.CharField(max_length=100, verbose_name="Nombre")
-    apellido = models.CharField(max_length=100, verbose_name="Apellido")
+    nombre = models.CharField(max_length=50, verbose_name="Nombre")
+    apellido = models.CharField(max_length=50, verbose_name="Apellido")
     ci = models.CharField(max_length=20, unique=True, verbose_name="Cédula de Identidad")
     telefono = models.CharField(max_length=20, blank=True, verbose_name="Teléfono")
     email = models.EmailField(blank=True, verbose_name="Email")
+    
+    # Campos adicionales según PUML
+    peso = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        verbose_name="Peso (kg)"
+    )
+    altura = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        verbose_name="Altura (m)"
+    )
+    experiencia = models.CharField(
+        max_length=20,
+        choices=[
+            ('PRINCIPIANTE', 'Principiante'),
+            ('INTERMEDIO', 'Intermedio'),
+            ('AVANZADO', 'Avanzado'),
+        ],
+        default='PRINCIPIANTE',
+        verbose_name="Nivel de Experiencia"
+    )
+    
     fecha_registro = models.DateField(auto_now_add=True, verbose_name="Fecha de Registro")
 
     class Meta:

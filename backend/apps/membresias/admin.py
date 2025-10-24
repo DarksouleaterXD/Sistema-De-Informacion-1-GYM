@@ -1,5 +1,26 @@
 from django.contrib import admin
-from .models import InscripcionMembresia, Membresia
+from .models import InscripcionMembresia, Membresia, PlanMembresia, MembresiaPromocion
+
+
+@admin.register(PlanMembresia)
+class PlanMembresiaAdmin(admin.ModelAdmin):
+    """
+    Admin para el modelo PlanMembresia
+    """
+    list_display = ('nombre', 'duracion', 'precio_base', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('nombre', 'descripcion')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Información del Plan', {
+            'fields': ('nombre', 'duracion', 'precio_base', 'descripcion')
+        }),
+        ('Fechas', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
 
 @admin.register(InscripcionMembresia)
@@ -26,20 +47,29 @@ class InscripcionMembresiaAdmin(admin.ModelAdmin):
     )
 
 
+class MembresiaPromocionInline(admin.TabularInline):
+    """Inline para promociones aplicadas a la membresía"""
+    model = MembresiaPromocion
+    extra = 1
+    verbose_name = "Promoción Aplicada"
+    verbose_name_plural = "Promociones Aplicadas"
+
+
 @admin.register(Membresia)
 class MembresiaAdmin(admin.ModelAdmin):
     """
     Admin para el modelo Membresia
     """
-    list_display = ('get_cliente', 'usuario_registro', 'estado', 'fecha_inicio', 'fecha_fin', 'dias_restantes')
-    list_filter = ('estado', 'fecha_inicio', 'fecha_fin')
+    list_display = ('get_cliente', 'plan', 'usuario_registro', 'estado', 'fecha_inicio', 'fecha_fin', 'dias_restantes')
+    list_filter = ('estado', 'plan', 'fecha_inicio', 'fecha_fin')
     search_fields = ('inscripcion__cliente__nombre', 'inscripcion__cliente__apellido', 'usuario_registro__email')
     readonly_fields = ('created_at', 'updated_at', 'dias_restantes')
     date_hierarchy = 'fecha_inicio'
+    inlines = [MembresiaPromocionInline]
     
     fieldsets = (
-        ('Inscripción', {
-            'fields': ('inscripcion', 'usuario_registro')
+        ('Inscripción y Plan', {
+            'fields': ('inscripcion', 'plan', 'usuario_registro')
         }),
         ('Estado y Vigencia', {
             'fields': ('estado', 'fecha_inicio', 'fecha_fin', 'dias_restantes')

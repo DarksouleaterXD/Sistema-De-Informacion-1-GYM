@@ -1,48 +1,42 @@
 // lib/services/promocion.service.ts
 import { httpClient } from "../config/http-client";
-
-export interface Promocion {
-  id: number;
-  nombre: string;
-  descripcion?: string;
-  tipo_descuento: "PORCENTAJE" | "MONTO_FIJO";
-  valor_descuento: number;
-  fecha_inicio: string;
-  fecha_fin: string;
-  activo: boolean;
-  codigo?: string;
-  esta_vigente: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { Promocion, EstadoPromocion } from "../types";
 
 export interface PromocionCreate {
   nombre: string;
-  descripcion?: string;
-  tipo_descuento: "PORCENTAJE" | "MONTO_FIJO";
-  valor_descuento: number;
+  meses: number; // Duración en meses
+  descuento: number | string; // Porcentaje de descuento
   fecha_inicio: string;
   fecha_fin: string;
-  activo: boolean;
-  codigo?: string;
+  estado?: EstadoPromocion;
 }
 
 export interface PromocionUpdate {
   nombre?: string;
-  descripcion?: string;
-  tipo_descuento?: "PORCENTAJE" | "MONTO_FIJO";
-  valor_descuento?: number;
+  meses?: number;
+  descuento?: number | string;
   fecha_inicio?: string;
   fecha_fin?: string;
-  activo?: boolean;
-  codigo?: string;
+  estado?: EstadoPromocion;
 }
 
 class PromocionService {
   private baseUrl = "/api/promociones";
 
-  async getAll(): Promise<Promocion[]> {
-    return await httpClient.get<Promocion[]>(this.baseUrl + "/");
+  async getAll(params?: {
+    estado?: EstadoPromocion;
+    activas?: boolean;
+  }): Promise<Promocion[]> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.estado) queryParams.append("estado", params.estado);
+    if (params?.activas) queryParams.append("activas", "true");
+
+    const url = `${this.baseUrl}/${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    
+    return await httpClient.get<Promocion[]>(url);
   }
 
   async getById(id: number): Promise<Promocion> {
@@ -63,6 +57,24 @@ class PromocionService {
 
   async delete(id: number): Promise<void> {
     await httpClient.delete(`${this.baseUrl}/${id}/`);
+  }
+
+  /**
+   * Activar una promoción
+   */
+  async activar(id: number): Promise<Promocion> {
+    return await httpClient.patch<Promocion>(`${this.baseUrl}/${id}/`, {
+      estado: "ACTIVA",
+    });
+  }
+
+  /**
+   * Desactivar una promoción
+   */
+  async desactivar(id: number): Promise<Promocion> {
+    return await httpClient.patch<Promocion>(`${this.baseUrl}/${id}/`, {
+      estado: "INACTIVA",
+    });
   }
 }
 

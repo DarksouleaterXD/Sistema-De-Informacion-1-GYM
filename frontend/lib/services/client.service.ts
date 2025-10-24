@@ -1,6 +1,6 @@
 import { httpClient } from "../config/http-client";
 import { API_ENDPOINTS } from "../config/api";
-import { Client } from "../types";
+import { Client, ExperienciaCliente } from "../types";
 
 export interface CreateClientDTO {
   nombre: string;
@@ -8,6 +8,9 @@ export interface CreateClientDTO {
   ci: string;
   telefono?: string;
   email?: string;
+  peso?: string | number; // Nuevo campo
+  altura?: string | number; // Nuevo campo
+  experiencia?: ExperienciaCliente; // Nuevo campo
 }
 
 export interface UpdateClientDTO extends Partial<CreateClientDTO> {}

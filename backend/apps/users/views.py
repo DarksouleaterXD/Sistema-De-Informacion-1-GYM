@@ -417,9 +417,9 @@ class UserListCreateView(APIView):
         # Registrar en bitácora
         Bitacora.log_activity(
             request=request,
+            tipo_accion='create_user',
             accion='crear_usuario',
             descripcion=f'Usuario {user.username} creado por {request.user.username}',
-            modulo='users',
             nivel='info'
         )
         
@@ -498,8 +498,7 @@ class UserDetailView(APIView):
             request=request,
             accion='actualizar_usuario',
             descripcion=f'Usuario {user.username} actualizado por {request.user.username}',
-            modulo='users',
-            nivel='info'
+                        nivel='info'
         )
         
         return Response(UserListSerializer(updated_user).data)
@@ -537,8 +536,7 @@ class UserDetailView(APIView):
             request=request,
             accion='actualizar_usuario',
             descripcion=f'Usuario {user.username} actualizado parcialmente por {request.user.username}',
-            modulo='users',
-            nivel='info'
+                        nivel='info'
         )
         
         return Response(UserListSerializer(updated_user).data)
@@ -580,8 +578,7 @@ class UserDetailView(APIView):
             request=request,
             accion='eliminar_usuario',
             descripcion=f'Usuario {user.username} eliminado por {request.user.username}',
-            modulo='users',
-            nivel='warning'
+                        nivel='warning'
         )
         
         user.delete()
