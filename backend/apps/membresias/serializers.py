@@ -188,6 +188,12 @@ class MembresiaCreateSerializer(serializers.Serializer):
     metodo_de_pago = serializers.ChoiceField(choices=['efectivo', 'tarjeta', 'transferencia', 'qr'])
     
     # Datos de Membresía
+    plan = serializers.IntegerField()  # ✨ NUEVO: Campo plan requerido
+    promociones = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        allow_empty=True
+    )  # ✨ NUEVO: Promociones opcionales (M2M)
     estado = serializers.ChoiceField(choices=['activo', 'vencido', 'suspendido'])
     fecha_inicio = serializers.DateField()
     fecha_fin = serializers.DateField()
@@ -201,6 +207,7 @@ class MembresiaCreateSerializer(serializers.Serializer):
     def validate(self, data):
         """Validaciones cruzadas"""
         from apps.clients.models import Client
+        from apps.promociones.models import Promocion
         
         # Validar que el cliente existe
         try:
@@ -209,6 +216,23 @@ class MembresiaCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError({
                 'cliente': 'El cliente no existe'
             })
+        
+        # ✨ NUEVO: Validar que el plan existe
+        try:
+            PlanMembresia.objects.get(pk=data['plan'])
+        except PlanMembresia.DoesNotExist:
+            raise serializers.ValidationError({
+                'plan': 'El plan de membresía no existe'
+            })
+        
+        # ✨ NUEVO: Validar promociones si se proporcionan
+        if 'promociones' in data and data['promociones']:
+            promociones_ids = data['promociones']
+            promociones_count = Promocion.objects.filter(id__in=promociones_ids).count()
+            if promociones_count != len(promociones_ids):
+                raise serializers.ValidationError({
+                    'promociones': 'Una o más promociones no existen'
+                })
         
         # Validar fechas
         if data['fecha_fin'] <= data['fecha_inicio']:
@@ -223,6 +247,9 @@ class MembresiaCreateSerializer(serializers.Serializer):
         from apps.clients.models import Client
         from django.db import transaction
         
+        # Extraer promociones (opcional)
+        promociones_ids = validated_data.pop('promociones', [])
+        
         with transaction.atomic():
             # Crear Inscripción
             inscripcion = InscripcionMembresia.objects.create(
@@ -234,10 +261,15 @@ class MembresiaCreateSerializer(serializers.Serializer):
             # Crear Membresía
             membresia = Membresia.objects.create(
                 inscripcion=inscripcion,
+                plan_id=validated_data['plan'],  # ✨ NUEVO: Asignar plan
                 usuario_registro=self.context['request'].user,
                 estado=validated_data['estado'],
                 fecha_inicio=validated_data['fecha_inicio'],
                 fecha_fin=validated_data['fecha_fin']
             )
+            
+            # ✨ NUEVO: Asociar promociones si se proporcionan
+            if promociones_ids:
+                membresia.promociones.set(promociones_ids)
             
             return membresia

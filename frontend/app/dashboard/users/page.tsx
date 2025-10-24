@@ -86,7 +86,7 @@ export default function UsersPage() {
   const handleCreate = async () => {
     try {
       if (!formData.username || !formData.email || !formData.password) {
-        alert("Por favor complete los campos obligatorios");
+        alert("Por favor complete los campos obligatorios (username, email, contraseña)");
         return;
       }
 
@@ -97,7 +97,24 @@ export default function UsersPage() {
       alert("Usuario creado exitosamente");
     } catch (error: any) {
       console.error("Error al crear usuario:", error);
-      alert(error?.message || "Error al crear usuario");
+      
+      // Mejorar mensaje de error con detalles del backend
+      let errorMessage = "Error al crear usuario";
+      
+      if (error?.errors) {
+        // Extraer mensajes de error del backend
+        const errorDetails = Object.entries(error.errors)
+          .map(([field, messages]: [string, any]) => {
+            const messageArray = Array.isArray(messages) ? messages : [messages];
+            return `${field}: ${messageArray.join(', ')}`;
+          })
+          .join('\n');
+        errorMessage = `Error al crear usuario:\n${errorDetails}`;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     }
   };
 

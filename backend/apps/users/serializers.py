@@ -130,8 +130,19 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return value.lower()
     
     def validate_password(self, value):
+        """Validar contraseña con requisitos de seguridad"""
         if len(value) < 8:
             raise serializers.ValidationError("La contraseña debe tener al menos 8 caracteres.")
+        
+        # Validar que no sea solo números
+        if value.isdigit():
+            raise serializers.ValidationError("La contraseña no puede ser solo números.")
+        
+        # Validar que no sea demasiado común
+        common_passwords = ['12345678', 'password', 'qwerty123', 'admin123', '00000000']
+        if value.lower() in common_passwords:
+            raise serializers.ValidationError("Esta contraseña es demasiado común. Usa una contraseña más segura.")
+        
         return value
     
     def create(self, validated_data):
