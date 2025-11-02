@@ -41,7 +41,7 @@ class RoleService {
       previous: string | null;
       results: Role[];
     }>(this.baseUrl + "/?page_size=100");
-    
+
     return response.results || [];
   }
 
@@ -57,7 +57,7 @@ class RoleService {
       previous: string | null;
       results: Permiso[];
     }>(this.permisosUrl + "/?page_size=100");
-    
+
     return response.results || [];
   }
 
