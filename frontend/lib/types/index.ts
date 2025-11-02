@@ -13,6 +13,7 @@ export interface User {
   fecha_registro?: string;
   ultimo_acceso?: string;
   roles?: Role[];
+  permissions?: string[]; // Lista de códigos de permisos
 }
 
 // Cliente
@@ -22,11 +23,12 @@ export interface Client {
   apellido: string;
   ci: string;
   telefono: string;
+  celular?: string; // Campo adicional opcional
   email: string;
   fecha_registro: string;
   peso: string; // DecimalField
   altura: string; // DecimalField
-  experiencia: 'PRINCIPIANTE' | 'INTERMEDIO' | 'AVANZADO';
+  experiencia: "PRINCIPIANTE" | "INTERMEDIO" | "AVANZADO";
   nombre_completo?: string;
   created_at: string;
   updated_at: string;
@@ -69,6 +71,7 @@ export interface InscripcionMembresia {
   cliente: number | Client;
   monto: string;
   metodo_de_pago: string;
+  metodo_de_pago_display?: string;
   created_at: string;
   updated_at: string;
 }
@@ -77,10 +80,16 @@ export interface InscripcionMembresia {
 export interface Membresia {
   id: number;
   inscripcion: number | InscripcionMembresia;
+  inscripcion_info?: InscripcionMembresia & {
+    cliente_info?: Client;
+  };
   usuario_registro: number | User;
+  usuario_registro_nombre?: string;
   plan: number | PlanMembresia; // Nueva relación FK
+  plan_info?: PlanMembresia;
   promociones?: number[] | Promocion[]; // Nueva relación M2M
-  estado: "ACTIVO" | "INACTIVO" | "VENCIDO" | "SUSPENDIDO";
+  estado: "activo" | "inactivo" | "vencido" | "suspendido"; // ✅ CORREGIDO: minúsculas
+  estado_display?: string;
   fecha_inicio: string;
   fecha_fin: string;
   dias_restantes?: number;
@@ -109,7 +118,8 @@ export interface Promocion {
   descuento: string; // DecimalField (porcentaje)
   fecha_inicio: string;
   fecha_fin: string;
-  estado: 'ACTIVA' | 'INACTIVA' | 'VENCIDA';
+  estado: "ACTIVA" | "INACTIVA" | "VENCIDA"; // ✅ Promociones usan MAYÚSCULAS en backend
+  esta_vigente?: boolean; // Calculado en el backend
   created_at: string;
   updated_at: string;
 }
@@ -148,8 +158,8 @@ export interface BaseFilters {
   ordering?: string;
 }
 
-// Estados
-export type EstadoMembresia = "ACTIVO" | "INACTIVO" | "VENCIDO" | "SUSPENDIDO";
+// Estados (✅ CORREGIDO: membresías minúsculas, promociones MAYÚSCULAS)
+export type EstadoMembresia = "activo" | "inactivo" | "vencido" | "suspendido";
 export type EstadoPromocion = "ACTIVA" | "INACTIVA" | "VENCIDA";
 export type ExperienciaCliente = "PRINCIPIANTE" | "INTERMEDIO" | "AVANZADO";
 export type MetodoPago = "efectivo" | "tarjeta" | "transferencia" | "qr";

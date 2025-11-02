@@ -11,6 +11,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Gym Spartan - Panel Administrativo",
   description: "Sistema de gestión para Gym Spartan",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

@@ -7,6 +7,7 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from apps.roles.models import Role, Permiso, UserRole, RolPermiso
 from apps.roles.serializers import RolSerializer, PermisoSerializer, RolePermissionSerializer, RolePermissionSetSerializer
 from apps.audit.models import HistorialActividad as Bitacora
+from apps.core.permissions import HasPermission, PermissionCodes
 
 User = get_user_model()
 # ----- Permiso: solo Superusuario (Dueño) o superuser de Django -----
@@ -46,7 +47,8 @@ class RoleListCreateView(generics.ListCreateAPIView):
     """
     queryset = Role.objects.all().order_by("-created_at")
     serializer_class = RolSerializer
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_VIEW
 
     @extend_schema(
         tags=["Roles"],
@@ -82,7 +84,8 @@ class RoleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Role.objects.all()
     serializer_class = RolSerializer
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_VIEW
 
     @extend_schema(
         tags=["Roles"],
@@ -161,7 +164,8 @@ class RoleAssignView(APIView):
     """
     POST /api/roles/assign/  {user_id, role_id}
     """
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_ASSIGN_TO_USER
 
     def post(self, request):
         s = RoleAssignSerializer(data=request.data)
@@ -199,7 +203,8 @@ class RoleRemoveView(APIView):
     """
     POST /api/roles/remove/  {user_id, role_id}
     """
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_ASSIGN_TO_USER
 
     def post(self, request):
         s = RoleRemoveSerializer(data=request.data)
@@ -256,9 +261,10 @@ def _ua(request): return request.META.get("HTTP_USER_AGENT", "")
 # ================== CRUD Permisos ==================
 @extend_schema(tags=["Permisos"], responses={200: PermisoSerializer(many=True)})
 class PermissionListCreateView(generics.ListCreateAPIView):
-    queryset = Permiso.objects.all().order_by("nombre")
+    queryset = Permiso.objects.all().order_by("codigo")
     serializer_class = PermisoSerializer
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.PERMISSION_VIEW
 
     @extend_schema(
         tags=["Permisos"], request=PermisoSerializer, responses={201: PermisoSerializer},
@@ -283,7 +289,8 @@ class PermissionListCreateView(generics.ListCreateAPIView):
 class PermissionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Permiso.objects.all()
     serializer_class = PermisoSerializer
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.PERMISSION_VIEW
 
     @extend_schema(tags=["Permisos"], request=PermisoSerializer, responses={200: PermisoSerializer})
     def put(self, request, *args, **kwargs):
@@ -338,7 +345,8 @@ class PermissionDetailView(generics.RetrieveUpdateDestroyAPIView):
     examples=[OpenApiExample("Asignar permiso a rol", request_only=True, value={"permiso_id": 2})],
 )
 class RolePermissionAssignView(APIView):
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_ASSIGN_PERMISSIONS
 
     def post(self, request, role_id: int):
         s = RolePermissionSerializer(data=request.data); s.is_valid(raise_exception=True)
@@ -366,7 +374,8 @@ class RolePermissionAssignView(APIView):
     examples=[OpenApiExample("Remover permiso de rol", request_only=True, value={"permiso_id": 2})],
 )
 class RolePermissionRemoveView(APIView):
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_ASSIGN_PERMISSIONS
 
     def post(self, request, role_id: int):
         s = RolePermissionSerializer(data=request.data); s.is_valid(raise_exception=True)
@@ -393,7 +402,8 @@ class RolePermissionRemoveView(APIView):
     examples=[OpenApiExample("Reemplazar set", request_only=True, value={"permisos": [1, 2, 5]})],
 )
 class RolePermissionSetView(APIView):
-    permission_classes = [HasRoleSuperUser]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.ROLE_ASSIGN_PERMISSIONS
 
     def put(self, request, role_id: int):
         s = RolePermissionSetSerializer(data=request.data); s.is_valid(raise_exception=True)

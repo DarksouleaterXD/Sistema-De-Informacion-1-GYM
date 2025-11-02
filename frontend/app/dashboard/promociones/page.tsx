@@ -21,8 +21,11 @@ import {
   PromocionCreate,
   PromocionUpdate,
 } from "@/lib/services/promocion.service";
+import { Card, Button, Badge, Input } from "@/components/ui";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PermissionCodes } from "@/lib/utils/permissions";
 
-export default function PromocionesPage() {
+function PromocionesPageContent() {
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -163,18 +166,15 @@ export default function PromocionesPage() {
               Gestiona las promociones y descuentos
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-          >
+          <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="h-5 w-5 mr-2" />
             Nueva Promoción
-          </button>
+          </Button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <Card>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Promociones</p>
@@ -184,23 +184,23 @@ export default function PromocionesPage() {
               </div>
               <Tag className="h-12 w-12 text-blue-600" />
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <Card>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Activas</p>
                 <p className="text-3xl font-bold text-green-600 mt-1">
                   {Array.isArray(promociones)
-                    ? promociones.filter((p) => p.estado === 'ACTIVA').length
+                    ? promociones.filter((p) => p.estado === "ACTIVA").length
                     : 0}
                 </p>
               </div>
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <Card>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Vigentes Ahora</p>
@@ -212,7 +212,7 @@ export default function PromocionesPage() {
               </div>
               <Calendar className="h-12 w-12 text-purple-600" />
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Tabla */}
@@ -265,7 +265,8 @@ export default function PromocionesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">
-                          {promocion.meses} {promocion.meses === 1 ? 'mes' : 'meses'}
+                          {promocion.meses}{" "}
+                          {promocion.meses === 1 ? "mes" : "meses"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -277,55 +278,58 @@ export default function PromocionesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
-                          {promocion.estado === 'ACTIVA' ? (
-                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                          {promocion.estado === "ACTIVA" ? (
+                            <Badge variant="success">
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Activa
-                            </span>
-                          ) : promocion.estado === 'VENCIDA' ? (
-                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                            </Badge>
+                          ) : promocion.estado === "VENCIDA" ? (
+                            <Badge variant="danger">
                               <XCircle className="h-3 w-3 mr-1" />
                               Vencida
-                            </span>
+                            </Badge>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
+                            <Badge variant="default">
                               <XCircle className="h-3 w-3 mr-1" />
                               Inactiva
-                            </span>
+                            </Badge>
                           )}
                           {promocion.esta_vigente && (
-                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-purple-800 bg-purple-100 rounded-full">
+                            <Badge variant="info">
                               <Calendar className="h-3 w-3 mr-1" />
                               Vigente
-                            </span>
+                            </Badge>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
-                          <button
+                          <Button
                             onClick={() => handleViewDetail(promocion.id)}
-                            className="text-blue-600 hover:text-blue-900"
+                            variant="secondary"
+                            size="sm"
                             title="Ver detalle"
                           >
-                            <Eye className="h-5 w-5" />
-                          </button>
-                          <button
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
                             onClick={() => handleEdit(promocion)}
-                            className="text-yellow-600 hover:text-yellow-900"
+                            variant="secondary"
+                            size="sm"
                             title="Editar"
                           >
-                            <Edit className="h-5 w-5" />
-                          </button>
-                          <button
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
                             onClick={() =>
                               handleDelete(promocion.id, promocion.nombre)
                             }
-                            className="text-red-600 hover:text-red-900"
+                            variant="danger"
+                            size="sm"
                             title="Eliminar"
                           >
-                            <Trash2 className="h-5 w-5" />
-                          </button>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -372,96 +376,73 @@ export default function PromocionesPage() {
               <form onSubmit={handleCreate} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre <span className="text-red-500">*</span>
-                    </label>
-                    <input
+                    <Input
+                      label="Nombre *"
                       type="text"
                       required
                       value={formData.nombre}
                       onChange={(e) =>
                         setFormData({ ...formData, nombre: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ej: Promoción Verano 2025"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Meses de Duración <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      step="1"
-                      value={formData.meses}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          meses: parseInt(e.target.value) || 1,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="6"
-                    />
-                  </div>
+                  <Input
+                    label="Meses de Duración *"
+                    type="number"
+                    required
+                    min="1"
+                    step="1"
+                    value={formData.meses}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        meses: parseInt(e.target.value) || 1,
+                      })
+                    }
+                    placeholder="6"
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descuento (%) <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={formData.descuento}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          descuento: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="15.00"
-                    />
-                  </div>
+                  <Input
+                    label="Descuento (%) *"
+                    type="number"
+                    required
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={formData.descuento}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        descuento: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="15.00"
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Fecha de Inicio <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.fecha_inicio}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          fecha_inicio: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                  <Input
+                    label="Fecha de Inicio *"
+                    type="date"
+                    required
+                    value={formData.fecha_inicio}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        fecha_inicio: e.target.value,
+                      })
+                    }
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Fecha de Fin <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.fecha_fin}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fecha_fin: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                  <Input
+                    label="Fecha de Fin *"
+                    type="date"
+                    required
+                    value={formData.fecha_fin}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fecha_fin: e.target.value })
+                    }
+                  />
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -473,7 +454,10 @@ export default function PromocionesPage() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          estado: e.target.value as 'ACTIVA' | 'INACTIVA' | 'VENCIDA',
+                          estado: e.target.value as
+                            | "ACTIVA"
+                            | "INACTIVA"
+                            | "VENCIDA",
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -486,19 +470,14 @@ export default function PromocionesPage() {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    variant="secondary"
                   >
                     Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                  >
-                    Crear Promoción
-                  </button>
+                  </Button>
+                  <Button type="submit">Crear Promoción</Button>
                 </div>
               </form>
             </div>
@@ -628,7 +607,10 @@ export default function PromocionesPage() {
                       onChange={(e) =>
                         setUpdateData({
                           ...updateData,
-                          estado: e.target.value as 'ACTIVA' | 'INACTIVA' | 'VENCIDA',
+                          estado: e.target.value as
+                            | "ACTIVA"
+                            | "INACTIVA"
+                            | "VENCIDA",
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -641,22 +623,17 @@ export default function PromocionesPage() {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedPromocion(null);
                     }}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    variant="secondary"
                   >
                     Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                  >
-                    Actualizar
-                  </button>
+                  </Button>
+                  <Button type="submit">Actualizar</Button>
                 </div>
               </form>
             </div>
@@ -707,7 +684,8 @@ export default function PromocionesPage() {
                       Duración
                     </label>
                     <p className="text-gray-900">
-                      {selectedPromocion.meses} {selectedPromocion.meses === 1 ? 'mes' : 'meses'}
+                      {selectedPromocion.meses}{" "}
+                      {selectedPromocion.meses === 1 ? "mes" : "meses"}
                     </p>
                   </div>
 
@@ -734,12 +712,12 @@ export default function PromocionesPage() {
                       Estado
                     </label>
                     <div className="flex gap-2 mt-1">
-                      {selectedPromocion.estado === 'ACTIVA' ? (
+                      {selectedPromocion.estado === "ACTIVA" ? (
                         <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Activa
                         </span>
-                      ) : selectedPromocion.estado === 'VENCIDA' ? (
+                      ) : selectedPromocion.estado === "VENCIDA" ? (
                         <span className="inline-flex items-center px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full">
                           <XCircle className="h-4 w-4 mr-1" />
                           Vencida
@@ -807,5 +785,13 @@ export default function PromocionesPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function PromocionesPage() {
+  return (
+    <ProtectedRoute requiredPermission={PermissionCodes.PROMOTION_VIEW}>
+      <PromocionesPageContent />
+    </ProtectedRoute>
   );
 }

@@ -2,6 +2,9 @@
 import { httpClient } from "../config/http-client";
 import { Promocion, EstadoPromocion } from "../types";
 
+// Re-exportar tipos para facilitar imports
+export type { Promocion, EstadoPromocion };
+
 export interface PromocionCreate {
   nombre: string;
   meses: number; // Duración en meses
@@ -28,14 +31,14 @@ class PromocionService {
     activas?: boolean;
   }): Promise<Promocion[]> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.estado) queryParams.append("estado", params.estado);
     if (params?.activas) queryParams.append("activas", "true");
 
     const url = `${this.baseUrl}/${
       queryParams.toString() ? `?${queryParams.toString()}` : ""
     }`;
-    
+
     return await httpClient.get<Promocion[]>(url);
   }
 

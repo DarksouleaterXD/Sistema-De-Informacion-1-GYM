@@ -22,8 +22,10 @@ import {
   UserCreate,
   UserUpdate,
 } from "@/lib/services/user.service";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PermissionCodes } from "@/lib/utils/permissions";
 
-export default function UsersPage() {
+function UsersPageContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,7 +88,9 @@ export default function UsersPage() {
   const handleCreate = async () => {
     try {
       if (!formData.username || !formData.email || !formData.password) {
-        alert("Por favor complete los campos obligatorios (username, email, contraseña)");
+        alert(
+          "Por favor complete los campos obligatorios (username, email, contraseña)"
+        );
         return;
       }
 
@@ -97,23 +101,25 @@ export default function UsersPage() {
       alert("Usuario creado exitosamente");
     } catch (error: any) {
       console.error("Error al crear usuario:", error);
-      
+
       // Mejorar mensaje de error con detalles del backend
       let errorMessage = "Error al crear usuario";
-      
+
       if (error?.errors) {
         // Extraer mensajes de error del backend
         const errorDetails = Object.entries(error.errors)
           .map(([field, messages]: [string, any]) => {
-            const messageArray = Array.isArray(messages) ? messages : [messages];
-            return `${field}: ${messageArray.join(', ')}`;
+            const messageArray = Array.isArray(messages)
+              ? messages
+              : [messages];
+            return `${field}: ${messageArray.join(", ")}`;
           })
-          .join('\n');
+          .join("\n");
         errorMessage = `Error al crear usuario:\n${errorDetails}`;
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       alert(errorMessage);
     }
   };
@@ -926,5 +932,13 @@ export default function UsersPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <ProtectedRoute requiredPermission={PermissionCodes.USER_VIEW}>
+      <UsersPageContent />
+    </ProtectedRoute>
   );
 }

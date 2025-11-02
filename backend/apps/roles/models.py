@@ -31,8 +31,14 @@ class Role(TimeStampedModel):
 class Permiso(TimeStampedModel):
     """
     Permiso - Tabla según PUML
-    Campos: ID (PK), Nombre, Descripcion
+    Campos: ID (PK), Codigo (único), Nombre, Descripcion
     """
+    codigo = models.CharField(
+        max_length=100, 
+        unique=True, 
+        verbose_name="Código",
+        help_text="Código único del permiso (ej: client.view, user.create)"
+    )
     nombre = models.CharField(max_length=50, verbose_name="Nombre")
     descripcion = models.TextField(null=True, blank=True, verbose_name="Descripción")
     
@@ -40,10 +46,10 @@ class Permiso(TimeStampedModel):
         db_table = 'permiso'
         verbose_name = "Permiso"
         verbose_name_plural = "Permisos"
-        ordering = ['nombre']
+        ordering = ['codigo']
     
     def __str__(self):
-        return self.nombre
+        return f"{self.codigo} - {self.nombre}"
 
 
 class UserRole(TimeStampedModel):
@@ -96,6 +102,4 @@ class RolPermiso(TimeStampedModel):
     
     def __str__(self):
         return f"{self.rol} - {self.permiso}"
-    
-    def __str__(self):
-        return self.name
+

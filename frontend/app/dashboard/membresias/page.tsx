@@ -24,8 +24,11 @@ import membresiaService, {
 } from "@/lib/services/membresia.service";
 import { clientService } from "@/lib/services/client.service";
 import { Client, PlanMembresia } from "@/lib/types";
+import { Card, Button, Badge, Input } from "@/components/ui";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PermissionCodes } from "@/lib/utils/permissions";
 
-export default function MembresiasPage() {
+function MembresiasPageContent() {
   const [membresias, setMembresias] = useState<MembresiaList[]>([]);
   const [stats, setStats] = useState<MembresiaStats | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
@@ -51,7 +54,7 @@ export default function MembresiasPage() {
     plan: 0, // ✨ NUEVO campo requerido
     monto: 0,
     metodo_de_pago: "efectivo",
-    estado: "ACTIVO",
+    estado: "activo", // ✅ CORREGIDO: minúsculas para coincidir con backend
     fecha_inicio: new Date().toISOString().split("T")[0],
     fecha_fin: "",
   });
@@ -131,8 +134,15 @@ export default function MembresiasPage() {
   // CRUD Functions
   const handleCreate = async () => {
     try {
-      if (!formData.cliente || !formData.plan || !formData.monto || !formData.fecha_fin) {
-        alert("Por favor complete todos los campos obligatorios (cliente, plan, monto, fecha fin)");
+      if (
+        !formData.cliente ||
+        !formData.plan ||
+        !formData.monto ||
+        !formData.fecha_fin
+      ) {
+        alert(
+          "Por favor complete todos los campos obligatorios (cliente, plan, monto, fecha fin)"
+        );
         return;
       }
 
@@ -163,11 +173,33 @@ export default function MembresiasPage() {
     try {
       const data = await membresiaService.getById(id);
       setSelectedMembresia(data);
+
+      // Extraer IDs correctamente
+      const clienteId =
+        typeof data.inscripcion === "number"
+          ? data.inscripcion
+          : typeof data.inscripcion?.cliente === "number"
+          ? data.inscripcion.cliente
+          : (data.inscripcion?.cliente as Client)?.id || 0;
+
+      const planId =
+        typeof data.plan === "number" ? data.plan : data.plan?.id || 0;
+
+      const monto =
+        typeof data.inscripcion === "number"
+          ? 0
+          : parseFloat(data.inscripcion?.monto?.toString() || "0");
+
+      const metodoPago =
+        typeof data.inscripcion === "number"
+          ? "efectivo"
+          : data.inscripcion?.metodo_de_pago || "efectivo";
+
       setFormData({
-        cliente: typeof data.inscripcion === 'number' ? data.inscripcion : data.inscripcion?.cliente || 0,
-        plan: typeof data.plan === 'number' ? data.plan : data.plan?.id || 0,
-        monto: typeof data.inscripcion === 'number' ? 0 : data.inscripcion?.monto || 0,
-        metodo_de_pago: typeof data.inscripcion === 'number' ? "efectivo" : data.inscripcion?.metodo_de_pago || "efectivo",
+        cliente: clienteId,
+        plan: planId,
+        monto: monto,
+        metodo_de_pago: metodoPago,
         estado: data.estado,
         fecha_inicio: data.fecha_inicio,
         fecha_fin: data.fecha_fin,
@@ -184,7 +216,11 @@ export default function MembresiasPage() {
 
     try {
       await membresiaService.patch(selectedMembresia.id, {
-        estado: formData.estado,
+        estado: formData.estado as
+          | "activo"
+          | "inactivo"
+          | "vencido"
+          | "suspendido",
         fecha_inicio: formData.fecha_inicio,
         fecha_fin: formData.fecha_fin,
       });
@@ -220,7 +256,7 @@ export default function MembresiasPage() {
       plan: 0, // ✨ NUEVO
       monto: 0,
       metodo_de_pago: "efectivo",
-      estado: "ACTIVO",
+      estado: "activo", // ✅ CORREGIDO: minúsculas
       fecha_inicio: new Date().toISOString().split("T")[0],
       fecha_fin: "",
     });
@@ -243,18 +279,15 @@ export default function MembresiasPage() {
               Gestiona los planes de membresía del gimnasio
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-          >
+          <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="h-5 w-5 mr-2" />
             Nueva Membresía
-          </button>
+          </Button>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <Card>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Membresías</p>
@@ -266,7 +299,7 @@ export default function MembresiasPage() {
                 <TrendingUp className="h-8 w-8 text-blue-600" />
               </div>
             </div>
-          </div>
+          </Card>
 
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between">
@@ -587,14 +620,20 @@ export default function MembresiasPage() {
                       value={formData.plan}
                       onChange={(e) => {
                         const planId = Number(e.target.value);
-                        const plan = planes.find(p => p.id === planId);
+                        const plan = planes.find((p) => p.id === planId);
                         setFormData({
                           ...formData,
                           plan: planId,
-                          monto: plan ? Number(plan.precio_base) : formData.monto,
-                          fecha_fin: plan && formData.fecha_inicio 
-                            ? calculateFechaFin(formData.fecha_inicio, plan.duracion)
-                            : formData.fecha_fin
+                          monto: plan
+                            ? Number(plan.precio_base)
+                            : formData.monto,
+                          fecha_fin:
+                            plan && formData.fecha_inicio
+                              ? calculateFechaFin(
+                                  formData.fecha_inicio,
+                                  plan.duracion
+                                )
+                              : formData.fecha_fin,
                         });
                       }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
@@ -603,7 +642,8 @@ export default function MembresiasPage() {
                       <option value={0}>Seleccione un plan</option>
                       {planes.map((plan) => (
                         <option key={plan.id} value={plan.id}>
-                          {plan.nombre} - Bs. {plan.precio_base} ({plan.duracion} días)
+                          {plan.nombre} - Bs. {plan.precio_base} (
+                          {plan.duracion} días)
                         </option>
                       ))}
                     </select>
@@ -706,7 +746,7 @@ export default function MembresiasPage() {
                             ),
                           })
                         }
-                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-black rounded text-sm"
                       >
                         1 Mes
                       </button>
@@ -721,7 +761,7 @@ export default function MembresiasPage() {
                             ),
                           })
                         }
-                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-black rounded text-sm"
                       >
                         3 Meses
                       </button>
@@ -736,7 +776,7 @@ export default function MembresiasPage() {
                             ),
                           })
                         }
-                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-black rounded text-sm"
                       >
                         6 Meses
                       </button>
@@ -751,7 +791,7 @@ export default function MembresiasPage() {
                             ),
                           })
                         }
-                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+                        className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-black rounded text-sm"
                       >
                         1 Año
                       </button>
@@ -767,7 +807,7 @@ export default function MembresiasPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, estado: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="activo">Activo</option>
                       <option value="suspendido">Suspendido</option>
@@ -1090,5 +1130,13 @@ export default function MembresiasPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function MembresiasPage() {
+  return (
+    <ProtectedRoute requiredPermission={PermissionCodes.MEMBERSHIP_VIEW}>
+      <MembresiasPageContent />
+    </ProtectedRoute>
   );
 }

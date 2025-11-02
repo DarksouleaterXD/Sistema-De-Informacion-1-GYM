@@ -16,10 +16,13 @@ import {
 } from "lucide-react";
 import { Client } from "@/lib/types";
 import { clientService, CreateClientDTO } from "@/lib/services/client.service";
+import { Card, Button, Input } from "@/components/ui";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PermissionCodes } from "@/lib/utils/permissions";
 
 type ModalMode = "create" | "edit" | null;
 
-export default function ClientsPage() {
+function ClientsPageContent() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,15 +71,15 @@ export default function ClientsPage() {
 
   const handleCreate = () => {
     setModalMode("create");
-    setFormData({ 
-      nombre: "", 
-      apellido: "", 
-      ci: "", 
-      telefono: "", 
+    setFormData({
+      nombre: "",
+      apellido: "",
+      ci: "",
+      telefono: "",
       email: "",
       peso: "",
       altura: "",
-      experiencia: "PRINCIPIANTE"
+      experiencia: "PRINCIPIANTE",
     });
     setFormErrors({});
     setSelectedClient(null);
@@ -101,15 +104,15 @@ export default function ClientsPage() {
   const handleCloseModal = () => {
     setModalMode(null);
     setSelectedClient(null);
-    setFormData({ 
-      nombre: "", 
-      apellido: "", 
-      ci: "", 
-      telefono: "", 
+    setFormData({
+      nombre: "",
+      apellido: "",
+      ci: "",
+      telefono: "",
       email: "",
       peso: "",
       altura: "",
-      experiencia: "PRINCIPIANTE"
+      experiencia: "PRINCIPIANTE",
     });
     setFormErrors({});
   };
@@ -131,10 +134,18 @@ export default function ClientsPage() {
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = "El email no es válido";
     }
-    if (formData.peso && (parseFloat(formData.peso.toString()) < 20 || parseFloat(formData.peso.toString()) > 300)) {
+    if (
+      formData.peso &&
+      (parseFloat(formData.peso.toString()) < 20 ||
+        parseFloat(formData.peso.toString()) > 300)
+    ) {
       errors.peso = "El peso debe estar entre 20 y 300 kg";
     }
-    if (formData.altura && (parseFloat(formData.altura.toString()) < 0.5 || parseFloat(formData.altura.toString()) > 2.5)) {
+    if (
+      formData.altura &&
+      (parseFloat(formData.altura.toString()) < 0.5 ||
+        parseFloat(formData.altura.toString()) > 2.5)
+    ) {
       errors.altura = "La altura debe estar entre 0.5 y 2.5 metros";
     }
 
@@ -201,16 +212,13 @@ export default function ClientsPage() {
               Gestiona la información de los clientes del gimnasio
             </p>
           </div>
-          <button
-            onClick={handleCreate}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-          >
+          <Button onClick={handleCreate}>
             <Plus className="h-5 w-5 mr-2" />
             Nuevo Cliente
-          </button>
+          </Button>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm">
+        <Card>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
@@ -224,7 +232,7 @@ export default function ClientsPage() {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             />
           </div>
-        </div>
+        </Card>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {loading ? (
@@ -302,18 +310,22 @@ export default function ClientsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleEdit(client)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(client)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={() => handleEdit(client)}
+                            variant="secondary"
+                            size="sm"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleDelete(client)}
+                            variant="danger"
+                            size="sm"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -329,26 +341,26 @@ export default function ClientsPage() {
               Mostrando {clients.length} de {pagination.total} clientes
             </p>
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={() =>
                   setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
                 }
                 disabled={pagination.page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                variant="secondary"
               >
                 Anterior
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() =>
                   setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
                 }
                 disabled={
                   pagination.page * pagination.pageSize >= pagination.total
                 }
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                variant="secondary"
               >
                 Siguiente
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -372,164 +384,87 @@ export default function ClientsPage() {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.nombre}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nombre: e.target.value })
-                      }
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                        formErrors.nombre ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                    {formErrors.nombre && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formErrors.nombre}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Apellido *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.apellido}
-                      onChange={(e) =>
-                        setFormData({ ...formData, apellido: e.target.value })
-                      }
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                        formErrors.apellido
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                    />
-                    {formErrors.apellido && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formErrors.apellido}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cédula de Identidad *
-                  </label>
-                  <input
+                  <Input
+                    label="Nombre *"
                     type="text"
-                    value={formData.ci}
+                    value={formData.nombre}
                     onChange={(e) =>
-                      setFormData({ ...formData, ci: e.target.value })
+                      setFormData({ ...formData, nombre: e.target.value })
                     }
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                      formErrors.ci ? "border-red-500" : "border-gray-300"
-                    }`}
-                    maxLength={10}
+                    error={formErrors.nombre}
                   />
-                  {formErrors.ci && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.ci}</p>
-                  )}
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono
-                  </label>
-                  <input
+                  <Input
+                    label="Apellido *"
                     type="text"
-                    value={formData.telefono}
+                    value={formData.apellido}
                     onChange={(e) =>
-                      setFormData({ ...formData, telefono: e.target.value })
+                      setFormData({ ...formData, apellido: e.target.value })
                     }
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                      formErrors.telefono ? "border-red-500" : "border-gray-300"
-                    }`}
-                    maxLength={8}
+                    error={formErrors.apellido}
                   />
-                  {formErrors.telefono && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.telefono}
-                    </p>
-                  )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                      formErrors.email ? "border-red-500" : "border-gray-300"
-                    }`}
-                  />
-                  {formErrors.email && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.email}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Cédula de Identidad *"
+                  type="text"
+                  value={formData.ci}
+                  onChange={(e) =>
+                    setFormData({ ...formData, ci: e.target.value })
+                  }
+                  error={formErrors.ci}
+                  maxLength={10}
+                />
+
+                <Input
+                  label="Teléfono"
+                  type="text"
+                  value={formData.telefono}
+                  onChange={(e) =>
+                    setFormData({ ...formData, telefono: e.target.value })
+                  }
+                  error={formErrors.telefono}
+                  maxLength={8}
+                />
+
+                <Input
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  error={formErrors.email}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Peso (kg)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="20"
-                      max="300"
-                      value={formData.peso}
-                      onChange={(e) =>
-                        setFormData({ ...formData, peso: e.target.value })
-                      }
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                        formErrors.peso ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="ej: 75.5"
-                    />
-                    {formErrors.peso && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formErrors.peso}
-                      </p>
-                    )}
-                  </div>
+                  <Input
+                    label="Peso (kg)"
+                    type="number"
+                    step="0.01"
+                    min="20"
+                    max="300"
+                    value={formData.peso}
+                    onChange={(e) =>
+                      setFormData({ ...formData, peso: e.target.value })
+                    }
+                    error={formErrors.peso}
+                    placeholder="ej: 75.5"
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Altura (m)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.5"
-                      max="2.5"
-                      value={formData.altura}
-                      onChange={(e) =>
-                        setFormData({ ...formData, altura: e.target.value })
-                      }
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 ${
-                        formErrors.altura ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="ej: 1.75"
-                    />
-                    {formErrors.altura && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {formErrors.altura}
-                      </p>
-                    )}
-                  </div>
+                  <Input
+                    label="Altura (m)"
+                    type="number"
+                    step="0.01"
+                    min="0.5"
+                    max="2.5"
+                    value={formData.altura}
+                    onChange={(e) =>
+                      setFormData({ ...formData, altura: e.target.value })
+                    }
+                    error={formErrors.altura}
+                    placeholder="ej: 1.75"
+                  />
                 </div>
 
                 <div>
@@ -539,7 +474,10 @@ export default function ClientsPage() {
                   <select
                     value={formData.experiencia}
                     onChange={(e) =>
-                      setFormData({ ...formData, experiencia: e.target.value as any })
+                      setFormData({
+                        ...formData,
+                        experiencia: e.target.value as any,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
                   >
@@ -551,18 +489,14 @@ export default function ClientsPage() {
               </div>
 
               <div className="flex justify-end gap-3 mt-6">
-                <button
+                <Button
                   onClick={handleCloseModal}
                   disabled={submitting}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  variant="secondary"
                 >
                   Cancelar
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={submitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
-                >
+                </Button>
+                <Button onClick={handleSave} disabled={submitting}>
                   {submitting ? (
                     <>
                       <Loader2 className="animate-spin h-5 w-5 mr-2" />
@@ -574,12 +508,20 @@ export default function ClientsPage() {
                       Guardar
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+export default function ClientsPage() {
+  return (
+    <ProtectedRoute requiredPermission={PermissionCodes.CLIENT_VIEW}>
+      <ClientsPageContent />
+    </ProtectedRoute>
   );
 }

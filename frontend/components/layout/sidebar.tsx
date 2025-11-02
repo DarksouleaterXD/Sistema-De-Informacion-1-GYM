@@ -1,5 +1,5 @@
 /**
- * Componente Sidebar - Navegación lateral responsiva
+ * Componente Sidebar - Navegación lateral responsiva con RBAC
  */
 
 "use client";
@@ -17,30 +17,89 @@ import {
   X,
   UserCircle,
   Dumbbell,
+  ClipboardList,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { PermissionCodes, PermissionCode } from "@/lib/utils/permissions";
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  requiredPermission?: PermissionCode; // Permiso requerido para mostrar el item
 }
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Clientes", href: "/dashboard/clients", icon: UserCircle },
-  { name: "Membresías", href: "/dashboard/membresias", icon: CreditCard },
-  { name: "Usuarios", href: "/dashboard/users", icon: Users },
-  { name: "Roles", href: "/dashboard/roles", icon: Shield },
-  { name: "Promociones", href: "/dashboard/promociones", icon: Tag },
-  { name: "Bitácora", href: "/dashboard/audit", icon: FileText },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: Home,
+    requiredPermission: PermissionCodes.DASHBOARD_VIEW,
+  },
+  {
+    name: "Clientes",
+    href: "/dashboard/clients",
+    icon: UserCircle,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+  },
+  {
+    name: "Membresías",
+    href: "/dashboard/membresias",
+    icon: CreditCard,
+    requiredPermission: PermissionCodes.MEMBERSHIP_VIEW,
+  },
+  {
+    name: "Inscripciones",
+    href: "/dashboard/inscripciones",
+    icon: ClipboardList,
+    requiredPermission: PermissionCodes.ENROLLMENT_VIEW,
+  },
+  {
+    name: "Promociones",
+    href: "/dashboard/promociones",
+    icon: Tag,
+    requiredPermission: PermissionCodes.PROMOTION_VIEW,
+  },
+  {
+    name: "Usuarios",
+    href: "/dashboard/users",
+    icon: Users,
+    requiredPermission: PermissionCodes.USER_VIEW,
+  },
+  {
+    name: "Roles",
+    href: "/dashboard/roles",
+    icon: Shield,
+    requiredPermission: PermissionCodes.ROLE_VIEW,
+  },
+  {
+    name: "Bitácora",
+    href: "/dashboard/audit",
+    icon: FileText,
+    requiredPermission: PermissionCodes.AUDIT_VIEW,
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, hasPermission, isSuperuser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Filtrar items del menú por permisos
+  const visibleNavItems = useMemo(() => {
+    // Superusers ven todo
+    if (isSuperuser) return navItems;
+
+    // Filtrar por permisos
+    return navItems.filter((item) => {
+      // Si no requiere permiso, mostrar siempre
+      if (!item.requiredPermission) return true;
+
+      // Verificar si el usuario tiene el permiso
+      return hasPermission(item.requiredPermission);
+    });
+  }, [hasPermission, isSuperuser]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -115,7 +174,7 @@ export default function Sidebar() {
         {/* Navegación */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-3">
-            {navItems.map((item, index) => {
+            {visibleNavItems.map((item, index) => {
               const Icon = item.icon;
               // Validación exacta: solo activo si la ruta coincide exactamente
               // o si es una subruta directa (pero no para /dashboard en /dashboard/clients)

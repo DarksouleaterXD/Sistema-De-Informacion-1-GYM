@@ -3,6 +3,7 @@ import { httpClient } from "../config/http-client";
 
 export interface Permiso {
   id: number;
+  codigo: string;
   nombre: string;
   descripcion?: string;
 }
@@ -19,22 +20,45 @@ export interface Role {
 export interface RoleCreate {
   nombre: string;
   descripcion?: string;
+  permisos_ids?: number[];
 }
 
 export interface RoleUpdate {
   nombre?: string;
   descripcion?: string;
+  permisos_ids?: number[];
 }
 
 class RoleService {
   private baseUrl = "/api/roles";
+  private permisosUrl = "/api/permissions";
 
   async getAll(): Promise<Role[]> {
-    return await httpClient.get<Role[]>(this.baseUrl + "/");
+    // Handle paginated response from backend
+    const response = await httpClient.get<{
+      count: number;
+      next: string | null;
+      previous: string | null;
+      results: Role[];
+    }>(this.baseUrl + "/?page_size=100");
+    
+    return response.results || [];
   }
 
   async getById(id: number): Promise<Role> {
     return await httpClient.get<Role>(`${this.baseUrl}/${id}/`);
+  }
+
+  async getAllPermisos(): Promise<Permiso[]> {
+    // Handle paginated response from backend
+    const response = await httpClient.get<{
+      count: number;
+      next: string | null;
+      previous: string | null;
+      results: Permiso[];
+    }>(this.permisosUrl + "/?page_size=100");
+    
+    return response.results || [];
   }
 
   async create(data: RoleCreate): Promise<Role> {

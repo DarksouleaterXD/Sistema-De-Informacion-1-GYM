@@ -333,13 +333,27 @@ class PasswordResetConfirmView(APIView):
 )
 class CurrentUserView(APIView):
     """
-    Obtiene la información del usuario autenticado actual.
+    Obtiene la información del usuario autenticado actual,
+    incluyendo sus roles y permisos.
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data, status=200)
+        from apps.core.permissions import get_user_permissions, get_user_roles
+        
+        user = request.user
+        serializer = UserSerializer(user)
+        user_data = serializer.data
+        
+        # Agregar permisos y roles
+        user_data['permissions'] = get_user_permissions(user)
+        user_data['roles'] = [
+            {'id': role.id, 'nombre': role.nombre, 'descripcion': role.descripcion}
+            for role in get_user_roles(user)
+        ]
+        user_data['is_superuser'] = user.is_superuser
+        
+        return Response(user_data, status=200)
 # --- /Password Reset ---------------------------------------------------------
 
 

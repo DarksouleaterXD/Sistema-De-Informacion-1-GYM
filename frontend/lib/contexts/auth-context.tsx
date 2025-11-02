@@ -1,30 +1,53 @@
 "use client";
 
 /**
- * Contexto de autenticación para compartir estado del usuario
+ * Contexto de autenticación con sistema de permisos RBAC
  */
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "../services/auth.service";
 import type { User } from "../types";
+import {
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+  canAccessRoute,
+  type PermissionCode,
+} from "../utils/permissions";
+
+interface Role {
+  id: number;
+  nombre: string;
+  descripcion: string;
+}
 
 interface AuthContextType {
   user: User | null;
+  permissions: string[];
+  roles: Role[];
+  isSuperuser: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  hasPermission: (permission: PermissionCode) => boolean;
+  hasAnyPermission: (permissions: PermissionCode[]) => boolean;
+  hasAllPermissions: (permissions: PermissionCode[]) => boolean;
+  canAccessRoute: (route: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isSuperuser, setIsSuperuser] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Cargar usuario al iniciar
+  // Cargar usuario y permisos al iniciar
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -32,14 +55,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const storedUser = authService.getStoredUser();
           if (storedUser) {
             setUser(storedUser);
-            // Opcionalmente, verificar con el servidor
+            // Cargar permisos desde el servidor
             try {
               const currentUser = await authService.getCurrentUser();
               setUser(currentUser);
+              setPermissions(currentUser.permissions || []);
+              setRoles(currentUser.roles || []);
+              setIsSuperuser(currentUser.is_superuser || false);
               localStorage.setItem("user", JSON.stringify(currentUser));
+              localStorage.setItem(
+                "permissions",
+                JSON.stringify(currentUser.permissions || [])
+              );
+              localStorage.setItem(
+                "roles",
+                JSON.stringify(currentUser.roles || [])
+              );
             } catch (error) {
-              // Si falla, mantener usuario del localStorage
+              // Si falla, cargar permisos del localStorage
               console.error("Error verificando usuario:", error);
+              const storedPermissions = localStorage.getItem("permissions");
+              const storedRoles = localStorage.getItem("roles");
+              if (storedPermissions)
+                setPermissions(JSON.parse(storedPermissions));
+              if (storedRoles) setRoles(JSON.parse(storedRoles));
             }
           }
         }
@@ -58,6 +97,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.login({ email, password });
       setUser(response.user);
+
+      // Cargar permisos del usuario recién logueado
+      const currentUser = await authService.getCurrentUser();
+      setPermissions(currentUser.permissions || []);
+      setRoles(currentUser.roles || []);
+      setIsSuperuser(currentUser.is_superuser || false);
+
+      localStorage.setItem(
+        "permissions",
+        JSON.stringify(currentUser.permissions || [])
+      );
+      localStorage.setItem("roles", JSON.stringify(currentUser.roles || []));
+
       router.push("/dashboard");
     } catch (error) {
       setLoading(false);
@@ -70,16 +122,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authService.logout();
     } finally {
       setUser(null);
+      setPermissions([]);
+      setRoles([]);
+      setIsSuperuser(false);
+      localStorage.removeItem("permissions");
+      localStorage.removeItem("roles");
       router.push("/login");
     }
   };
 
   const value = {
     user,
+    permissions,
+    roles,
+    isSuperuser,
     loading,
     login,
     logout,
     isAuthenticated: !!user,
+    hasPermission: (permission: PermissionCode) =>
+      hasPermission(permissions, permission, isSuperuser),
+    hasAnyPermission: (perms: PermissionCode[]) =>
+      hasAnyPermission(permissions, perms, isSuperuser),
+    hasAllPermissions: (perms: PermissionCode[]) =>
+      hasAllPermissions(permissions, perms, isSuperuser),
+    canAccessRoute: (route: string) =>
+      canAccessRoute(route, permissions, isSuperuser),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

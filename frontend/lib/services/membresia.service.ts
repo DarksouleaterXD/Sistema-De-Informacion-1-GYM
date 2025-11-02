@@ -1,5 +1,18 @@
 import { httpClient } from "../config/http-client";
-import { Membresia, PlanMembresia, InscripcionMembresia, MembresiaPromocion } from "../types";
+import {
+  Membresia,
+  PlanMembresia,
+  InscripcionMembresia,
+  MembresiaPromocion,
+} from "../types";
+
+// Re-exportar tipos para facilitar imports
+export type {
+  Membresia,
+  PlanMembresia,
+  InscripcionMembresia,
+  MembresiaPromocion,
+};
 
 export interface MembresiaList {
   id: number;
@@ -119,7 +132,10 @@ class MembresiaService {
   /**
    * Aplicar promoción a una membresía
    */
-  async aplicarPromocion(membresiaId: number, promocionId: number): Promise<MembresiaPromocion> {
+  async aplicarPromocion(
+    membresiaId: number,
+    promocionId: number
+  ): Promise<MembresiaPromocion> {
     return httpClient.post<MembresiaPromocion>(
       `${this.baseURL}/${membresiaId}/aplicar-promocion/`,
       { promocion_id: promocionId }
@@ -129,7 +145,10 @@ class MembresiaService {
   /**
    * Remover promoción de una membresía
    */
-  async removerPromocion(membresiaId: number, promocionId: number): Promise<void> {
+  async removerPromocion(
+    membresiaId: number,
+    promocionId: number
+  ): Promise<void> {
     return httpClient.delete(
       `${this.baseURL}/${membresiaId}/remover-promocion/${promocionId}/`
     );

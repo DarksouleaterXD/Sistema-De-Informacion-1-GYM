@@ -17,6 +17,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { httpClient } from "@/lib/config/http-client";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PermissionCodes } from "@/lib/utils/permissions";
 
 interface AuditLog {
   id: number;
@@ -42,7 +44,7 @@ interface PaginatedResponse {
   results: AuditLog[];
 }
 
-export default function AuditPage() {
+function AuditPageContent() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -359,5 +361,13 @@ export default function AuditPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function AuditPage() {
+  return (
+    <ProtectedRoute requiredPermission={PermissionCodes.AUDIT_VIEW}>
+      <AuditPageContent />
+    </ProtectedRoute>
   );
 }

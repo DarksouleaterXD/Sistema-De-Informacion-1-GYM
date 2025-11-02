@@ -18,10 +18,14 @@ import {
   Role,
   RoleCreate,
   RoleUpdate,
+  Permiso,
 } from "@/lib/services/role.service";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PermissionCodes } from "@/lib/utils/permissions";
 
-export default function RolesPage() {
+function RolesPageContent() {
   const [roles, setRoles] = useState<Role[]>([]);
+  const [permisos, setPermisos] = useState<Permiso[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -31,15 +35,18 @@ export default function RolesPage() {
   const [formData, setFormData] = useState<RoleCreate>({
     nombre: "",
     descripcion: "",
+    permisos_ids: [],
   });
 
   const [updateData, setUpdateData] = useState<RoleUpdate>({
     nombre: "",
     descripcion: "",
+    permisos_ids: [],
   });
 
   useEffect(() => {
     loadRoles();
+    loadPermisos();
   }, []);
 
   const loadRoles = async () => {
@@ -55,6 +62,22 @@ export default function RolesPage() {
     }
   };
 
+  const loadPermisos = async () => {
+    try {
+      const data = await roleService.getAllPermisos();
+      // Asegurarse de que data sea un array
+      if (Array.isArray(data)) {
+        setPermisos(data);
+      } else {
+        console.error("Los permisos no son un array:", data);
+        setPermisos([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar permisos:", error);
+      setPermisos([]); // Asegurar que siempre sea un array
+    }
+  };
+
   const handleCreate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -66,7 +89,7 @@ export default function RolesPage() {
     try {
       await roleService.create(formData);
       setShowCreateModal(false);
-      setFormData({ nombre: "", descripcion: "" });
+      setFormData({ nombre: "", descripcion: "", permisos_ids: [] });
       await loadRoles(); // Esperar a que cargue antes de mostrar el alert
       alert("Rol creado exitosamente");
     } catch (error: any) {
@@ -112,6 +135,7 @@ export default function RolesPage() {
     setUpdateData({
       nombre: role.nombre,
       descripcion: role.descripcion || "",
+      permisos_ids: role.permisos.map((p) => p.id),
     });
     setShowEditModal(true);
   };
@@ -283,7 +307,11 @@ export default function RolesPage() {
                 <button
                   onClick={() => {
                     setShowCreateModal(false);
-                    setFormData({ nombre: "", descripcion: "" });
+                    setFormData({
+                      nombre: "",
+                      descripcion: "",
+                      permisos_ids: [],
+                    });
                   }}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -324,6 +352,55 @@ export default function RolesPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Permisos
+                    </label>
+                    <div className="border border-gray-300 rounded-lg max-h-64 overflow-y-auto p-3 space-y-2">
+                      {Array.isArray(permisos) && permisos.length > 0 ? (
+                        permisos.map((permiso) => (
+                          <label
+                            key={permiso.id}
+                            className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.permisos_ids?.includes(
+                                permiso.id
+                              )}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  permisos_ids: checked
+                                    ? [...(prev.permisos_ids || []), permiso.id]
+                                    : (prev.permisos_ids || []).filter(
+                                        (id) => id !== permiso.id
+                                      ),
+                                }));
+                              }}
+                              className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300"
+                            />
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">
+                                {permiso.nombre}
+                              </div>
+                              {permiso.descripcion && (
+                                <div className="text-xs text-gray-500">
+                                  {permiso.descripcion}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-500 text-center py-4">
+                          Cargando permisos...
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex gap-3 mt-6">
@@ -340,6 +417,7 @@ export default function RolesPage() {
                       setFormData({
                         nombre: "",
                         descripcion: "",
+                        permisos_ids: [],
                       });
                     }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg"
@@ -403,6 +481,55 @@ export default function RolesPage() {
                       rows={3}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Permisos
+                    </label>
+                    <div className="border border-gray-300 rounded-lg max-h-64 overflow-y-auto p-3 space-y-2">
+                      {Array.isArray(permisos) && permisos.length > 0 ? (
+                        permisos.map((permiso) => (
+                          <label
+                            key={permiso.id}
+                            className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={updateData.permisos_ids?.includes(
+                                permiso.id
+                              )}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setUpdateData((prev) => ({
+                                  ...prev,
+                                  permisos_ids: checked
+                                    ? [...(prev.permisos_ids || []), permiso.id]
+                                    : (prev.permisos_ids || []).filter(
+                                        (id) => id !== permiso.id
+                                      ),
+                                }));
+                              }}
+                              className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300"
+                            />
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">
+                                {permiso.nombre}
+                              </div>
+                              {permiso.descripcion && (
+                                <div className="text-xs text-gray-500">
+                                  {permiso.descripcion}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-500 text-center py-4">
+                          Cargando permisos...
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -532,5 +659,13 @@ export default function RolesPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function RolesPage() {
+  return (
+    <ProtectedRoute requiredPermission={PermissionCodes.ROLE_VIEW}>
+      <RolesPageContent />
+    </ProtectedRoute>
   );
 }
