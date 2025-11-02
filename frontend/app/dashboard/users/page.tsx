@@ -22,6 +22,7 @@ import {
   UserCreate,
   UserUpdate,
 } from "@/lib/services/user.service";
+import { roleService, Role } from "@/lib/services/role.service";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PermissionCodes } from "@/lib/utils/permissions";
 
@@ -32,6 +33,9 @@ function UsersPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Roles disponibles
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
 
   // Modales
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -49,6 +53,7 @@ function UsersPageContent() {
     is_active: true,
     is_staff: false,
     is_superuser: false,
+    roles: [],
   });
 
   const [updateData, setUpdateData] = useState<UserUpdate>({
@@ -57,11 +62,22 @@ function UsersPageContent() {
     is_active: true,
     is_staff: false,
     is_superuser: false,
+    roles: [],
   });
 
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, [currentPage]);
+
+  const fetchRoles = async () => {
+    try {
+      const roles = await roleService.getAll();
+      setAvailableRoles(roles);
+    } catch (error) {
+      console.error("Error al cargar roles:", error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -145,6 +161,7 @@ function UsersPageContent() {
         is_active: data.is_active,
         is_staff: data.is_staff,
         is_superuser: data.is_superuser,
+        roles: data.roles.map((r) => r.id),
       });
       setShowEditModal(true);
     } catch (error) {
@@ -192,6 +209,7 @@ function UsersPageContent() {
       is_active: true,
       is_staff: false,
       is_superuser: false,
+      roles: [],
     });
   };
 
@@ -202,7 +220,38 @@ function UsersPageContent() {
       is_active: true,
       is_staff: false,
       is_superuser: false,
+      roles: [],
     });
+  };
+
+  const toggleRole = (roleId: number, isCreate: boolean = true) => {
+    if (isCreate) {
+      const currentRoles = formData.roles || [];
+      if (currentRoles.includes(roleId)) {
+        setFormData({
+          ...formData,
+          roles: currentRoles.filter((id) => id !== roleId),
+        });
+      } else {
+        setFormData({
+          ...formData,
+          roles: [...currentRoles, roleId],
+        });
+      }
+    } else {
+      const currentRoles = updateData.roles || [];
+      if (currentRoles.includes(roleId)) {
+        setUpdateData({
+          ...updateData,
+          roles: currentRoles.filter((id) => id !== roleId),
+        });
+      } else {
+        setUpdateData({
+          ...updateData,
+          roles: [...currentRoles, roleId],
+        });
+      }
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -616,6 +665,57 @@ function UsersPageContent() {
                       </span>
                     </label>
                   </div>
+
+                  {/* Asignación de Roles */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <Shield className="inline h-4 w-4 mr-1" />
+                      Roles Asignados
+                    </label>
+                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 max-h-48 overflow-y-auto">
+                      {availableRoles.length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          Cargando roles...
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {availableRoles.map((role) => (
+                            <label
+                              key={role.id}
+                              className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  formData.roles?.includes(role.id) || false
+                                }
+                                onChange={() => toggleRole(role.id, true)}
+                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-900">
+                                  {role.nombre}
+                                </span>
+                                {role.descripcion && (
+                                  <p className="text-xs text-gray-500">
+                                    {role.descripcion}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-xs text-gray-400">
+                                {role.permisos.length} permisos
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {formData.roles && formData.roles.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        {formData.roles.length} rol(es) seleccionado(s)
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex gap-3 mt-6">
@@ -775,6 +875,57 @@ function UsersPageContent() {
                         Superusuario (todos los permisos)
                       </span>
                     </label>
+                  </div>
+
+                  {/* Asignación de Roles */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <Shield className="inline h-4 w-4 mr-1" />
+                      Roles Asignados
+                    </label>
+                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 max-h-48 overflow-y-auto">
+                      {availableRoles.length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          Cargando roles...
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {availableRoles.map((role) => (
+                            <label
+                              key={role.id}
+                              className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  updateData.roles?.includes(role.id) || false
+                                }
+                                onChange={() => toggleRole(role.id, false)}
+                                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-900">
+                                  {role.nombre}
+                                </span>
+                                {role.descripcion && (
+                                  <p className="text-xs text-gray-500">
+                                    {role.descripcion}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-xs text-gray-400">
+                                {role.permisos.length} permisos
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {updateData.roles && updateData.roles.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        {updateData.roles.length} rol(es) seleccionado(s)
+                      </p>
+                    )}
                   </div>
                 </div>
 

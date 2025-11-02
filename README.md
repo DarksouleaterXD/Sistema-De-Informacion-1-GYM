@@ -1,410 +1,402 @@
-# 🏋️ SI1-Spartan - Sistema de Gestión de Gimnasio# SI1-Spartan
+# 🏋️ Sistema de Información Gym Spartan
 
-Sistema completo de gestión para gimnasios desarrollado con Django REST Framework y Next.js.Proyecto Full Stack con Django, Next.js y PostgreSQL usando Docker.
+Sistema completo de gestión para gimnasios desarrollado con **Django REST Framework** y **Next.js**.
 
-## 🚀 Instalación Rápida## 🚀 Tecnologías
+---
 
-### Requisitos- **Backend**: Django 5.0 + Django REST Framework
+## 🚀 Tecnologías
 
-- Docker y Docker Compose- **Frontend**: Next.js 14.2
-
-- Git- **Base de datos**: PostgreSQL 15
-
+- **Backend**: Django 5.0 + Django REST Framework + PostgreSQL 15
+- **Frontend**: Next.js 14.2 + TypeScript + React 18 + Tailwind CSS
+- **Autenticación**: JWT + Sistema RBAC (51 permisos, 6 roles predeterminados)
 - **Containerización**: Docker & Docker Compose
+- **Documentación API**: OpenAPI (Swagger)
 
-### Pasos de Instalación
+---
 
-## 📋 Prerequisitos
+## 📚 Documentación para Colaboradores
 
-````bash
+**¿Primera vez en el proyecto?** Lee estos documentos en orden:
 
-# 1. Clonar repositorio- Docker Desktop instalado
+1. **[📖 SETUP_COLABORADORES.md](./SETUP_COLABORADORES.md)** - Guía completa de instalación (10 minutos)
+2. **[🛠️ COMANDOS_UTILES.md](./COMANDOS_UTILES.md)** - Comandos frecuentes para desarrollo
 
-git clone --single-branch --branch feature/IDK https://github.com/DarksouleaterXD/Sistema-De-Informacion-1-GYM.git- Docker Compose
+---
 
+## ⚡ Quick Start (Resumen)
+
+```bash
+# 1. Clonar y configurar
+git clone --single-branch --branch feature/IDK https://github.com/DarksouleaterXD/Sistema-De-Informacion-1-GYM.git
 cd Sistema-De-Informacion-1-GYM
-
-## � Variables de Entorno
-
-# 2. Configurar variables de entorno
-
-cp backend/.env.example backend/.env### Configuración Inicial (IMPORTANTE)
-
-cp frontend/.env.example frontend/.env.local
-
-Antes de iniciar el proyecto, debes copiar los archivos de ejemplo y configurar tus variables de entorno:
-
-# 3. Editar archivos .env según tu entorno:
-
-# - Local: dejar como está```bash
-
-# - Azure/Nube: editar backend/.env (CORS, ALLOWED_HOSTS) y frontend/.env.local (NEXT_PUBLIC_API_URL=/api)# Backend
-
 cp backend/.env.example backend/.env
-
-# 4. Levantar servicios
-
-docker compose up -d --build# Frontend
-
 cp frontend/.env.example frontend/.env.local
 
-# 5. Ejecutar migraciones y seeders```
+# 2. Levantar servicios
+docker compose up -d --build
 
+# 3. Configurar base de datos
+docker compose exec backend python manage.py migrate
+
+# 4. Cargar datos de prueba (usuarios, roles, permisos, clientes, etc.)
+docker compose exec backend python seeders/init_system.py
+
+# 5. Verificar que todo funcione
+docker compose exec backend python seeders/verify_system.py
+```
+
+**✅ Listo!** Accede a http://localhost:3000 con `admin` / `admin123`
+
+---
+
+## 🌐 URLs de Acceso
+
+| Servicio               | URL                             | Credenciales                  |
+| ---------------------- | ------------------------------- | ----------------------------- |
+| **Frontend**           | http://localhost:3000           | admin / admin123              |
+| **Backend API**        | http://localhost:8000/api/      | -                             |
+| **Django Admin**       | http://localhost:8000/admin/    | admin / admin123              |
+| **API Docs (Swagger)** | http://localhost:8000/api/docs/ | -                             |
+| **pgAdmin**            | http://localhost:5050           | admin@gym-spartan.com / admin |
+| **MailHog**            | http://localhost:8025           | -                             |
+
+---
+
+## 🏗️ Estructura del Proyecto
+
+```
+Sistema-De-Informacion-1-GYM/
+├── backend/                 # Django REST Framework
+│   ├── apps/               # Aplicaciones Django
+│   │   ├── audit/          # Auditoría (bitácora de acciones)
+│   │   ├── clients/        # Gestión de clientes
+│   │   ├── core/           # Lógica central, permisos, middleware
+│   │   ├── membresias/     # Membresías y planes
+│   │   ├── promociones/    # Promociones y descuentos
+│   │   ├── roles/          # Sistema RBAC (roles y permisos)
+│   │   └── users/          # Gestión de usuarios
+│   ├── config/             # Configuración Django
+│   ├── seeders/            # Scripts de datos de prueba
+│   └── requirements.txt    # Dependencias Python
+│
+├── frontend/               # Next.js + TypeScript
+│   ├── app/               # App Router
+│   │   ├── dashboard/     # Páginas del dashboard
+│   │   ├── login/         # Autenticación
+│   │   └── layout.tsx     # Layout principal
+│   ├── components/        # Componentes React
+│   │   ├── auth/          # ProtectedRoute, permisos
+│   │   ├── layout/        # Navbar, Sidebar, Dashboard
+│   │   └── ui/            # Componentes reutilizables
+│   ├── lib/               # Utilidades
+│   │   ├── contexts/      # Context API (AuthContext)
+│   │   ├── services/      # Servicios de API
+│   │   ├── types/         # Tipos TypeScript
+│   │   └── utils/         # Helpers
+│   └── package.json       # Dependencias Node
+│
+├── docker-compose.yml      # Orquestación de servicios
+├── SETUP_COLABORADORES.md  # Guía de instalación detallada
+└── COMANDOS_UTILES.md      # Comandos frecuentes
+```
+
+---
+
+## 🔐 Sistema de Permisos (RBAC)
+
+El sistema incluye **51 permisos** organizados en 9 módulos:
+
+### Módulos de Permisos
+
+- **Dashboard** (1 permiso): `dashboard.view`
+- **Clientes** (5 permisos): view, create, edit, delete, export
+- **Usuarios** (5 permisos): view, create, edit, delete, manage_permissions
+- **Roles** (6 permisos): view, create, edit, delete, assign_to_user, assign_permissions
+- **Membresías** (7 permisos): view, create, edit, delete, suspend, activate, renew
+- **Inscripciones** (5 permisos): view, create, edit, delete, export
+- **Planes** (5 permisos): view, create, edit, delete, toggle_active
+- **Promociones** (7 permisos): view, create, edit, delete, activate, deactivate, assign
+- **Auditoría** (3 permisos): view, export, delete_old
+
+### Roles Predeterminados
+
+| Rol                  | Permisos   | Descripción                               |
+| -------------------- | ---------- | ----------------------------------------- |
+| **Administrador**    | 51 (todos) | Acceso completo al sistema                |
+| **Gerente**          | 36         | Gestión diaria sin eliminaciones críticas |
+| **Administrativo**   | 25         | Operaciones administrativas básicas       |
+| **Coach/Entrenador** | 13         | Solo lectura de clientes y membresías     |
+| **Recepcionista**    | 10         | Gestión de inscripciones y clientes       |
+
+---
+
+## 📦 Comandos Útiles
+
+### Desarrollo Diario
+
+```bash
+# Ver logs en tiempo real
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# Reiniciar servicios
+docker compose restart backend
+docker compose restart frontend
+
+# Acceder a shell de Django
+docker compose exec backend python manage.py shell
+
+# Crear migraciones
 docker compose exec backend python manage.py makemigrations
 
-docker compose exec backend python manage.py migrate### Backend (.env)
-
-docker compose exec backend python manage.py seed
-
-```Edita `backend/.env` y configura:
-
-
-
-## 🌐 Acceso a la Aplicación```bash
-
-# Genera una clave secreta segura para producción
-
-### LocalSECRET_KEY=tu-clave-secreta-generada
-
-- **Frontend**: http://localhost:3000
-
-- **Backend API**: http://localhost:8000/api/# En desarrollo usa DEBUG=True, en producción DEBUG=False
-
-- **Django Admin**: http://localhost:8000/admin/DEBUG=True
-
-- **API Docs (Swagger)**: http://localhost:8000/api/docs/
-
-- **pgAdmin**: http://localhost:5050# Base de datos (los valores por defecto funcionan con Docker)
-
-- **MailHog**: http://localhost:8025DATABASE_ENGINE=postgresql
-
-DATABASE_NAME=spartan_db
-
-### Azure/Nube (con Nginx)DATABASE_USER=spartan_user
-
-- **App**: http://TU_IP/DATABASE_PASSWORD=spartan_pass  # ⚠️ Cambiar en producción
-
-- **API**: http://TU_IP/api/DATABASE_HOST=db
-
-- **Admin**: http://TU_IP/admin/DATABASE_PORT=5432
-
-````
-
-## ⚙️ Configuración por Entorno
-
-### Frontend (.env.local)
-
-### 🖥️ Local (Desarrollo)
-
-El archivo `frontend/.env.local` ya tiene la configuración correcta:
-
-**backend/.env**
-
-`env`bash
-
-ALLOWED_HOSTS=localhost,127.0.0.1,backendNEXT_PUBLIC_API_URL=http://localhost:8000
-
-CORS_ALLOWED_ORIGINS=http://localhost:3000```
-
-```````
-
-> ⚠️ **IMPORTANTE**: Los archivos `.env` y `.env.local` están en `.gitignore` y NO se suben al repositorio por seguridad.
-
-**frontend/.env.local**
-
-```env## �🛠️ Configuración inicial
-
-NEXT_PUBLIC_API_URL=http://localhost:8000
-
-```### 1. Inicializar el proyecto Django
-
-
-
-### ☁️ Azure/Nube (Producción)Primero, construye y ejecuta los contenedores:
-
-
-
-**backend/.env**```bash
-
-```envdocker-compose up -d db
-
-DEBUG=False```
-
-ALLOWED_HOSTS=TU_IP_PUBLICA,localhost,127.0.0.1,backend
-
-CORS_ALLOWED_ORIGINS=http://TU_IP_PUBLICALuego, crea el proyecto Django:
-
-SECRET_KEY=<generar-clave-segura>
-
-``````bash
-
-docker-compose run --rm backend django-admin startproject config .
-
-**frontend/.env.local**```
-
-```env
-
-NEXT_PUBLIC_API_URL=/api### 2. Configurar Django para PostgreSQL
-
-```````
-
-Edita el archivo `backend/config/settings.py` y reemplaza la configuración de DATABASES con:
-
-## 📦 Stack Tecnológico
-
-````python
-
-- **Backend**: Django 5.0 + Django REST Frameworkimport os
-
-- **Frontend**: Next.js 14 + TypeScript + Tailwind CSS
-
-- **Database**: PostgreSQL 15DATABASES = {
-
-- **Authentication**: JWT    'default': {
-
-- **Containerization**: Docker + Docker Compose        'ENGINE': 'django.db.backends.postgresql',
-
-        'NAME': os.environ.get('DATABASE_NAME', 'spartan_db'),
-
-## 🔧 Comandos Útiles        'USER': os.environ.get('DATABASE_USER', 'spartan_user'),
-
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'spartan_pass'),
-
-```bash        'HOST': os.environ.get('DATABASE_HOST', 'db'),
-
-# Ver logs        'PORT': os.environ.get('DATABASE_PORT', '5432'),
-
-docker compose logs -f backend    }
-
-docker compose logs -f frontend}
-
-
-
-# Crear superusuario# Agregar CORS
-
-docker compose exec backend python manage.py createsuperuserINSTALLED_APPS = [
-
-    # ... apps existentes
-
-# Shell de Django    'rest_framework',
-
-docker compose exec backend python manage.py shell    'corsheaders',
-
-]
-
-# Conectar a PostgreSQL
-
-docker compose exec db psql -U spartan_user -d spartan_dbMIDDLEWARE = [
-
-    'corsheaders.middleware.CorsMiddleware',
-
-# Detener servicios    # ... middleware existentes
-
-docker compose down]
-
-
-
-# Reiniciar servicio específicoCORS_ALLOWED_ORIGINS = [
-
-docker compose restart backend    "http://localhost:3000",
-
-```]
-
-
-
-## 📚 API DocumentationALLOWED_HOSTS = ['*']
-
-````
-
-La documentación de la API está disponible en:
-
-- **Swagger UI**: http://localhost:8000/api/docs/### 3. Inicializar Next.js
-
-- **ReDoc**: http://localhost:8000/api/redoc/
-
-```bash
-
-## 🔐 Credenciales por Defectodocker-compose run --rm frontend npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias "@/*"
-
-```
-
-Después de ejecutar `python manage.py seed`:
-
-- **Superusuario**: admin / admin123### 4. Ejecutar migraciones de Django
-
-- **Usuarios de prueba**: Consultar logs del seeder
-
-```bash
-
-## 📝 Estructura del Proyectodocker-compose run --rm backend python manage.py migrate
-
-```
-
-```````
-
-SI1-Spartan/### 5. Crear superusuario de Django (opcional)
-
-├── backend/              # Django REST API
-
-│   ├── apps/            # Aplicaciones Django```bash
-
-│   ├── config/          # Configuracióndocker-compose run --rm backend python manage.py createsuperuser
-
-│   └── seeders/         # Datos de prueba```
-
-├── frontend/            # Next.js App
-
-│   ├── app/            # App Router## 🏃 Ejecutar el proyecto
-
-│   ├── components/     # Componentes React
-
-│   └── lib/            # Servicios y utilidades### Iniciar todos los servicios
-
-└── docker-compose.yml  # Configuración Docker
-
-``````bash
-
-docker-compose up
-
-## 🤝 Contribución```
-
-
-
-1. Fork el proyectoO en modo detached:
-
-2. Crea tu feature branch (`git checkout -b feature/AmazingFeature`)
-
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)```bash
-
-4. Push a la branch (`git push origin feature/AmazingFeature`)docker-compose up -d
-
-5. Abre un Pull Request```
-
-
-
----### Acceder a los servicios
-
-
-
-**Desarrollado con ❤️ para Gym Spartan**- **Frontend**: http://localhost:3000
-
-- **Backend**: http://localhost:8000
-- **Admin Django**: http://localhost:8000/admin
-- **PostgreSQL**: localhost:5432
-
-### Ver logs
-
-```bash
-docker-compose logs -f
-```````
-
-### Detener los servicios
-
-```bash
-docker-compose down
-```
-
-### Detener y eliminar volúmenes (⚠️ elimina la base de datos)
-
-```bash
-docker-compose down -v
-```
-
-## 📝 Comandos útiles
-
-### Backend (Django)
-
-```bash
-# Crear una nueva app
-docker-compose run --rm backend python manage.py startapp nombre_app
-
-# Hacer migraciones
-docker-compose run --rm backend python manage.py makemigrations
-
 # Aplicar migraciones
-docker-compose run --rm backend python manage.py migrate
-
-# Shell de Django
-docker-compose run --rm backend python manage.py shell
-
-# Crear superusuario
-docker-compose run --rm backend python manage.py createsuperuser
+docker compose exec backend python manage.py migrate
 ```
 
-### Frontend (Next.js)
+### Verificación y Testing
 
 ```bash
-# Instalar dependencias
-docker-compose run --rm frontend npm install nombre-paquete
+# Verificar sistema completo
+docker compose exec backend python seeders/verify_system.py
 
-# Acceder al contenedor
-docker-compose exec frontend sh
+# Verificar RBAC (roles y permisos)
+docker compose exec backend python seeders/verify_rbac.py
+
+# Ejecutar tests
+docker compose exec backend python manage.py test
 ```
 
-### Base de datos
+### Reset Completo
 
 ```bash
-# Acceder a PostgreSQL
-docker-compose exec db psql -U spartan_user -d spartan_db
-
-# Backup de la base de datos
-docker-compose exec db pg_dump -U spartan_user spartan_db > backup.sql
-
-# Restaurar backup
-docker-compose exec -T db psql -U spartan_user spartan_db < backup.sql
+# ⚠️ ESTO BORRA TODOS LOS DATOS
+docker compose down -v
+docker compose up -d --build
+docker compose exec backend python manage.py migrate
+docker compose exec backend python seeders/init_system.py
 ```
 
-## 🔧 Desarrollo
+**📖 Ver más comandos en [COMANDOS_UTILES.md](./COMANDOS_UTILES.md)**
 
-### Reconstruir contenedores después de cambios en Dockerfile
+---
+
+## 🎯 Funcionalidades
+
+### Gestión de Clientes
+
+- ✅ CRUD completo de clientes
+- ✅ Filtros y búsqueda avanzada
+- ✅ Exportación a Excel/CSV
+- ✅ Historial de actividad
+
+### Gestión de Membresías
+
+- ✅ Múltiples planes de membresía
+- ✅ Estados: activo, inactivo, vencido, suspendido
+- ✅ Cálculo automático de fechas
+- ✅ Asignación de promociones
+
+### Sistema de Promociones
+
+- ✅ Descuentos por porcentaje o monto fijo
+- ✅ Fecha de inicio y fin
+- ✅ Estados: activa, inactiva, vencida
+- ✅ Asignación a membresías
+
+### Usuarios y Roles
+
+- ✅ Sistema RBAC completo (51 permisos)
+- ✅ 6 roles predeterminados personalizables
+- ✅ Asignación dinámica de permisos
+- ✅ Interfaz de gestión intuitiva
+
+### Auditoría y Bitácora
+
+- ✅ Registro automático de todas las acciones
+- ✅ Información de IP y User-Agent
+- ✅ Niveles: INFO, WARNING, ERROR, CRITICAL
+- ✅ Búsqueda y filtros avanzados
+
+---
+
+## 🔧 Configuración de Variables de Entorno
+
+### Backend (`backend/.env`)
 
 ```bash
-docker-compose up --build
+# Django
+SECRET_KEY=tu-clave-secreta-generada
+DEBUG=True  # False en producción
+
+# Base de Datos (valores por defecto para Docker)
+DATABASE_ENGINE=postgresql
+DATABASE_NAME=spartan_db
+DATABASE_USER=spartan_user
+DATABASE_PASSWORD=spartan_pass
+DATABASE_HOST=db
+DATABASE_PORT=5432
+
+# JWT
+JWT_SECRET_KEY=tu-jwt-secret
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# CORS (ajustar para producción)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-### Reconstruir un servicio específico
+### Frontend (`frontend/.env.local`)
 
 ```bash
-docker-compose up --build backend
+# API URL
+# Local: http://localhost:8000
+# Azure con Nginx: /api
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## 📦 Estructura del proyecto
+---
 
-```
-SI1-Spartan/
-├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── (archivos Django)
-├── frontend/
-│   ├── Dockerfile
-│   ├── package.json
-│   └── (archivos Next.js)
-├── docker-compose.yml
-├── .gitignore
-└── README.md
-```
+## 🚨 Troubleshooting
 
-## 🐛 Solución de problemas
-
-### El backend no se conecta a la base de datos
-
-Asegúrate de que el contenedor de PostgreSQL esté funcionando:
+### ❌ "Port already in use"
 
 ```bash
-docker-compose ps
+docker compose down
+# Cambiar puerto en docker-compose.yml o matar proceso
 ```
 
-### Errores de permisos en Windows
-
-Ejecuta Docker Desktop como administrador.
-
-### Los cambios no se reflejan
-
-Los volúmenes están configurados para desarrollo en vivo, pero si hay problemas:
+### ❌ "Database connection error"
 
 ```bash
-docker-compose restart backend
-# o
-docker-compose restart frontend
+# Esperar a que PostgreSQL termine de iniciar (30 segundos)
+docker compose logs db
+docker compose ps
 ```
+
+### ❌ Frontend muestra error 500
+
+```bash
+# Verificar variables de entorno
+cat frontend/.env.local
+# Debe contener: NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Verificar que backend esté corriendo
+curl http://localhost:8000/api/users/me/
+```
+
+### ❌ No aparecen datos de prueba
+
+```bash
+docker compose exec backend python seeders/init_system.py
+```
+
+**📖 Ver más soluciones en [SETUP_COLABORADORES.md](./SETUP_COLABORADORES.md)**
+
+---
+
+## 📊 API REST
+
+### Endpoints Principales
+
+```
+POST   /api/auth/login/                    # Login (obtener JWT)
+POST   /api/auth/logout/                   # Logout
+GET    /api/users/me/                      # Usuario actual
+
+GET    /api/clients/                       # Listar clientes
+POST   /api/clients/                       # Crear cliente
+GET    /api/clients/{id}/                  # Detalle cliente
+PUT    /api/clients/{id}/                  # Actualizar cliente
+DELETE /api/clients/{id}/                  # Eliminar cliente
+
+GET    /api/membresias/                    # Listar membresías
+POST   /api/membresias/                    # Crear membresía
+GET    /api/membresias/stats/              # Estadísticas
+GET    /api/planes-membresia/              # Planes disponibles
+
+GET    /api/promociones/                   # Listar promociones
+POST   /api/promociones/                   # Crear promoción
+
+GET    /api/roles/                         # Listar roles
+POST   /api/roles/                         # Crear rol
+GET    /api/permissions/                   # Listar permisos
+
+GET    /api/audit/logs/                    # Bitácora de auditoría
+```
+
+**📖 Documentación completa:** http://localhost:8000/api/docs/
+
+---
+
+## 🧪 Testing
+
+```bash
+# Backend
+docker compose exec backend python manage.py test
+
+# Tests de una app específica
+docker compose exec backend python manage.py test apps.clients
+docker compose exec backend python manage.py test apps.roles
+
+# Frontend
+docker compose exec frontend npm test
+```
+
+---
+
+## 🤝 Contribuir
+
+1. Fork el repositorio
+2. Crea tu rama: `git checkout -b feature/nueva-funcionalidad`
+3. Haz commits descriptivos: `git commit -m "feat: agregar funcionalidad X"`
+4. Push a la rama: `git push origin feature/nueva-funcionalidad`
+5. Abre un Pull Request
+
+### Convención de Commits
+
+- `feat:` Nueva funcionalidad
+- `fix:` Corrección de bug
+- `docs:` Cambios en documentación
+- `style:` Formateo, punto y coma faltante, etc.
+- `refactor:` Refactorización de código
+- `test:` Agregar tests
+- `chore:` Actualizar dependencias, configuración, etc.
+
+---
+
+## 📄 Licencia
+
+Este proyecto es privado y pertenece a Gym Spartan.
+
+---
+
+## 📞 Contacto y Soporte
+
+- **Repositorio**: https://github.com/DarksouleaterXD/Sistema-De-Informacion-1-GYM
+- **Branch activa**: feature/IDK
+- **Documentación**: Ver carpeta `/docs` y archivos `.md` en la raíz
+
+---
+
+## ✅ Checklist para Nuevos Colaboradores
+
+Antes de empezar a desarrollar:
+
+- [ ] Docker Desktop instalado y corriendo
+- [ ] Repositorio clonado (branch `feature/IDK`)
+- [ ] Variables de entorno configuradas (`.env` y `.env.local`)
+- [ ] Servicios levantados (`docker compose up -d`)
+- [ ] Migraciones aplicadas (`python manage.py migrate`)
+- [ ] Datos de prueba cargados (`python seeders/init_system.py`)
+- [ ] Sistema verificado (`python seeders/verify_system.py`)
+- [ ] Puedes hacer login en http://localhost:3000
+- [ ] Leíste [SETUP_COLABORADORES.md](./SETUP_COLABORADORES.md)
+- [ ] Leíste [COMANDOS_UTILES.md](./COMANDOS_UTILES.md)
+
+**Si todos los items están ✅, ¡estás listo para desarrollar!** 🎉
+
+---
+
+**Última actualización:** Noviembre 2024  
+**Versión:** 1.0.0

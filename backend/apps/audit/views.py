@@ -15,18 +15,7 @@ from drf_spectacular.types import OpenApiTypes
 from apps.audit.models import HistorialActividad as Bitacora
 from apps.audit.serializers import BitacoraSerializer
 from apps.roles.models import UserRole
-
-# --- Permiso: Superusuario (Dueño) o Administrador ---
-class IsOwnerOrAdmin(permissions.BasePermission):
-    allowed_role_names = {"Superusuario", "Superusuario (Dueño)", "Administrador"}
-
-    def has_permission(self, request, view):
-        u = request.user
-        if not (u and u.is_authenticated):
-            return False
-        if getattr(u, "is_superuser", False):
-            return True
-        return UserRole.objects.filter(usuario=u, rol__nombre__in=self.allowed_role_names).exists()
+from apps.core.permissions import HasPermission, PermissionCodes
 
 
 # --- Paginación por defecto (20 por página) ---
@@ -57,7 +46,8 @@ class AuditLogListView(ListAPIView):
     """
     serializer_class = BitacoraSerializer
     pagination_class = AuditPagination
-    permission_classes = [IsOwnerOrAdmin]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.AUDIT_VIEW
 
     def get_queryset(self):
         qs = Bitacora.objects.select_related("usuario").all()
@@ -124,7 +114,8 @@ class AuditLogDetailView(RetrieveAPIView):
     """
     queryset = Bitacora.objects.select_related("usuario").all()
     serializer_class = BitacoraSerializer
-    permission_classes = [IsOwnerOrAdmin]
+    permission_classes = [HasPermission]
+    required_permission = PermissionCodes.AUDIT_VIEW_DETAILS
 
 
 

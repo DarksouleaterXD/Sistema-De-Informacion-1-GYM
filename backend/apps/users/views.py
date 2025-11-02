@@ -66,16 +66,12 @@ class CreateAdminView(APIView):
         UserRole.objects.get_or_create(usuario=user, rol=admin_role)
 
         # 3) Registrar en bitácora
-        ip = self._ip(request)
-        ua = request.META.get("HTTP_USER_AGENT", "")
         Bitacora.log_activity(
-            usuario=request.user,
+            request=request,
             tipo_accion="create_user",
             accion="Crear Administrador",
             descripcion=f"Se creó el administrador {user.username} ({user.email})",
             nivel="info",
-            ip_address=ip,
-            user_agent=ua,
             datos_adicionales={"nuevo_usuario_id": user.id, "rol_asignado": "Administrador"},
         )
 
@@ -170,17 +166,12 @@ class LogoutView(APIView):
         self._audit(request, ok=True, accion="Cierre de sesión (refresh invalidado)")
         return Response(status=205)
     def _audit(self, request, ok: bool, accion: str, detalle: str = ""):
-        ip = request.META.get("HTTP_X_FORWARDED_FOR")
-        ip = ip.split(",")[0] if ip else request.META.get("REMOTE_ADDR", "")
-        ua = request.META.get("HTTP_USER_AGENT", "")
         Bitacora.log_activity(
-            usuario=request.user,
+            request=request,
             tipo_accion="logout",
             accion="Cierre de Sesión",
             descripcion="Logout con blacklist de refresh",
             nivel="info",
-            ip_address=ip,
-            user_agent=ua,
         )
         
 # --- /CU2 --------------------------------------------------------------------
@@ -256,13 +247,12 @@ class PasswordResetRequestView(APIView):
 
             # bitácora
             Bitacora.log_activity(
+                request=request,
                 usuario=user,
                 tipo_accion="other",
                 accion="Password Reset Request",
                 descripcion="Solicitud de recuperación de contraseña",
                 nivel="info",
-                ip_address=ip,
-                user_agent=ua,
                 datos_adicionales={"token": str(prt.token)},
             )
 
@@ -303,13 +293,12 @@ class PasswordResetConfirmView(APIView):
 
         # bitácora
         Bitacora.log_activity(
+            request=request,
             usuario=user,
             tipo_accion="other",
             accion="Password Reset Confirm",
             descripcion="Contraseña restablecida correctamente",
             nivel="info",
-            ip_address=ip,
-            user_agent=ua,
         )
 
         # (opcional) notificar por email que se cambió la contraseña
@@ -510,9 +499,10 @@ class UserDetailView(APIView):
         # Registrar en bitácora
         Bitacora.log_activity(
             request=request,
+            tipo_accion='update_user',
             accion='actualizar_usuario',
             descripcion=f'Usuario {user.username} actualizado por {request.user.username}',
-                        nivel='info'
+            nivel='info'
         )
         
         return Response(UserListSerializer(updated_user).data)
@@ -548,9 +538,10 @@ class UserDetailView(APIView):
         # Registrar en bitácora
         Bitacora.log_activity(
             request=request,
-            accion='actualizar_usuario',
+            tipo_accion='update_user',
+            accion='actualizar_usuario_parcial',
             descripcion=f'Usuario {user.username} actualizado parcialmente por {request.user.username}',
-                        nivel='info'
+            nivel='info'
         )
         
         return Response(UserListSerializer(updated_user).data)
@@ -590,9 +581,10 @@ class UserDetailView(APIView):
         # Registrar en bitácora antes de eliminar
         Bitacora.log_activity(
             request=request,
+            tipo_accion='delete_user',
             accion='eliminar_usuario',
             descripcion=f'Usuario {user.username} eliminado por {request.user.username}',
-                        nivel='warning'
+            nivel='warning'
         )
         
         user.delete()
