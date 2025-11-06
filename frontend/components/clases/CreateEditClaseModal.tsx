@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, Users, MapPin } from 'lucide-react';
-import { createClase, updateClase, Clase, ClaseFormData } from '@/lib/services/clase.service';
-import { getDisciplinas, Disciplina } from '@/lib/services/disciplina.service';
-import { getSalones, Salon } from '@/lib/services/clase.service';
+import { createClase, updateClase, Clase, ClaseFormData, getSalones, Salon } from '@/lib/services/clase.service';
+import disciplinaService, { Disciplina } from '@/lib/services/disciplina.service';
 
 interface CreateEditClaseModalProps {
   isOpen: boolean;
@@ -60,7 +59,7 @@ export default function CreateEditClaseModal({
   const loadOptions = async () => {
     try {
       // Cargar disciplinas activas
-      const disciplinasRes = await getDisciplinas(1, '', true);
+      const disciplinasRes = await disciplinaService.getDisciplinas({ activa: true });
       setDisciplinas(disciplinasRes.results);
 
       // Cargar salones activos
