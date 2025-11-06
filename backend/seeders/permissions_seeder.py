@@ -259,6 +259,72 @@ class PermissionSeeder:
             'descripcion': 'Eliminar disciplinas'
         },
         
+        # SALONES
+        {
+            'codigo': PermissionCodes.SALON_VIEW,
+            'nombre': 'Ver Salones',
+            'descripcion': 'Ver lista de salones del gimnasio'
+        },
+        {
+            'codigo': PermissionCodes.SALON_CREATE,
+            'nombre': 'Crear Salón',
+            'descripcion': 'Crear nuevos salones'
+        },
+        {
+            'codigo': PermissionCodes.SALON_EDIT,
+            'nombre': 'Editar Salón',
+            'descripcion': 'Editar salones existentes'
+        },
+        {
+            'codigo': PermissionCodes.SALON_DELETE,
+            'nombre': 'Eliminar Salón',
+            'descripcion': 'Eliminar salones'
+        },
+        
+        # CLASES
+        {
+            'codigo': PermissionCodes.CLASE_VIEW,
+            'nombre': 'Ver Clases',
+            'descripcion': 'Ver lista de clases programadas'
+        },
+        {
+            'codigo': PermissionCodes.CLASE_CREATE,
+            'nombre': 'Programar Clase',
+            'descripcion': 'Programar nuevas clases'
+        },
+        {
+            'codigo': PermissionCodes.CLASE_EDIT,
+            'nombre': 'Editar Clase',
+            'descripcion': 'Editar clases programadas'
+        },
+        {
+            'codigo': PermissionCodes.CLASE_DELETE,
+            'nombre': 'Cancelar Clase',
+            'descripcion': 'Cancelar clases programadas'
+        },
+        
+        # INSCRIPCIONES A CLASES
+        {
+            'codigo': PermissionCodes.INSCRIPCION_CLASE_VIEW,
+            'nombre': 'Ver Inscripciones a Clases',
+            'descripcion': 'Ver inscripciones de clientes a clases'
+        },
+        {
+            'codigo': PermissionCodes.INSCRIPCION_CLASE_CREATE,
+            'nombre': 'Inscribir a Clase',
+            'descripcion': 'Inscribir clientes a clases'
+        },
+        {
+            'codigo': PermissionCodes.INSCRIPCION_CLASE_EDIT,
+            'nombre': 'Editar Inscripción a Clase',
+            'descripcion': 'Editar inscripciones a clases'
+        },
+        {
+            'codigo': PermissionCodes.INSCRIPCION_CLASE_DELETE,
+            'nombre': 'Cancelar Inscripción a Clase',
+            'descripcion': 'Cancelar inscripciones a clases'
+        },
+        
         # AUDITORÍA
         {
             'codigo': PermissionCodes.AUDIT_VIEW,

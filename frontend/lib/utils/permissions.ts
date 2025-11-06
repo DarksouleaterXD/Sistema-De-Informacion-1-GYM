@@ -71,6 +71,24 @@ export const PermissionCodes = {
   DISCIPLINE_EDIT: "discipline.edit",
   DISCIPLINE_DELETE: "discipline.delete",
 
+  // SALONES
+  SALON_VIEW: "salon.view",
+  SALON_CREATE: "salon.create",
+  SALON_EDIT: "salon.edit",
+  SALON_DELETE: "salon.delete",
+
+  // CLASES
+  CLASE_VIEW: "clase.view",
+  CLASE_CREATE: "clase.create",
+  CLASE_EDIT: "clase.edit",
+  CLASE_DELETE: "clase.delete",
+
+  // INSCRIPCIONES A CLASES
+  INSCRIPCION_CLASE_VIEW: "inscripcion_clase.view",
+  INSCRIPCION_CLASE_CREATE: "inscripcion_clase.create",
+  INSCRIPCION_CLASE_EDIT: "inscripcion_clase.edit",
+  INSCRIPCION_CLASE_DELETE: "inscripcion_clase.delete",
+
   // AUDITORÍA
   AUDIT_VIEW: "audit.view",
   AUDIT_VIEW_DETAILS: "audit.view_details",
@@ -123,6 +141,12 @@ export const RoutePermissions: Record<string, PermissionCode[]> = {
   "/dashboard/promotions/create": [PermissionCodes.PROMOTION_CREATE],
   "/dashboard/promotions/[id]": [PermissionCodes.PROMOTION_VIEW_DETAILS],
   "/dashboard/promotions/[id]/edit": [PermissionCodes.PROMOTION_EDIT],
+
+  // Disciplinas
+  "/dashboard/disciplinas": [PermissionCodes.DISCIPLINE_VIEW],
+
+  // Clases
+  "/dashboard/clases": [PermissionCodes.CLASE_VIEW],
 
   // Auditoría
   "/dashboard/audit": [PermissionCodes.AUDIT_VIEW],

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'apps.promociones',
     'apps.membresias',
     'apps.disciplinas',
+    'apps.clases',
 ]
 
 MIDDLEWARE = [

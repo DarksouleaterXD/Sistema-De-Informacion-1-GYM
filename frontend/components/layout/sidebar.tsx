@@ -18,6 +18,8 @@ import {
   UserCircle,
   Dumbbell,
   ClipboardList,
+  Calendar,
+  ScrollText,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -56,6 +58,12 @@ const navItems: NavItem[] = [
     requiredPermission: PermissionCodes.DISCIPLINE_VIEW,
   },
   {
+    name: "Clases",
+    href: "/dashboard/clases",
+    icon: Calendar,
+    requiredPermission: PermissionCodes.CLASE_VIEW,
+  },
+  {
     name: "Inscripciones",
     href: "/dashboard/inscripciones",
     icon: ClipboardList,
@@ -82,7 +90,7 @@ const navItems: NavItem[] = [
   {
     name: "Bitácora",
     href: "/dashboard/audit",
-    icon: FileText,
+    icon: ScrollText,
     requiredPermission: PermissionCodes.AUDIT_VIEW,
   },
 ];

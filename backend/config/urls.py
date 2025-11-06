@@ -9,6 +9,11 @@ from apps.clients.views import ClientListCreateView, ClientDetailView
 from apps.membresias.views import MembresiaListCreateView, MembresiaDetailView, MembresiaStatsView, PlanMembresiaListView, ConsultarEstadoVigenciaView
 from apps.promociones.views import PromocionListCreateView, PromocionDetailView
 from apps.disciplinas.views import DisciplinaListCreateView, DisciplinaDetailView
+from apps.clases.views import (
+    SalonListCreateView, SalonDetailView,
+    ClaseListCreateView, ClaseDetailView,
+    InscripcionClaseListCreateView, InscripcionClaseDetailView
+)
 
 urlpatterns = [
     # Django Admin
@@ -76,5 +81,17 @@ urlpatterns = [
     # CU19: Gestionar Disciplinas CRUD
     path("api/disciplinas/", DisciplinaListCreateView.as_view(), name="disciplina-list-create"),
     path("api/disciplinas/<int:pk>/", DisciplinaDetailView.as_view(), name="disciplina-detail"),
+    
+    # CU20: Programar Clase - Salones
+    path("api/salones/", SalonListCreateView.as_view(), name="salon-list-create"),
+    path("api/salones/<int:pk>/", SalonDetailView.as_view(), name="salon-detail"),
+    
+    # CU20: Programar Clase - Clases
+    path("api/clases/", ClaseListCreateView.as_view(), name="clase-list-create"),
+    path("api/clases/<int:pk>/", ClaseDetailView.as_view(), name="clase-detail"),
+    
+    # Inscripciones a Clases
+    path("api/inscripciones-clase/", InscripcionClaseListCreateView.as_view(), name="inscripcion-clase-list-create"),
+    path("api/inscripciones-clase/<int:pk>/", InscripcionClaseDetailView.as_view(), name="inscripcion-clase-detail"),
     
 ]
