@@ -1,4 +1,4 @@
-import { httpClient } from '@/lib/config/httpClient';
+import { httpClient } from '@/lib/config/http-client';
 
 export interface Salon {
   id: number;
@@ -83,31 +83,23 @@ export const getSalones = async (
   if (search) params.append('search', search);
   if (activo !== undefined) params.append('activo', activo.toString());
 
-  return httpClient(`/api/salones/?${params.toString()}`);
+  return httpClient.get<PaginatedResponse<Salon>>(`/api/salones/?${params.toString()}`);
 };
 
 export const getSalonById = async (id: number): Promise<Salon> => {
-  return httpClient(`/api/salones/${id}/`);
+  return httpClient.get<Salon>(`/api/salones/${id}/`);
 };
 
 export const createSalon = async (data: SalonFormData): Promise<Salon> => {
-  return httpClient('/api/salones/', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return httpClient.post<Salon>('/api/salones/', data);
 };
 
 export const updateSalon = async (id: number, data: SalonFormData): Promise<Salon> => {
-  return httpClient(`/api/salones/${id}/`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+  return httpClient.put<Salon>(`/api/salones/${id}/`, data);
 };
 
 export const deleteSalon = async (id: number): Promise<void> => {
-  return httpClient(`/api/salones/${id}/`, {
-    method: 'DELETE',
-  });
+  await httpClient.delete(`/api/salones/${id}/`);
 };
 
 // Servicios para Clases
@@ -129,31 +121,23 @@ export const getClases = async (
   if (disciplina) params.append('disciplina', disciplina.toString());
   if (instructor) params.append('instructor', instructor.toString());
 
-  return httpClient(`/api/clases/?${params.toString()}`);
+  return httpClient.get<PaginatedResponse<Clase>>(`/api/clases/?${params.toString()}`);
 };
 
 export const getClaseById = async (id: number): Promise<Clase> => {
-  return httpClient(`/api/clases/${id}/`);
+  return httpClient.get<Clase>(`/api/clases/${id}/`);
 };
 
 export const createClase = async (data: ClaseFormData): Promise<Clase> => {
-  return httpClient('/api/clases/', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return httpClient.post<Clase>('/api/clases/', data);
 };
 
 export const updateClase = async (id: number, data: ClaseFormData): Promise<Clase> => {
-  return httpClient(`/api/clases/${id}/`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+  return httpClient.put<Clase>(`/api/clases/${id}/`, data);
 };
 
 export const deleteClase = async (id: number): Promise<void> => {
-  return httpClient(`/api/clases/${id}/`, {
-    method: 'DELETE',
-  });
+  await httpClient.delete(`/api/clases/${id}/`);
 };
 
 // Servicios para Inscripciones a Clases
@@ -171,32 +155,24 @@ export const getInscripciones = async (
   if (cliente) params.append('cliente', cliente.toString());
   if (estado) params.append('estado', estado);
 
-  return httpClient(`/api/inscripciones-clase/?${params.toString()}`);
+  return httpClient.get<PaginatedResponse<InscripcionClase>>(`/api/inscripciones-clase/?${params.toString()}`);
 };
 
 export const getInscripcionById = async (id: number): Promise<InscripcionClase> => {
-  return httpClient(`/api/inscripciones-clase/${id}/`);
+  return httpClient.get<InscripcionClase>(`/api/inscripciones-clase/${id}/`);
 };
 
 export const createInscripcion = async (data: InscripcionFormData): Promise<InscripcionClase> => {
-  return httpClient('/api/inscripciones-clase/', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return httpClient.post<InscripcionClase>('/api/inscripciones-clase/', data);
 };
 
 export const updateInscripcion = async (
   id: number,
   data: InscripcionFormData
 ): Promise<InscripcionClase> => {
-  return httpClient(`/api/inscripciones-clase/${id}/`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+  return httpClient.put<InscripcionClase>(`/api/inscripciones-clase/${id}/`, data);
 };
 
 export const deleteInscripcion = async (id: number): Promise<void> => {
-  return httpClient(`/api/inscripciones-clase/${id}/`, {
-    method: 'DELETE',
-  });
+  await httpClient.delete(`/api/inscripciones-clase/${id}/`);
 };

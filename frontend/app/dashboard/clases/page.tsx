@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Filter, Calendar, Clock, Users, Edit2, Trash2 } from 'lucide-react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import DashboardLayout from '@/components/layout/dashboard-layout';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import CreateEditClaseModal from '@/components/clases/CreateEditClaseModal';
 import DeleteClaseModal from '@/components/clases/DeleteClaseModal';
 import { getClases, Clase } from '@/lib/services/clase.service';
-import { getDisciplinas, Disciplina } from '@/lib/services/disciplina.service';
+import disciplinaService, { Disciplina } from '@/lib/services/disciplina.service';
 
 export default function ClasesPage() {
   return (
@@ -63,7 +63,7 @@ function ClasesContent() {
 
   const fetchDisciplinas = async () => {
     try {
-      const response = await getDisciplinas(1, '', true);
+      const response = await disciplinaService.getDisciplinas({ activa: true });
       setDisciplinas(response.results);
     } catch (err) {
       console.error('Error cargando disciplinas:', err);
