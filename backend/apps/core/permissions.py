@@ -74,6 +74,12 @@ class PermissionCodes:
     ENROLLMENT_EDIT = "enrollment.edit"
     ENROLLMENT_DELETE = "enrollment.delete"
     
+    # ===== DISCIPLINAS =====
+    DISCIPLINE_VIEW = "discipline.view"
+    DISCIPLINE_CREATE = "discipline.create"
+    DISCIPLINE_EDIT = "discipline.edit"
+    DISCIPLINE_DELETE = "discipline.delete"
+    
     # ===== AUDITORÍA =====
     AUDIT_VIEW = "audit.view"
     AUDIT_VIEW_DETAILS = "audit.view_details"
@@ -142,29 +148,29 @@ class PermissionGroups:
         PermissionCodes.REPORT_GENERATE,
     ]
     
-    # Coach/Instructor - Solo consulta
-    COACH = [
+    # Instructor - Permisos según CU18
+    # Puede: Ver clientes inscritos, Consultar vigencia membresías (solo lectura),
+    # Programar sus clases, Inscribir clientes, Controlar asistencia
+    INSTRUCTOR = [
         PermissionCodes.DASHBOARD_VIEW,
         
-        # Clientes solo ver
+        # Clientes - Solo ver (CU8: solo inscritos en sus clases)
         PermissionCodes.CLIENT_VIEW,
         PermissionCodes.CLIENT_VIEW_DETAILS,
         
-        # Membresías solo ver
+        # Membresías - Solo consultar estado/vigencia (CU17: para pasar lista)
         PermissionCodes.MEMBERSHIP_VIEW,
         PermissionCodes.MEMBERSHIP_VIEW_DETAILS,
-        PermissionCodes.MEMBERSHIP_VIEW_STATS,
         
-        # Planes solo ver
-        PermissionCodes.PLAN_VIEW,
-        
-        # Promociones solo ver
-        PermissionCodes.PROMOTION_VIEW,
-        PermissionCodes.PROMOTION_VIEW_DETAILS,
-        
-        # Reportes solo ver
-        PermissionCodes.REPORT_VIEW,
+        # Nota: Permisos de clases se agregarán cuando se implemente ese módulo
+        # - class.view (ver sus clases)
+        # - class.create (programar sus clases - CU20)
+        # - class.enroll_client (inscribir clientes - CU21)
+        # - class.take_attendance (controlar asistencia - CU22)
     ]
+    
+    # Alias para compatibilidad
+    COACH = INSTRUCTOR
 
 
 # ==========================================

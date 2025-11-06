@@ -273,3 +273,92 @@ class MembresiaCreateSerializer(serializers.Serializer):
                 membresia.promociones.set(promociones_ids)
             
             return membresia
+
+
+class MembresiaEstadoVigenciaSerializer(serializers.ModelSerializer):
+    """
+    Serializer para consultar Estado y Vigencia de Membresía
+    CU17: Consultar Estado/Vigencia de Membresía
+    """
+    cliente = serializers.SerializerMethodField()
+    plan = serializers.SerializerMethodField()
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+    dias_restantes = serializers.ReadOnlyField()
+    dias_transcurridos = serializers.SerializerMethodField()
+    porcentaje_uso = serializers.SerializerMethodField()
+    vigente = serializers.SerializerMethodField()
+    promociones = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Membresia
+        fields = [
+            'id',
+            'cliente',
+            'plan',
+            'estado',
+            'estado_display',
+            'fecha_inicio',
+            'fecha_fin',
+            'dias_restantes',
+            'dias_transcurridos',
+            'porcentaje_uso',
+            'vigente',
+            'promociones',
+            'created_at',
+        ]
+    
+    def get_cliente(self, obj):
+        """Información del cliente"""
+        return {
+            'id': obj.inscripcion.cliente.id,
+            'nombre_completo': obj.inscripcion.cliente.nombre_completo,
+            'ci': obj.inscripcion.cliente.ci,
+            'telefono': obj.inscripcion.cliente.telefono,
+        }
+    
+    def get_plan(self, obj):
+        """Información del plan"""
+        return {
+            'id': obj.plan.id,
+            'nombre': obj.plan.nombre,
+            'duracion': obj.plan.duracion,
+            'precio_base': str(obj.plan.precio_base),
+        }
+    
+    def get_dias_transcurridos(self, obj):
+        """Calcula los días transcurridos desde el inicio"""
+        from datetime import date
+        if obj.fecha_inicio:
+            dias = (date.today() - obj.fecha_inicio).days
+            return max(0, dias)
+        return 0
+    
+    def get_porcentaje_uso(self, obj):
+        """Calcula el porcentaje de uso de la membresía"""
+        if obj.duracion_dias > 0:
+            dias_transcurridos = self.get_dias_transcurridos(obj)
+            porcentaje = (dias_transcurridos / obj.duracion_dias) * 100
+            return round(min(100, porcentaje), 2)
+        return 0
+    
+    def get_vigente(self, obj):
+        """Determina si la membresía está vigente"""
+        from datetime import date
+        from apps.core.constants import ESTADO_ACTIVO, ESTADO_SUSPENDIDO
+        
+        # Vigente si está activa o suspendida y no ha vencido
+        esta_en_periodo = obj.fecha_fin >= date.today()
+        estado_valido = obj.estado in [ESTADO_ACTIVO, ESTADO_SUSPENDIDO]
+        
+        return esta_en_periodo and estado_valido
+    
+    def get_promociones(self, obj):
+        """Lista de promociones aplicadas"""
+        return [
+            {
+                'id': promo.id,
+                'nombre': promo.nombre,
+                'descuento': str(promo.descuento),
+            }
+            for promo in obj.promociones.all()
+        ]

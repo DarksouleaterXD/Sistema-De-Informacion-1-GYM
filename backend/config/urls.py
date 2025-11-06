@@ -6,8 +6,9 @@ from apps.users.views import CreateAdminView, CurrentUserView, LoginView, Logout
 from apps.roles.views import PermissionDetailView, PermissionListCreateView, RoleAssignView, RoleDetailView, RoleListCreateView, RolePermissionAssignView, RolePermissionRemoveView, RolePermissionSetView, RoleRemoveView
 from apps.audit.views import AuditLogDetailView, AuditLogListView
 from apps.clients.views import ClientListCreateView, ClientDetailView
-from apps.membresias.views import MembresiaListCreateView, MembresiaDetailView, MembresiaStatsView, PlanMembresiaListView
+from apps.membresias.views import MembresiaListCreateView, MembresiaDetailView, MembresiaStatsView, PlanMembresiaListView, ConsultarEstadoVigenciaView
 from apps.promociones.views import PromocionListCreateView, PromocionDetailView
+from apps.disciplinas.views import DisciplinaListCreateView, DisciplinaDetailView
 
 urlpatterns = [
     # Django Admin
@@ -62,6 +63,8 @@ urlpatterns = [
     path("api/membresias/", MembresiaListCreateView.as_view(), name="membresia-list-create"),
     path("api/membresias/<int:pk>/", MembresiaDetailView.as_view(), name="membresia-detail"),
     path("api/membresias/stats/", MembresiaStatsView.as_view(), name="membresia-stats"),
+    # CU17: Consultar Estado/Vigencia de Membresía
+    path("api/membresias/consultar-estado/", ConsultarEstadoVigenciaView.as_view(), name="membresia-consultar-estado"),
     
     # Planes de Membresía
     path("api/planes-membresia/", PlanMembresiaListView.as_view(), name="plan-membresia-list"),
@@ -69,5 +72,9 @@ urlpatterns = [
     # Promociones CRUD
     path("api/promociones/", PromocionListCreateView.as_view(), name="promocion-list-create"),
     path("api/promociones/<int:pk>/", PromocionDetailView.as_view(), name="promocion-detail"),
+    
+    # CU19: Gestionar Disciplinas CRUD
+    path("api/disciplinas/", DisciplinaListCreateView.as_view(), name="disciplina-list-create"),
+    path("api/disciplinas/<int:pk>/", DisciplinaDetailView.as_view(), name="disciplina-detail"),
     
 ]

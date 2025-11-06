@@ -47,7 +47,7 @@ def create_default_roles():
     admin_permissions_added = 0
     for perm_code in PermissionGroups.ADMIN:
         try:
-            perm = Permiso.objects.get(nombre=perm_code)
+            perm = Permiso.objects.get(codigo=perm_code)
             RolPermiso.objects.get_or_create(rol=admin_role, permiso=perm)
             admin_permissions_added += 1
         except Permiso.DoesNotExist:
@@ -73,7 +73,7 @@ def create_default_roles():
     admin_staff_permissions_added = 0
     for perm_code in PermissionGroups.ADMINISTRATIVO:
         try:
-            perm = Permiso.objects.get(nombre=perm_code)
+            perm = Permiso.objects.get(codigo=perm_code)
             RolPermiso.objects.get_or_create(rol=admin_staff_role, permiso=perm)
             admin_staff_permissions_added += 1
         except Permiso.DoesNotExist:
@@ -82,30 +82,30 @@ def create_default_roles():
     print(f"   ✅ Asignados {admin_staff_permissions_added} permisos al Administrativo")
     
     # ========================================
-    # ROL: COACH
+    # ROL: INSTRUCTOR (CU18)
     # ========================================
-    print("\n📌 Creando rol: Coach")
-    coach_role, created = Role.objects.get_or_create(
-        nombre='Coach',
-        defaults={'descripcion': 'Instructor/Coach. Solo puede consultar información.'}
+    print("\n📌 Creando rol: Instructor")
+    instructor_role, created = Role.objects.get_or_create(
+        nombre='Instructor',
+        defaults={'descripcion': 'Instructor/Coach del gimnasio. Puede consultar clientes inscritos y membresías (solo lectura para pasar lista).'}
     )
     
     if created:
-        print("   ✅ Rol 'Coach' creado")
+        print("   ✅ Rol 'Instructor' creado")
     else:
-        print("   ℹ️  Rol 'Coach' ya existe, actualizando permisos...")
+        print("   ℹ️  Rol 'Instructor' ya existe, actualizando permisos...")
     
-    # Asignar permisos de COACH
-    coach_permissions_added = 0
-    for perm_code in PermissionGroups.COACH:
+    # Asignar permisos de INSTRUCTOR
+    instructor_permissions_added = 0
+    for perm_code in PermissionGroups.INSTRUCTOR:
         try:
-            perm = Permiso.objects.get(nombre=perm_code)
-            RolPermiso.objects.get_or_create(rol=coach_role, permiso=perm)
-            coach_permissions_added += 1
+            perm = Permiso.objects.get(codigo=perm_code)
+            RolPermiso.objects.get_or_create(rol=instructor_role, permiso=perm)
+            instructor_permissions_added += 1
         except Permiso.DoesNotExist:
             print(f"   ⚠️  Permiso '{perm_code}' no encontrado")
     
-    print(f"   ✅ Asignados {coach_permissions_added} permisos al Coach")
+    print(f"   ✅ Asignados {instructor_permissions_added} permisos al Instructor")
     
     # ========================================
     # RESUMEN
@@ -115,7 +115,7 @@ def create_default_roles():
     print("\n📊 RESUMEN:")
     print(f"   • Administrador: {admin_permissions_added} permisos")
     print(f"   • Administrativo: {admin_staff_permissions_added} permisos")
-    print(f"   • Coach: {coach_permissions_added} permisos")
+    print(f"   • Instructor: {instructor_permissions_added} permisos")
     print("\n💡 Ahora puedes asignar estos roles a los usuarios")
     print("=" * 60)
 

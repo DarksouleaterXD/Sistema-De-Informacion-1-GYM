@@ -65,6 +65,12 @@ export const PermissionCodes = {
   ENROLLMENT_EDIT: "enrollment.edit",
   ENROLLMENT_DELETE: "enrollment.delete",
 
+  // DISCIPLINAS
+  DISCIPLINE_VIEW: "discipline.view",
+  DISCIPLINE_CREATE: "discipline.create",
+  DISCIPLINE_EDIT: "discipline.edit",
+  DISCIPLINE_DELETE: "discipline.delete",
+
   // AUDITORÍA
   AUDIT_VIEW: "audit.view",
   AUDIT_VIEW_DETAILS: "audit.view_details",

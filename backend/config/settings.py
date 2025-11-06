@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.audit',
     'apps.promociones',
     'apps.membresias',
+    'apps.disciplinas',
 ]
 
 MIDDLEWARE = [

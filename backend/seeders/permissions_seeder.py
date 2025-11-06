@@ -237,6 +237,28 @@ class PermissionSeeder:
             'descripcion': 'Eliminar inscripciones'
         },
         
+        # DISCIPLINAS
+        {
+            'codigo': PermissionCodes.DISCIPLINE_VIEW,
+            'nombre': 'Ver Disciplinas',
+            'descripcion': 'Ver lista de disciplinas del gimnasio'
+        },
+        {
+            'codigo': PermissionCodes.DISCIPLINE_CREATE,
+            'nombre': 'Crear Disciplina',
+            'descripcion': 'Crear nuevas disciplinas'
+        },
+        {
+            'codigo': PermissionCodes.DISCIPLINE_EDIT,
+            'nombre': 'Editar Disciplina',
+            'descripcion': 'Editar disciplinas existentes'
+        },
+        {
+            'codigo': PermissionCodes.DISCIPLINE_DELETE,
+            'nombre': 'Eliminar Disciplina',
+            'descripcion': 'Eliminar disciplinas'
+        },
+        
         # AUDITORÍA
         {
             'codigo': PermissionCodes.AUDIT_VIEW,

@@ -49,6 +49,39 @@ export interface MembresiaStats {
   ingresos_mes_actual: number;
 }
 
+/**
+ * CU17: Respuesta de consulta de estado/vigencia
+ */
+export interface MembresiaEstadoVigencia {
+  id: number;
+  cliente: {
+    id: number;
+    nombre_completo: string;
+    ci: string;
+    telefono: string;
+  };
+  plan: {
+    id: number;
+    nombre: string;
+    duracion: number;
+    precio_base: string;
+  };
+  estado: string;
+  estado_display: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  dias_restantes: number;
+  dias_transcurridos: number;
+  porcentaje_uso: number;
+  vigente: boolean;
+  promociones: Array<{
+    id: number;
+    nombre: string;
+    descuento: string;
+  }>;
+  created_at: string;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
@@ -152,6 +185,26 @@ class MembresiaService {
     return httpClient.delete(
       `${this.baseURL}/${membresiaId}/remover-promocion/${promocionId}/`
     );
+  }
+
+  /**
+   * CU17: Consultar Estado/Vigencia de Membresía
+   * @param membresiaId ID de la membresía específica (opcional)
+   * @param clienteId ID del cliente para obtener su membresía activa (opcional)
+   */
+  async consultarEstadoVigencia(params: {
+    membresiaId?: number;
+    clienteId?: number;
+  }): Promise<MembresiaEstadoVigencia> {
+    const queryParams = new URLSearchParams();
+
+    if (params.membresiaId)
+      queryParams.append("membresia_id", params.membresiaId.toString());
+    if (params.clienteId)
+      queryParams.append("cliente_id", params.clienteId.toString());
+
+    const url = `${this.baseURL}/consultar-estado/?${queryParams.toString()}`;
+    return httpClient.get<MembresiaEstadoVigencia>(url);
   }
 }
 

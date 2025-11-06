@@ -12,8 +12,10 @@ from .serializers import (
     MembresiaListSerializer,
     MembresiaCreateSerializer,
     InscripcionMembresiaSerializer,
-    PlanMembresiaSerializer
+    PlanMembresiaSerializer,
+    MembresiaEstadoVigenciaSerializer
 )
+from apps.audit.helpers import registrar_bitacora
 
 
 class MembresiaPagination(PageNumberPagination):
@@ -287,3 +289,133 @@ class PlanMembresiaListView(APIView):
         planes = PlanMembresia.objects.all().order_by('duracion')
         serializer = PlanMembresiaSerializer(planes, many=True)
         return Response(serializer.data)
+
+
+@extend_schema(
+    tags=["Membresías"],
+    parameters=[
+        OpenApiParameter(
+            name='membresia_id',
+            description='ID de la membresía a consultar',
+            required=False,
+            type=int,
+            location=OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            name='cliente_id',
+            description='ID del cliente para obtener su membresía activa',
+            required=False,
+            type=int,
+            location=OpenApiParameter.QUERY
+        ),
+    ],
+    responses={
+        200: MembresiaEstadoVigenciaSerializer,
+        404: {"description": "Membresía no encontrada"}
+    }
+)
+class ConsultarEstadoVigenciaView(APIView):
+    """
+    CU17: Consultar Estado/Vigencia de Membresía
+    
+    GET: Consulta el estado y vigencia de una membresía específica o de un cliente
+    
+    Permite a los actores (Superusuario, Administrador, Instructor) consultar
+    el estado y vigencia de una membresía en el sistema.
+    
+    Query Params:
+    - membresia_id: ID de la membresía específica
+    - cliente_id: ID del cliente (retorna su membresía más reciente)
+    
+    Retorna:
+    - Estado actual (activo, suspendido, cancelado, vencido)
+    - Vigencia (fechas de inicio y fin)
+    - Días restantes y días transcurridos
+    - Porcentaje de uso
+    - Promociones aplicadas
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Consultar estado y vigencia de membresía"""
+        membresia_id = request.query_params.get('membresia_id')
+        cliente_id = request.query_params.get('cliente_id')
+        
+        # Validar que se proporcione al menos un parámetro
+        if not membresia_id and not cliente_id:
+            return Response(
+                {
+                    "error": "Debe proporcionar 'membresia_id' o 'cliente_id'",
+                    "detail": "Especifique una membresía específica o un cliente"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Buscar por ID de membresía específica
+            if membresia_id:
+                membresia = Membresia.objects.select_related(
+                    'inscripcion__cliente',
+                    'plan'
+                ).prefetch_related('promociones').get(id=membresia_id)
+            
+            # Buscar por cliente (última membresía)
+            elif cliente_id:
+                membresia = Membresia.objects.select_related(
+                    'inscripcion__cliente',
+                    'plan'
+                ).prefetch_related('promociones').filter(
+                    inscripcion__cliente_id=cliente_id
+                ).order_by('-fecha_inicio').first()
+                
+                if not membresia:
+                    return Response(
+                        {
+                            "error": "Cliente sin membresías",
+                            "detail": f"El cliente con ID {cliente_id} no tiene membresías registradas"
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+        
+        except Membresia.DoesNotExist:
+            return Response(
+                {
+                    "error": "Membresía no encontrada",
+                    "detail": f"No existe una membresía con ID {membresia_id}"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "error": "Error en la carga de datos",
+                    "detail": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        # Serializar la información
+        serializer = MembresiaEstadoVigenciaSerializer(membresia)
+        
+        # Registrar la consulta en auditoría (Post-Condición del CU17)
+        try:
+            registrar_bitacora(
+                request=request,
+                usuario=request.user,
+                accion="Consultar Estado/Vigencia",
+                descripcion=f"Consultó estado/vigencia de membresía #{membresia.id} del cliente {membresia.inscripcion.cliente.nombre_completo}",
+                modulo="MEMBRESÍAS",
+                tipo_accion="view",
+                nivel="info",
+                datos_adicionales={
+                    'membresia_id': membresia.id,
+                    'cliente_id': membresia.inscripcion.cliente.id,
+                    'estado': membresia.estado,
+                    'dias_restantes': membresia.dias_restantes
+                }
+            )
+        except Exception as audit_error:
+            # No fallar la consulta si falla el registro de auditoría
+            print(f"Error al registrar auditoría: {audit_error}")
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)

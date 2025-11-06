@@ -50,6 +50,12 @@ const navItems: NavItem[] = [
     requiredPermission: PermissionCodes.MEMBERSHIP_VIEW,
   },
   {
+    name: "Disciplinas",
+    href: "/dashboard/disciplinas",
+    icon: Dumbbell,
+    requiredPermission: PermissionCodes.DISCIPLINE_VIEW,
+  },
+  {
     name: "Inscripciones",
     href: "/dashboard/inscripciones",
     icon: ClipboardList,

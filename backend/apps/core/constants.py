@@ -7,12 +7,14 @@ ESTADO_ACTIVO = 'activo'
 ESTADO_INACTIVO = 'inactivo'
 ESTADO_VENCIDO = 'vencido'
 ESTADO_SUSPENDIDO = 'suspendido'
+ESTADO_CANCELADO = 'cancelado'
 
 ESTADOS_MEMBRESIA = [
     (ESTADO_ACTIVO, 'Activo'),
     (ESTADO_INACTIVO, 'Inactivo'),
     (ESTADO_VENCIDO, 'Vencido'),
     (ESTADO_SUSPENDIDO, 'Suspendido'),
+    (ESTADO_CANCELADO, 'Cancelado'),
 ]
 
 # Métodos de pago
@@ -35,6 +37,7 @@ ACTIVIDAD_CREAR = 'crear'
 ACTIVIDAD_ACTUALIZAR = 'actualizar'
 ACTIVIDAD_ELIMINAR = 'eliminar'
 ACTIVIDAD_VER = 'ver'
+ACTIVIDAD_CONSULTAR = 'consultar'
 
 TIPOS_ACTIVIDAD = [
     (ACTIVIDAD_LOGIN, 'Inicio de Sesión'),
@@ -43,6 +46,7 @@ TIPOS_ACTIVIDAD = [
     (ACTIVIDAD_ACTUALIZAR, 'Actualizar Registro'),
     (ACTIVIDAD_ELIMINAR, 'Eliminar Registro'),
     (ACTIVIDAD_VER, 'Ver Registro'),
+    (ACTIVIDAD_CONSULTAR, 'Consultar Registro'),
 ]
 
 # Niveles de experiencia para clientes

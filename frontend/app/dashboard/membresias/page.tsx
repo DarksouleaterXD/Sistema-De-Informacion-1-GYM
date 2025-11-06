@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Activity,
 } from "lucide-react";
 import membresiaService, {
   MembresiaList,
@@ -27,6 +28,7 @@ import { Client, PlanMembresia } from "@/lib/types";
 import { Card, Button, Badge, Input } from "@/components/ui";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PermissionCodes } from "@/lib/utils/permissions";
+import ViewEstadoVigenciaModal from "@/components/membresias/ViewEstadoVigenciaModal";
 
 function MembresiasPageContent() {
   const [membresias, setMembresias] = useState<MembresiaList[]>([]);
@@ -44,9 +46,11 @@ function MembresiasPageContent() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEstadoVigenciaModal, setShowEstadoVigenciaModal] = useState(false);
   const [selectedMembresia, setSelectedMembresia] = useState<Membresia | null>(
     null
   );
+  const [selectedMembresiaId, setSelectedMembresiaId] = useState<number | undefined>();
 
   // Formulario
   const [formData, setFormData] = useState<MembresiaCreate>({
@@ -248,6 +252,11 @@ function MembresiasPageContent() {
       console.error("Error al eliminar membresía:", error);
       alert("Error al eliminar membresía");
     }
+  };
+
+  const handleViewEstadoVigencia = (id: number) => {
+    setSelectedMembresiaId(id);
+    setShowEstadoVigenciaModal(true);
   };
 
   const resetForm = () => {
@@ -464,11 +473,11 @@ function MembresiasPageContent() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
                             <button
-                              onClick={() => handleViewDetail(membresia.id)}
-                              className="text-blue-600 hover:text-blue-900"
-                              title="Ver detalle"
+                              onClick={() => handleViewEstadoVigencia(membresia.id)}
+                              className="text-green-600 hover:text-green-900"
+                              title="Ver estado y vigencia"
                             >
-                              <Eye className="h-4 w-4" />
+                              <Activity className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleEdit(membresia.id)}
@@ -1128,6 +1137,16 @@ function MembresiasPageContent() {
             </div>
           </div>
         )}
+
+        {/* Modal de Estado/Vigencia - CU17 */}
+        <ViewEstadoVigenciaModal
+          isOpen={showEstadoVigenciaModal}
+          onClose={() => {
+            setShowEstadoVigenciaModal(false);
+            setSelectedMembresiaId(undefined);
+          }}
+          membresiaId={selectedMembresiaId}
+        />
       </div>
     </DashboardLayout>
   );
