@@ -2,12 +2,23 @@
 Script para ejecutar todos los seeders en orden
 """
 from .superuser_seeder import SuperUserSeeder
-from .roles_seeder import RolesSeeder
+from .permissions_seeder import PermissionSeeder
+from .roles_default_seeder import create_default_roles  # 🔥 Usar el nuevo seeder de roles
 from .users_seeder import UsersSeeder
 from .clients_seeder import ClientsSeeder
 from .plan_membresia_seeder import PlanMembresiaSeeder
 from .promocion_seeder import PromocionSeeder
-from .permissions_seeder import PermissionSeeder
+
+
+class RolesDefaultSeederWrapper:
+    """Wrapper para el seeder de roles que usa la función create_default_roles"""
+    def run(self):
+        try:
+            create_default_roles()
+            return True
+        except Exception as e:
+            print(f"❌ Error al ejecutar seeder: {e}")
+            return False
 
 
 def run_all_seeders():
@@ -21,7 +32,7 @@ def run_all_seeders():
     seeders = [
         SuperUserSeeder(),
         PermissionSeeder(),  # 🔥 PRIMERO: Crear permisos
-        RolesSeeder(),       # LUEGO: Crear roles y asignar permisos
+        RolesDefaultSeederWrapper(),  # LUEGO: Crear roles y asignar permisos
         UsersSeeder(),
         ClientsSeeder(),
         PlanMembresiaSeeder(),
