@@ -13,6 +13,7 @@ import {
   Mail,
   Calendar,
   Loader2,
+  Eye,
 } from "lucide-react";
 import { Client } from "@/lib/types";
 import { clientService, CreateClientDTO } from "@/lib/services/client.service";
@@ -20,7 +21,7 @@ import { Card, Button, Input } from "@/components/ui";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PermissionCodes } from "@/lib/utils/permissions";
 
-type ModalMode = "create" | "edit" | null;
+type ModalMode = "create" | "edit" | "view" | null;
 
 function ClientsPageContent() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -98,6 +99,12 @@ function ClientsPageContent() {
       altura: client.altura || "",
       experiencia: client.experiencia || "principiante",
     });
+    setFormErrors({});
+  };
+
+  const handleView = (client: Client) => {
+    setModalMode("view");
+    setSelectedClient(client);
     setFormErrors({});
   };
 
@@ -312,9 +319,18 @@ function ClientsPageContent() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
                           <Button
+                            onClick={() => handleView(client)}
+                            variant="secondary"
+                            size="sm"
+                            title="Ver detalles"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
                             onClick={() => handleEdit(client)}
                             variant="secondary"
                             size="sm"
+                            title="Editar"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -322,6 +338,7 @@ function ClientsPageContent() {
                             onClick={() => handleDelete(client)}
                             variant="danger"
                             size="sm"
+                            title="Eliminar"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -372,7 +389,11 @@ function ClientsPageContent() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {modalMode === "create" ? "Nuevo Cliente" : "Editar Cliente"}
+                  {modalMode === "create" 
+                    ? "Nuevo Cliente" 
+                    : modalMode === "view" 
+                    ? "Detalle del Cliente" 
+                    : "Editar Cliente"}
                 </h2>
                 <button
                   onClick={handleCloseModal}
@@ -382,7 +403,90 @@ function ClientsPageContent() {
                 </button>
               </div>
 
-              <div className="space-y-4">
+              {modalMode === "view" && selectedClient ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre
+                      </label>
+                      <p className="text-gray-900 font-medium">{selectedClient.nombre}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Apellido
+                      </label>
+                      <p className="text-gray-900 font-medium">{selectedClient.apellido}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cédula de Identidad
+                    </label>
+                    <p className="text-gray-900">{selectedClient.ci}</p>
+                  </div>
+
+                  {selectedClient.telefono && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Teléfono
+                      </label>
+                      <p className="text-gray-900">{selectedClient.telefono}</p>
+                    </div>
+                  )}
+
+                  {selectedClient.email && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+                      <p className="text-gray-900">{selectedClient.email}</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedClient.peso && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Peso (kg)
+                        </label>
+                        <p className="text-gray-900">{selectedClient.peso}</p>
+                      </div>
+                    )}
+                    {selectedClient.altura && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Altura (m)
+                        </label>
+                        <p className="text-gray-900">{selectedClient.altura}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nivel de Experiencia
+                    </label>
+                    <p className="text-gray-900 capitalize">{selectedClient.experiencia}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Fecha de Registro
+                    </label>
+                    <p className="text-gray-900">{formatDate(selectedClient.fecha_registro)}</p>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-6">
+                    <Button onClick={handleCloseModal} variant="secondary">
+                      Cerrar
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Nombre *"
@@ -510,6 +614,8 @@ function ClientsPageContent() {
                   )}
                 </Button>
               </div>
+                </>
+              )}
             </div>
           </div>
         </div>

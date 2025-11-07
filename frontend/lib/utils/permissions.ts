@@ -184,9 +184,7 @@ export const hasAnyPermission = (
   isSuperuser: boolean = false
 ): boolean => {
   if (isSuperuser) return true;
-  return permissions.some((permission) =>
-    userPermissions.includes(permission)
-  );
+  return permissions.some((permission) => userPermissions.includes(permission));
 };
 
 /**

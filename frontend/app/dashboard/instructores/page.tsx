@@ -15,7 +15,8 @@ import {
   Award,
   User,
 } from "lucide-react";
-import { Instructor,
+import {
+  Instructor,
   instructorService,
   CreateInstructorDTO,
   UpdateInstructorDTO,
@@ -33,8 +34,11 @@ function InstructorsPageContent() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [modalMode, setModalMode] = useState<ModalMode>(null);
-  const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
-  const [formData, setFormData] = useState<CreateInstructorDTO | UpdateInstructorDTO>({
+  const [selectedInstructor, setSelectedInstructor] =
+    useState<Instructor | null>(null);
+  const [formData, setFormData] = useState<
+    CreateInstructorDTO | UpdateInstructorDTO
+  >({
     usuario_id: 0,
     especialidades: "",
     experiencia_anos: 0,
@@ -139,7 +143,8 @@ function InstructorsPageContent() {
     }
 
     if (!formData.experiencia_anos || formData.experiencia_anos < 0) {
-      errors.experiencia_anos = "Los años de experiencia deben ser un número positivo";
+      errors.experiencia_anos =
+        "Los años de experiencia deben ser un número positivo";
     }
 
     setFormErrors(errors);
@@ -176,7 +181,9 @@ function InstructorsPageContent() {
   };
 
   const handleDelete = async (instructor: Instructor) => {
-    if (!confirm(`¿Estás seguro de desactivar a ${instructor.nombre_completo}?`))
+    if (
+      !confirm(`¿Estás seguro de desactivar a ${instructor.nombre_completo}?`)
+    )
       return;
 
     try {

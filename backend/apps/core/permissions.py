@@ -187,11 +187,23 @@ class PermissionGroups:
         PermissionCodes.MEMBERSHIP_VIEW,
         PermissionCodes.MEMBERSHIP_VIEW_DETAILS,
         
-        # Nota: Permisos de clases se agregarán cuando se implemente ese módulo
-        # - class.view (ver sus clases)
-        # - class.create (programar sus clases - CU20)
-        # - class.enroll_client (inscribir clientes - CU21)
-        # - class.take_attendance (controlar asistencia - CU22)
+        # Disciplinas - Ver disciplinas disponibles
+        PermissionCodes.DISCIPLINE_VIEW,
+        
+        # Salones - Ver salones disponibles para programar clases
+        PermissionCodes.SALON_VIEW,
+        
+        # Clases - Gestión completa de sus clases (CU20: Programar clase)
+        PermissionCodes.CLASE_VIEW,
+        PermissionCodes.CLASE_CREATE,
+        PermissionCodes.CLASE_EDIT,
+        PermissionCodes.CLASE_DELETE,
+        
+        # Inscripciones a Clases - Gestión de inscripciones (CU21: Inscribir cliente, CU22: Asistencia)
+        PermissionCodes.INSCRIPCION_CLASE_VIEW,
+        PermissionCodes.INSCRIPCION_CLASE_CREATE,
+        PermissionCodes.INSCRIPCION_CLASE_EDIT,
+        PermissionCodes.INSCRIPCION_CLASE_DELETE,
     ]
     
     # Alias para compatibilidad

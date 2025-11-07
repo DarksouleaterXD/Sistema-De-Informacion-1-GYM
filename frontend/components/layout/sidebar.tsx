@@ -22,14 +22,18 @@ import {
   Activity,
   ScrollText,
   Building2,
+  ClipboardList,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { PermissionCodes } from "@/lib/utils/permissions";
+import { canAccessRoute } from "@/lib/utils/permissions";
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  requiredPermission?: string;
 }
 
 const navItems: NavItem[] = [
@@ -105,7 +109,12 @@ const navItems: NavItem[] = [
     icon: ScrollText,
     requiredPermission: PermissionCodes.AUDIT_VIEW,
   },
-   { name: "Instructores", href: "/dashboard/instructores", icon: GraduationCap },
+  {
+    name: "Instructores",
+    href: "/dashboard/instructores",
+    icon: GraduationCap,
+    requiredPermission: PermissionCodes.INSTRUCTOR_VIEW,
+  },
 ];
 
 export default function Sidebar() {
@@ -186,28 +195,41 @@ export default function Sidebar() {
         {/* Navegación */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-3">
-            {navItems.map((item, index) => {
-              const Icon = item.icon;
-              // Validación exacta: solo activo si la ruta coincide exactamente
-              // o si es una subruta directa (pero no para /dashboard en /dashboard/clients)
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard" &&
-                  pathname.startsWith(item.href + "/"));
+            {navItems
+              .filter((item) => {
+                // Si no requiere permiso, siempre mostrar
+                if (!item.requiredPermission) return true;
+                // Si no hay usuario, no mostrar
+                if (!user) return false;
+                // Verificar si el usuario tiene acceso a la ruta
+                return canAccessRoute(
+                  item.href,
+                  user.permissions || [],
+                  user.is_superuser || false
+                );
+              })
+              .map((item, index) => {
+                const Icon = item.icon;
+                // Validación exacta: solo activo si la ruta coincide exactamente
+                // o si es una subruta directa (pero no para /dashboard en /dashboard/clients)
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/dashboard" &&
+                    pathname.startsWith(item.href + "/"));
 
-              return (
-                <li
-                  key={item.href}
-                  style={{
-                    animation: isOpen
-                      ? `slideInLeft 0.3s ease-out ${index * 0.05}s both`
-                      : "none",
-                  }}
-                >
-                  <Link
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className={`
+                return (
+                  <li
+                    key={item.href}
+                    style={{
+                      animation: isOpen
+                        ? `slideInLeft 0.3s ease-out ${index * 0.05}s both`
+                        : "none",
+                    }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`
                       flex items-center space-x-3 px-4 py-3 rounded-lg
                       transition-all duration-200
                       transform hover:scale-105
@@ -217,13 +239,13 @@ export default function Sidebar() {
                           : "text-gray-300 hover:bg-gray-700 hover:text-white"
                       }
                     `}
-                  >
-                    <Icon className="w-5 h-5 transition-transform duration-200 group-hover:rotate-12" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
+                    >
+                      <Icon className="w-5 h-5 transition-transform duration-200 group-hover:rotate-12" />
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  </li>
+                );
+              })}
           </ul>
         </nav>
 

@@ -3,6 +3,7 @@
 Este documento lista todos los comandos personalizados disponibles en el sistema Gym Spartan.
 
 ## 📋 Tabla de Contenidos
+
 - [Seeders](#seeders)
 - [Validación](#validación)
 - [Bitácora](#bitácora)
@@ -14,12 +15,15 @@ Este documento lista todos los comandos personalizados disponibles en el sistema
 ## 🌱 Seeders
 
 ### Ejecutar todos los seeders
+
 ```bash
 docker-compose exec backend python manage.py seed
 ```
+
 **Descripción**: Ejecuta todos los seeders en el orden correcto (Superusuario, Permisos, Roles, Usuarios, Instructores, Clientes, Planes, Promociones, Disciplinas, Salones, Clases).
 
 **Resultado esperado**:
+
 - ✅ 11 seeders exitosos
 - 67 permisos creados
 - 3 roles predeterminados (Administrador, Administrativo, Instructor)
@@ -36,12 +40,15 @@ docker-compose exec backend python manage.py seed
 ## ✅ Validación
 
 ### Validar integridad de seeders
+
 ```bash
 docker-compose exec backend python manage.py validate_seeders
 ```
+
 **Descripción**: Verifica que todos los datos creados por los seeders estén correctos y completos.
 
 **Qué valida**:
+
 - ✅ Superusuario existe y está activo
 - ✅ 67 permisos creados
 - ✅ 3 roles con sus permisos correctos
@@ -57,6 +64,7 @@ docker-compose exec backend python manage.py validate_seeders
 ## 📋 Bitácora (Auditoría)
 
 ### Ver últimas entradas de bitácora
+
 ```bash
 # Ver últimas 10 entradas
 docker-compose exec backend python manage.py bitacora
@@ -77,6 +85,7 @@ docker-compose exec backend python manage.py bitacora --tipo create_user
 **Descripción**: Muestra las últimas entradas del historial de actividades (bitácora) con formato amigable.
 
 **Tipos de acción disponibles**:
+
 - `login` - Inicio de sesión
 - `logout` - Cierre de sesión
 - `create` - Crear registro
@@ -91,6 +100,7 @@ docker-compose exec backend python manage.py bitacora --tipo create_user
 - `error` - Error del sistema
 
 **Salida incluye**:
+
 - 🔐 Usuario que realizó la acción (o "Sistema" si no aplica)
 - 📅 Fecha y hora
 - 📝 Tipo y descripción de la acción
@@ -102,21 +112,25 @@ docker-compose exec backend python manage.py bitacora --tipo create_user
 ## 🗄️ Migraciones
 
 ### Crear migraciones
+
 ```bash
 docker-compose exec backend python manage.py makemigrations
 ```
 
 ### Aplicar migraciones
+
 ```bash
 docker-compose exec backend python manage.py migrate
 ```
 
 ### Ver estado de migraciones
+
 ```bash
 docker-compose exec backend python manage.py showmigrations
 ```
 
 ### Resetear migraciones (⚠️ Peligroso - borra la BD)
+
 ```bash
 # Windows PowerShell
 .\scripts\reset_migrations_docker.ps1
@@ -130,16 +144,19 @@ docker-compose exec backend python manage.py showmigrations
 ## 👤 Usuarios
 
 ### Crear superusuario manualmente
+
 ```bash
 docker-compose exec backend python manage.py createsuperuser
 ```
 
 ### Acceder al shell de Django
+
 ```bash
 docker-compose exec backend python manage.py shell
 ```
 
 ### Verificar usuarios en la base de datos
+
 ```bash
 docker-compose exec backend python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(f'Usuarios: {User.objects.count()}'); [print(f'  - {u.email} ({u.get_full_name()})') for u in User.objects.all()[:10]]"
 ```
@@ -149,16 +166,19 @@ docker-compose exec backend python manage.py shell -c "from django.contrib.auth 
 ## 🔍 Base de Datos
 
 ### Acceder a psql (PostgreSQL)
+
 ```bash
 docker-compose exec db psql -U spartan_user -d spartan_db
 ```
 
 ### Ver todas las tablas
+
 ```bash
 docker-compose exec db psql -U spartan_user -d spartan_db -c "\dt"
 ```
 
 ### Contar registros en una tabla
+
 ```bash
 # Ejemplo: contar instructores
 docker-compose exec backend python manage.py shell -c "from apps.instructores.models import Instructor; print(f'Instructores: {Instructor.objects.count()}')"
@@ -169,16 +189,19 @@ docker-compose exec backend python manage.py shell -c "from apps.instructores.mo
 ## 🐳 Docker
 
 ### Ver logs del backend
+
 ```bash
 docker-compose logs backend --tail=50
 ```
 
 ### Ver logs del frontend
+
 ```bash
 docker-compose logs frontend --tail=50
 ```
 
 ### Reiniciar un servicio
+
 ```bash
 # Reiniciar backend
 docker-compose restart backend
@@ -188,12 +211,14 @@ docker-compose restart frontend
 ```
 
 ### Reconstruir contenedores
+
 ```bash
 docker-compose down
 docker-compose up -d --build
 ```
 
 ### Limpiar todo y empezar de cero
+
 ```bash
 docker-compose down -v  # ⚠️ Borra volúmenes (base de datos)
 docker-compose up -d --build
@@ -206,13 +231,15 @@ docker-compose exec backend python manage.py seed
 ## 📊 Datos de Prueba
 
 ### Usuarios predeterminados
-| Email | Contraseña | Rol |
-|-------|-----------|-----|
-| `admin@gym-spartan.com` | `admin123` | Administrador (Superusuario) |
-| `administrativo@gym-spartan.com` | `admin123` | Administrativo |
-| `instructor@gym-spartan.com` | `instructor123` | Instructor |
+
+| Email                            | Contraseña      | Rol                          |
+| -------------------------------- | --------------- | ---------------------------- |
+| `admin@gym-spartan.com`          | `admin123`      | Administrador (Superusuario) |
+| `administrativo@gym-spartan.com` | `admin123`      | Administrativo               |
+| `instructor@gym-spartan.com`     | `instructor123` | Instructor                   |
 
 ### Instructores de prueba
+
 1. **Juan Pérez** - `jperez@gym-spartan.com` - CrossFit, Functional Training, HIIT
 2. **María García** - `mgarcia@gym-spartan.com` - Yoga, Pilates, Stretching
 3. **Carlos López** - `clopez@gym-spartan.com` - Spinning, Cardio, HIIT
@@ -224,6 +251,7 @@ docker-compose exec backend python manage.py seed
 ## 🚀 Comandos Rápidos
 
 ### Desarrollo diario
+
 ```bash
 # 1. Iniciar servicios
 docker-compose up -d
@@ -239,6 +267,7 @@ docker-compose exec backend python manage.py validate_seeders
 ```
 
 ### Solución de problemas
+
 ```bash
 # Si el backend no responde
 docker-compose restart backend

@@ -86,7 +86,9 @@ class InstructorService {
     }
 
     const queryString = params.toString();
-    const url = queryString ? `${this.baseUrl}/?${queryString}` : `${this.baseUrl}/`;
+    const url = queryString
+      ? `${this.baseUrl}/?${queryString}`
+      : `${this.baseUrl}/`;
 
     return httpClient.get<PaginatedResponse<Instructor>>(url);
   }
