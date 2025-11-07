@@ -192,8 +192,9 @@ class InscripcionClaseSerializer(serializers.ModelSerializer):
                 from apps.membresias.models import Membresia
                 from apps.core.constants import ESTADO_ACTIVO
                 
+                # Acceso correcto: Membresia -> InscripcionMembresia -> Cliente
                 tiene_membresia_activa = Membresia.objects.filter(
-                    cliente=cliente,
+                    inscripcion__cliente=cliente,
                     estado=ESTADO_ACTIVO
                 ).exists()
                 
