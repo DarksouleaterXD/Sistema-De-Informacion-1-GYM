@@ -8,6 +8,8 @@ from .users_seeder import UsersSeeder
 from .clients_seeder import ClientsSeeder
 from .plan_membresia_seeder import PlanMembresiaSeeder
 from .promocion_seeder import PromocionSeeder
+from .disciplinas_seeder import DisciplinasSeeder
+from .salones_clases_seeder import SalonSeeder, ClaseSeeder
 
 
 class RolesDefaultSeederWrapper:
@@ -37,15 +39,24 @@ def run_all_seeders():
         ClientsSeeder(),
         PlanMembresiaSeeder(),
         PromocionSeeder(),
+        DisciplinasSeeder(),  # 🔥 NUEVO: Crear disciplinas
+        SalonSeeder(),  # 🔥 NUEVO: Crear salones
+        ClaseSeeder(),  # 🔥 NUEVO: Crear clases de prueba
     ]
     
     success_count = 0
     error_count = 0
     
-    for seeder in seeders:
-        if seeder.run():
-            success_count += 1
-        else:
+    for i, seeder in enumerate(seeders, 1):
+        seeder_name = seeder.__class__.__name__
+        try:
+            if seeder.run():
+                success_count += 1
+            else:
+                print(f"\n⚠️  Seeder #{i} ({seeder_name}) retornó False")
+                error_count += 1
+        except Exception as e:
+            print(f"\n❌ Error en Seeder #{i} ({seeder_name}): {e}")
             error_count += 1
     
     print("\n" + "="*60)

@@ -387,6 +387,8 @@ class PermissionSeeder:
         print(f"  - {created_count} permisos creados")
         print(f"  - {updated_count} permisos actualizados")
         print(f"  - {created_count + updated_count} permisos totales")
+        
+        return True  # 🔥 RETORNAR True para indicar éxito
 
 
 if __name__ == '__main__':
