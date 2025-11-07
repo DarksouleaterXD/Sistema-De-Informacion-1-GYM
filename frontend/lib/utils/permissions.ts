@@ -1,24 +1,20 @@
 /**
- * Sistema de permisos y RBAC para el frontend.
- * Define todos los códigos de permisos que existen en el sistema.
+ * Definición de permisos del sistema
+ * Deben coincidir con los códigos del backend
  */
 
-// ==========================================
-// CÓDIGOS DE PERMISOS (sincronizados con backend)
-// ==========================================
-
 export const PermissionCodes = {
-  // DASHBOARD
+  // Dashboard
   DASHBOARD_VIEW: "dashboard.view",
 
-  // USUARIOS
+  // Usuarios
   USER_VIEW: "user.view",
   USER_CREATE: "user.create",
   USER_EDIT: "user.edit",
   USER_DELETE: "user.delete",
   USER_VIEW_DETAILS: "user.view_details",
 
-  // ROLES Y PERMISOS
+  // Roles
   ROLE_VIEW: "role.view",
   ROLE_CREATE: "role.create",
   ROLE_EDIT: "role.edit",
@@ -26,19 +22,20 @@ export const PermissionCodes = {
   ROLE_ASSIGN_PERMISSIONS: "role.assign_permissions",
   ROLE_ASSIGN_TO_USER: "role.assign_to_user",
 
+  // Permisos
   PERMISSION_VIEW: "permission.view",
   PERMISSION_CREATE: "permission.create",
   PERMISSION_EDIT: "permission.edit",
   PERMISSION_DELETE: "permission.delete",
 
-  // CLIENTES
+  // Clientes
   CLIENT_VIEW: "client.view",
   CLIENT_CREATE: "client.create",
   CLIENT_EDIT: "client.edit",
   CLIENT_DELETE: "client.delete",
   CLIENT_VIEW_DETAILS: "client.view_details",
 
-  // MEMBRESÍAS
+  // Membresías
   MEMBERSHIP_VIEW: "membership.view",
   MEMBERSHIP_CREATE: "membership.create",
   MEMBERSHIP_EDIT: "membership.edit",
@@ -46,187 +43,139 @@ export const PermissionCodes = {
   MEMBERSHIP_VIEW_STATS: "membership.view_stats",
   MEMBERSHIP_VIEW_DETAILS: "membership.view_details",
 
-  // PLANES DE MEMBRESÍA
+  // Planes
   PLAN_VIEW: "plan.view",
   PLAN_CREATE: "plan.create",
   PLAN_EDIT: "plan.edit",
   PLAN_DELETE: "plan.delete",
 
-  // PROMOCIONES
+  // Promociones
   PROMOTION_VIEW: "promotion.view",
   PROMOTION_CREATE: "promotion.create",
   PROMOTION_EDIT: "promotion.edit",
   PROMOTION_DELETE: "promotion.delete",
   PROMOTION_VIEW_DETAILS: "promotion.view_details",
 
-  // INSCRIPCIONES
+  // Inscripciones
   ENROLLMENT_VIEW: "enrollment.view",
   ENROLLMENT_CREATE: "enrollment.create",
   ENROLLMENT_EDIT: "enrollment.edit",
   ENROLLMENT_DELETE: "enrollment.delete",
 
-  // DISCIPLINAS
+  // Disciplinas
   DISCIPLINE_VIEW: "discipline.view",
   DISCIPLINE_CREATE: "discipline.create",
   DISCIPLINE_EDIT: "discipline.edit",
   DISCIPLINE_DELETE: "discipline.delete",
 
-  // SALONES
+  // Instructores
+  INSTRUCTOR_VIEW: "instructor.view",
+  INSTRUCTOR_CREATE: "instructor.create",
+  INSTRUCTOR_EDIT: "instructor.edit",
+  INSTRUCTOR_DELETE: "instructor.delete",
+  INSTRUCTOR_VIEW_DETAILS: "instructor.view_details",
+
+  // Salones
   SALON_VIEW: "salon.view",
   SALON_CREATE: "salon.create",
   SALON_EDIT: "salon.edit",
   SALON_DELETE: "salon.delete",
 
-  // CLASES
+  // Clases
   CLASE_VIEW: "clase.view",
   CLASE_CREATE: "clase.create",
   CLASE_EDIT: "clase.edit",
   CLASE_DELETE: "clase.delete",
 
-  // INSCRIPCIONES A CLASES
+  // Inscripciones a Clases
   INSCRIPCION_CLASE_VIEW: "inscripcion_clase.view",
   INSCRIPCION_CLASE_CREATE: "inscripcion_clase.create",
   INSCRIPCION_CLASE_EDIT: "inscripcion_clase.edit",
   INSCRIPCION_CLASE_DELETE: "inscripcion_clase.delete",
 
-  // AUDITORÍA
+  // Auditoría
   AUDIT_VIEW: "audit.view",
   AUDIT_VIEW_DETAILS: "audit.view_details",
   AUDIT_EXPORT: "audit.export",
 
-  // REPORTES
+  // Reportes
   REPORT_VIEW: "report.view",
   REPORT_GENERATE: "report.generate",
   REPORT_EXPORT: "report.export",
 } as const;
 
-// Tipo para autocompletado de permisos
 export type PermissionCode =
   (typeof PermissionCodes)[keyof typeof PermissionCodes];
-
-// ==========================================
-// MAPEO DE RUTAS A PERMISOS
-// ==========================================
-
-export const RoutePermissions: Record<string, PermissionCode[]> = {
-  // Dashboard principal
-  "/dashboard": [PermissionCodes.DASHBOARD_VIEW],
-
-  // Usuarios
-  "/dashboard/users": [PermissionCodes.USER_VIEW],
-  "/dashboard/users/create": [PermissionCodes.USER_CREATE],
-  "/dashboard/users/[id]": [PermissionCodes.USER_VIEW_DETAILS],
-  "/dashboard/users/[id]/edit": [PermissionCodes.USER_EDIT],
-
-  // Roles
-  "/dashboard/roles": [PermissionCodes.ROLE_VIEW],
-  "/dashboard/roles/create": [PermissionCodes.ROLE_CREATE],
-  "/dashboard/roles/[id]": [PermissionCodes.ROLE_VIEW],
-  "/dashboard/roles/[id]/edit": [PermissionCodes.ROLE_EDIT],
-
-  // Clientes
-  "/dashboard/clients": [PermissionCodes.CLIENT_VIEW],
-  "/dashboard/clients/create": [PermissionCodes.CLIENT_CREATE],
-  "/dashboard/clients/[id]": [PermissionCodes.CLIENT_VIEW_DETAILS],
-  "/dashboard/clients/[id]/edit": [PermissionCodes.CLIENT_EDIT],
-
-  // Membresías
-  "/dashboard/memberships": [PermissionCodes.MEMBERSHIP_VIEW],
-  "/dashboard/memberships/create": [PermissionCodes.MEMBERSHIP_CREATE],
-  "/dashboard/memberships/[id]": [PermissionCodes.MEMBERSHIP_VIEW_DETAILS],
-  "/dashboard/memberships/[id]/edit": [PermissionCodes.MEMBERSHIP_EDIT],
-
-  // Promociones
-  "/dashboard/promotions": [PermissionCodes.PROMOTION_VIEW],
-  "/dashboard/promotions/create": [PermissionCodes.PROMOTION_CREATE],
-  "/dashboard/promotions/[id]": [PermissionCodes.PROMOTION_VIEW_DETAILS],
-  "/dashboard/promotions/[id]/edit": [PermissionCodes.PROMOTION_EDIT],
-
-  // Disciplinas
-  "/dashboard/disciplinas": [PermissionCodes.DISCIPLINE_VIEW],
-
-  // Clases
-  "/dashboard/clases": [PermissionCodes.CLASE_VIEW],
-
-  // Auditoría
-  "/dashboard/audit": [PermissionCodes.AUDIT_VIEW],
-  "/dashboard/audit/[id]": [PermissionCodes.AUDIT_VIEW_DETAILS],
-};
-
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
 
 /**
  * Verifica si el usuario tiene un permiso específico
  */
-export function hasPermission(
+export const hasPermission = (
   userPermissions: string[],
-  requiredPermission: PermissionCode,
+  permission: PermissionCode,
   isSuperuser: boolean = false
-): boolean {
-  // El superusuario siempre tiene todos los permisos
+): boolean => {
   if (isSuperuser) return true;
-
-  // Verificar si el usuario tiene el permiso
-  return userPermissions.includes(requiredPermission);
-}
+  return userPermissions.includes(permission);
+};
 
 /**
- * Verifica si el usuario tiene AL MENOS UNO de los permisos especificados
+ * Verifica si el usuario tiene al menos uno de los permisos especificados
  */
-export function hasAnyPermission(
+export const hasAnyPermission = (
   userPermissions: string[],
-  requiredPermissions: PermissionCode[],
+  permissions: PermissionCode[],
   isSuperuser: boolean = false
-): boolean {
+): boolean => {
   if (isSuperuser) return true;
-  return requiredPermissions.some((perm) => userPermissions.includes(perm));
-}
+  return permissions.some((permission) =>
+    userPermissions.includes(permission)
+  );
+};
 
 /**
- * Verifica si el usuario tiene TODOS los permisos especificados
+ * Verifica si el usuario tiene todos los permisos especificados
  */
-export function hasAllPermissions(
+export const hasAllPermissions = (
   userPermissions: string[],
-  requiredPermissions: PermissionCode[],
+  permissions: PermissionCode[],
   isSuperuser: boolean = false
-): boolean {
+): boolean => {
   if (isSuperuser) return true;
-  return requiredPermissions.every((perm) => userPermissions.includes(perm));
-}
+  return permissions.every((permission) =>
+    userPermissions.includes(permission)
+  );
+};
+
+/**
+ * Mapeo de rutas a permisos requeridos
+ */
+const routePermissions: Record<string, PermissionCode[]> = {
+  "/dashboard": [PermissionCodes.DASHBOARD_VIEW],
+  "/dashboard/users": [PermissionCodes.USER_VIEW],
+  "/dashboard/roles": [PermissionCodes.ROLE_VIEW],
+  "/dashboard/clients": [PermissionCodes.CLIENT_VIEW],
+  "/dashboard/membresias": [PermissionCodes.MEMBERSHIP_VIEW],
+  "/dashboard/promociones": [PermissionCodes.PROMOTION_VIEW],
+  "/dashboard/disciplinas": [PermissionCodes.DISCIPLINE_VIEW],
+  "/dashboard/instructores": [PermissionCodes.INSTRUCTOR_VIEW],
+  "/dashboard/clases": [PermissionCodes.CLASE_VIEW],
+  "/dashboard/inscripciones": [PermissionCodes.INSCRIPCION_CLASE_VIEW],
+  "/dashboard/audit": [PermissionCodes.AUDIT_VIEW],
+};
 
 /**
  * Verifica si el usuario puede acceder a una ruta específica
  */
-export function canAccessRoute(
+export const canAccessRoute = (
   route: string,
   userPermissions: string[],
   isSuperuser: boolean = false
-): boolean {
+): boolean => {
   if (isSuperuser) return true;
 
-  const requiredPermissions = RoutePermissions[route];
-  if (!requiredPermissions) {
-    // Si no hay permisos definidos para la ruta, permitir acceso
-    return true;
-  }
+  const requiredPermissions = routePermissions[route];
+  if (!requiredPermissions) return true; // Si no hay permisos definidos, permite acceso
 
-  // El usuario debe tener al menos uno de los permisos requeridos
   return hasAnyPermission(userPermissions, requiredPermissions, isSuperuser);
-}
-
-/**
- * Filtra las rutas del menú según los permisos del usuario
- */
-export function filterMenuByPermissions(
-  menuItems: Array<{ href: string; [key: string]: any }>,
-  userPermissions: string[],
-  isSuperuser: boolean = false
-): Array<{ href: string; [key: string]: any }> {
-  if (isSuperuser) return menuItems;
-
-  return menuItems.filter((item) =>
-    canAccessRoute(item.href, userPermissions, isSuperuser)
-  );
-}
+};

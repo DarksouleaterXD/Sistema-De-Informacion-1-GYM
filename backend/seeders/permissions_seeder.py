@@ -259,6 +259,33 @@ class PermissionSeeder:
             'descripcion': 'Eliminar disciplinas'
         },
         
+        # INSTRUCTORES
+        {
+            'codigo': PermissionCodes.INSTRUCTOR_VIEW,
+            'nombre': 'Ver Instructores',
+            'descripcion': 'Ver lista de instructores'
+        },
+        {
+            'codigo': PermissionCodes.INSTRUCTOR_CREATE,
+            'nombre': 'Crear Instructor',
+            'descripcion': 'Crear nuevos perfiles de instructor'
+        },
+        {
+            'codigo': PermissionCodes.INSTRUCTOR_EDIT,
+            'nombre': 'Editar Instructor',
+            'descripcion': 'Editar información de instructores'
+        },
+        {
+            'codigo': PermissionCodes.INSTRUCTOR_DELETE,
+            'nombre': 'Eliminar Instructor',
+            'descripcion': 'Eliminar o desactivar instructores'
+        },
+        {
+            'codigo': PermissionCodes.INSTRUCTOR_VIEW_DETAILS,
+            'nombre': 'Ver Detalles de Instructor',
+            'descripcion': 'Ver información detallada de un instructor'
+        },
+        
         # SALONES
         {
             'codigo': PermissionCodes.SALON_VIEW,

@@ -10,6 +10,7 @@ from .plan_membresia_seeder import PlanMembresiaSeeder
 from .promocion_seeder import PromocionSeeder
 from .disciplinas_seeder import DisciplinasSeeder
 from .salones_clases_seeder import SalonSeeder, ClaseSeeder
+from .instructores_seeder import InstructorSeeder
 
 
 class RolesDefaultSeederWrapper:
@@ -36,6 +37,7 @@ def run_all_seeders():
         PermissionSeeder(),  # 🔥 PRIMERO: Crear permisos
         RolesDefaultSeederWrapper(),  # LUEGO: Crear roles y asignar permisos
         UsersSeeder(),
+        InstructorSeeder(),  # 🔥 NUEVO: Crear instructores
         ClientsSeeder(),
         PlanMembresiaSeeder(),
         PromocionSeeder(),

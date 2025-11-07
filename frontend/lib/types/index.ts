@@ -16,6 +16,21 @@ export interface User {
   permissions?: string[]; // Lista de códigos de permisos
 }
 
+// Instructor (Usuario con rol de Instructor)
+export interface Instructor {
+  id: number;
+  usuario: number | User;
+  usuario_info?: User; // Información del usuario relacionado
+  especialidades: string[]; // Lista de especialidades (disciplinas)
+  certificaciones?: string; // Certificaciones del instructor
+  biografia?: string; // Biografía breve
+  foto_perfil?: string; // URL de la foto
+  activo: boolean;
+  fecha_ingreso: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Cliente
 export interface Client {
   id: number;
