@@ -136,6 +136,9 @@ export const RoutePermissions: Record<string, PermissionCode[]> = {
   "/dashboard/memberships/[id]": [PermissionCodes.MEMBERSHIP_VIEW_DETAILS],
   "/dashboard/memberships/[id]/edit": [PermissionCodes.MEMBERSHIP_EDIT],
 
+  // Planes de Membresía
+  "/dashboard/planes-membresia": [PermissionCodes.PLAN_VIEW],
+
   // Promociones
   "/dashboard/promotions": [PermissionCodes.PROMOTION_VIEW],
   "/dashboard/promotions/create": [PermissionCodes.PROMOTION_CREATE],

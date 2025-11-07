@@ -156,10 +156,14 @@ class MembresiaService {
   }
 
   /**
-   * Obtener todos los planes de membresía
+   * Obtener todos los planes de membresía (sin paginación para dropdowns)
    */
   async getPlanes(): Promise<PlanMembresia[]> {
-    return httpClient.get<PlanMembresia[]>("/api/planes-membresia/");
+    const response = await httpClient.get<{
+      count: number;
+      results: PlanMembresia[];
+    }>("/api/planes-membresia/");
+    return response.results || [];
   }
 
   /**
