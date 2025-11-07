@@ -18,6 +18,8 @@ import {
   UserCircle,
   Dumbbell,
   GraduationCap,
+  Calendar,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -32,6 +34,8 @@ const navItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Clientes", href: "/dashboard/clients", icon: UserCircle },
   { name: "Instructores", href: "/dashboard/instructores", icon: GraduationCap },
+  { name: "Disciplinas", href: "/dashboard/disciplinas", icon: Activity },
+  { name: "Clases", href: "/dashboard/clases", icon: Calendar },
   { name: "Membresías", href: "/dashboard/membresias", icon: CreditCard },
   { name: "Usuarios", href: "/dashboard/users", icon: Users },
   { name: "Roles", href: "/dashboard/roles", icon: Shield },

@@ -26,6 +26,25 @@ class InstructorSeeder(BaseSeeder):
             }
         )
         
+        # Verificar si el usuario instructor@gym-spartan.com necesita perfil
+        try:
+            instructor_user = User.objects.filter(email="instructor@gym-spartan.com").first()
+            if instructor_user and not hasattr(instructor_user, 'perfil_instructor'):
+                Instructor.objects.create(
+                    usuario=instructor_user,
+                    especialidades="Entrenamiento General, Fitness",
+                    certificaciones="Personal Trainer Certification",
+                    experiencia_anos=2,
+                    telefono="70000000",
+                    biografia="Instructor general del gimnasio.",
+                    foto_url="https://i.pravatar.cc/300?img=60",
+                    fecha_ingreso=date(2023, 1, 1),
+                    activo=True
+                )
+                print(f"   ✅ Perfil de instructor creado para: instructor@gym-spartan.com")
+        except Exception as e:
+            print(f"   ⚠️  No se pudo crear perfil para instructor@gym-spartan.com: {e}")
+        
         # Datos de instructores de prueba
         instructores_data = [
             {

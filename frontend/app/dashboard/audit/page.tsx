@@ -27,13 +27,19 @@ interface AuditLog {
     username: string;
     email: string;
   } | null;
+  usuario_nombre: string;
+  usuario_email: string | null;
+  usuario_completo: string;
   tipo_accion: string;
+  tipo_accion_display: string;
   accion: string;
   descripcion: string;
   nivel: string;
+  nivel_display: string;
   ip_address: string;
   user_agent: string;
   fecha_hora: string;
+  fecha_formateada: string;
   datos_adicionales: any;
 }
 
@@ -252,10 +258,10 @@ function AuditPageContent() {
                           <User className="h-5 w-5 text-gray-400 mr-2" />
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {log.usuario?.username || "Sistema"}
+                              {log.usuario_completo}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {log.usuario?.email || "-"}
+                              {log.usuario_email || "-"}
                             </div>
                           </div>
                         </div>
