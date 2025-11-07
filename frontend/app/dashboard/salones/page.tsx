@@ -123,7 +123,7 @@ function CreateEditModal({ isOpen, salon, onClose, onSuccess }: CreateEditModalP
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-4 rounded-t-lg">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 rounded-t-lg">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +167,7 @@ function CreateEditModal({ isOpen, salon, onClose, onSuccess }: CreateEditModalP
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 placeholder="Ej: Sala A, Sala Spinning, Sala Yoga"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 required
                 disabled={loading}
               />
@@ -184,7 +184,7 @@ function CreateEditModal({ isOpen, salon, onClose, onSuccess }: CreateEditModalP
                 value={formData.capacidad || ""}
                 onChange={(e) => setFormData({ ...formData, capacidad: parseInt(e.target.value) || 0 })}
                 placeholder="Número máximo de personas"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 required
                 disabled={loading}
               />
@@ -203,7 +203,7 @@ function CreateEditModal({ isOpen, salon, onClose, onSuccess }: CreateEditModalP
                 onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                 rows={3}
                 placeholder="Información adicional del salón..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                 disabled={loading}
               />
             </div>
@@ -215,7 +215,7 @@ function CreateEditModal({ isOpen, salon, onClose, onSuccess }: CreateEditModalP
                 id="activo"
                 checked={formData.activo}
                 onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 disabled={loading}
               />
               <label htmlFor="activo" className="ml-2 text-sm text-gray-700">
@@ -237,7 +237,7 @@ function CreateEditModal({ isOpen, salon, onClose, onSuccess }: CreateEditModalP
             <Button
               type="submit"
               disabled={loading}
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-blue-600 hover:bg-blue-700"
             >
               {loading ? (
                 <>
@@ -446,7 +446,7 @@ function SalonesPageContent() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar por nombre..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <Button type="submit" variant="outline">
                   Buscar
@@ -465,7 +465,7 @@ function SalonesPageContent() {
                   setActivoFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Todos</option>
                 <option value="true">Activos</option>
@@ -476,7 +476,7 @@ function SalonesPageContent() {
             {/* Botón Crear */}
             <Button
               onClick={handleCreate}
-              className="bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap"
+              className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -490,7 +490,7 @@ function SalonesPageContent() {
         <Card>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
               <p className="text-gray-600">Cargando salones...</p>
             </div>
           ) : error ? (
@@ -543,8 +543,8 @@ function SalonesPageContent() {
                       <tr key={salon.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-purple-100 rounded-lg">
-                              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-lg">
+                              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                               </svg>
                             </div>

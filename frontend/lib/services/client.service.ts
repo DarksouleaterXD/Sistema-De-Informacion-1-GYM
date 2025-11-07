@@ -30,6 +30,7 @@ class ClientService {
     search?: string;
     page?: number;
     page_size?: number;
+    con_membresia_activa?: boolean;
   }): Promise<ClientListResponse> {
     const queryParams = new URLSearchParams();
 
@@ -37,6 +38,8 @@ class ClientService {
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.page_size)
       queryParams.append("page_size", params.page_size.toString());
+    if (params?.con_membresia_activa)
+      queryParams.append("con_membresia_activa", "true");
 
     const url = `${API_ENDPOINTS.CLIENTS.BASE}${
       queryParams.toString() ? "?" + queryParams.toString() : ""
@@ -93,15 +96,17 @@ class ClientService {
   }
 
   /**
-   * Obtener clientes con membresía activa
+   * Obtener clientes con membresía activa (para inscripciones)
    */
-  async getClientesActivos(): Promise<Client[]> {
+  async getClientesConMembresia(): Promise<Client[]> {
     try {
-      const allClients = await this.getClients();
-      // El filtro de membresía activa se puede hacer en backend si hay endpoint
-      return allClients;
+      const response = await this.getAll({ 
+        page_size: 1000,
+        con_membresia_activa: true 
+      });
+      return response.results || [];
     } catch (error) {
-      console.error('Error obteniendo clientes activos:', error);
+      console.error('Error obteniendo clientes con membresía:', error);
       return [];
     }
   }

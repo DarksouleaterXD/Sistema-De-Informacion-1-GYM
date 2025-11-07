@@ -57,7 +57,7 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
 
       const [clasesData, clientesData] = await Promise.all([
         claseService.getClasesDisponibles({ estado: "programada" }),
-        clientService.getClients(),
+        clientService.getClientesConMembresia(), // Solo clientes con membresía activa
       ]);
 
       setClases(clasesData);
@@ -65,6 +65,10 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
 
       if (clasesData.length === 0) {
         setError("No hay clases disponibles con cupos libres");
+      }
+      
+      if (clientesData.length === 0) {
+        setError("No hay clientes con membresía activa para inscribir");
       }
     } catch (err: any) {
       console.error("Error cargando datos:", err);
@@ -190,7 +194,7 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
                   <select
                     value={formData.clase}
                     onChange={(e) => setFormData({ ...formData, clase: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                     required
                     disabled={loading || clases.length === 0}
                   >
@@ -217,7 +221,7 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
                   <select
                     value={formData.cliente}
                     onChange={(e) => setFormData({ ...formData, cliente: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                     required
                     disabled={loading}
                   >
@@ -242,7 +246,7 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
                     value={formData.observaciones}
                     onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                     placeholder="Notas adicionales..."
                     disabled={loading}
                   />
