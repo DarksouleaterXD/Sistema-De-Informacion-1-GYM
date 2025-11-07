@@ -176,3 +176,51 @@ export const updateInscripcion = async (
 export const deleteInscripcion = async (id: number): Promise<void> => {
   await httpClient.delete(`/api/inscripciones-clase/${id}/`);
 };
+
+// Helper para obtener clases con filtros opcionales
+export const getClasesDisponibles = async (filtros?: {
+  estado?: string;
+  fecha?: string;
+  disciplina?: number;
+  instructor?: number;
+}): Promise<Clase[]> => {
+  const params = new URLSearchParams();
+
+  if (filtros?.estado) params.append('estado', filtros.estado);
+  if (filtros?.fecha) params.append('fecha', filtros.fecha);
+  if (filtros?.disciplina) params.append('disciplina', filtros.disciplina.toString());
+  if (filtros?.instructor) params.append('instructor', filtros.instructor.toString());
+
+  const queryString = params.toString();
+  const url = queryString ? `/api/clases/?${queryString}` : '/api/clases/';
+  
+  const response = await httpClient.get<PaginatedResponse<Clase> | Clase[]>(url);
+  
+  // Si es paginado, retornar los resultados, sino retornar el array completo
+  if (response && typeof response === 'object' && 'results' in response) {
+    return response.results;
+  }
+  
+  return Array.isArray(response) ? response : [];
+};
+
+const claseService = {
+  getSalones,
+  getSalonById,
+  createSalon,
+  updateSalon,
+  deleteSalon,
+  getClases,
+  getClasesDisponibles,
+  getClaseById,
+  createClase,
+  updateClase,
+  deleteClase,
+  getInscripciones,
+  getInscripcionById,
+  createInscripcion,
+  updateInscripcion,
+  deleteInscripcion,
+};
+
+export default claseService;

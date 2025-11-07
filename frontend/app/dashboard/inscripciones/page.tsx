@@ -46,22 +46,27 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
 
   const loadData = async () => {
     setLoadingData(true);
+    setError("");
     try {
       const [clasesData, clientesData] = await Promise.all([
-        claseService.getClases({ estado: "programada" }),
+        claseService.getClasesDisponibles({ estado: "programada" }),
         clientService.getClients(),
       ]);
       
-      // Filtrar solo clases futuras o de hoy con cupos disponibles
+      // Filtrar solo clases con cupos disponibles
       const clasesDisponibles = clasesData.filter(
-        (clase) => clase.cupos_disponibles > 0
+        (clase) => clase.cupos_disponibles && clase.cupos_disponibles > 0
       );
       
       setClases(clasesDisponibles);
       setClientes(clientesData);
-    } catch (err) {
+      
+      if (clasesDisponibles.length === 0) {
+        setError("No hay clases programadas con cupos disponibles");
+      }
+    } catch (err: any) {
       console.error("Error cargando datos:", err);
-      setError("Error al cargar clases y clientes");
+      setError(err?.message || "Error al cargar clases y clientes. Por favor, verifica que el backend esté funcionando.");
     } finally {
       setLoadingData(false);
     }

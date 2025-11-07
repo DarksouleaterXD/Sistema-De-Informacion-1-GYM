@@ -78,6 +78,19 @@ class ClientService {
   async delete(id: number): Promise<void> {
     return httpClient.delete<void>(API_ENDPOINTS.CLIENTS.DETAIL(id));
   }
+
+  /**
+   * Obtener todos los clientes (sin paginación) para selects
+   */
+  async getClients(): Promise<Client[]> {
+    try {
+      const response = await this.getAll({ page_size: 1000 });
+      return response.results || [];
+    } catch (error) {
+      console.error('Error obteniendo clientes:', error);
+      return [];
+    }
+  }
 }
 
 export const clientService = new ClientService();
