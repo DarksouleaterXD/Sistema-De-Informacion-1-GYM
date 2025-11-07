@@ -90,6 +90,9 @@ urlpatterns = [
     path("api/disciplinas/", DisciplinaListCreateView.as_view(), name="disciplina-list-create"),
     path("api/disciplinas/<int:pk>/", DisciplinaDetailView.as_view(), name="disciplina-detail"),
     
+    # Gestionar Instructores CRUD
+    path("api/instructores/", include('apps.instructores.urls')),
+    
     # CU20: Programar Clase - Salones
     path("api/salones/", SalonListCreateView.as_view(), name="salon-list-create"),
     path("api/salones/<int:pk>/", SalonDetailView.as_view(), name="salon-detail"),

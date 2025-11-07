@@ -36,7 +36,7 @@ function ClientsPageContent() {
     email: "",
     peso: "",
     altura: "",
-    experiencia: "PRINCIPIANTE",
+    experiencia: "principiante",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -79,7 +79,7 @@ function ClientsPageContent() {
       email: "",
       peso: "",
       altura: "",
-      experiencia: "PRINCIPIANTE",
+      experiencia: "principiante",
     });
     setFormErrors({});
     setSelectedClient(null);
@@ -96,7 +96,7 @@ function ClientsPageContent() {
       email: client.email || "",
       peso: client.peso || "",
       altura: client.altura || "",
-      experiencia: client.experiencia || "PRINCIPIANTE",
+      experiencia: client.experiencia || "principiante",
     });
     setFormErrors({});
   };
@@ -112,7 +112,7 @@ function ClientsPageContent() {
       email: "",
       peso: "",
       altura: "",
-      experiencia: "PRINCIPIANTE",
+      experiencia: "principiante",
     });
     setFormErrors({});
   };
@@ -481,9 +481,9 @@ function ClientsPageContent() {
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
                   >
-                    <option value="PRINCIPIANTE">Principiante</option>
-                    <option value="INTERMEDIO">Intermedio</option>
-                    <option value="AVANZADO">Avanzado</option>
+                    <option value="principiante">Principiante</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
                   </select>
                 </div>
               </div>

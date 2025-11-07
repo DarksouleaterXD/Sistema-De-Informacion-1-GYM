@@ -1,5 +1,5 @@
 /**
- * Componente Sidebar - Navegación lateral responsiva con RBAC
+ * Componente Sidebar - Navegación lateral responsiva
  */
 
 "use client";
@@ -17,20 +17,19 @@ import {
   X,
   UserCircle,
   Dumbbell,
-  ClipboardList,
+  GraduationCap,
   Calendar,
+  Activity,
   ScrollText,
   Building2,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { PermissionCodes, PermissionCode } from "@/lib/utils/permissions";
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  requiredPermission?: PermissionCode; // Permiso requerido para mostrar el item
 }
 
 const navItems: NavItem[] = [
@@ -106,27 +105,13 @@ const navItems: NavItem[] = [
     icon: ScrollText,
     requiredPermission: PermissionCodes.AUDIT_VIEW,
   },
+   { name: "Instructores", href: "/dashboard/instructores", icon: GraduationCap },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, hasPermission, isSuperuser } = useAuth();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-
-  // Filtrar items del menú por permisos
-  const visibleNavItems = useMemo(() => {
-    // Superusers ven todo
-    if (isSuperuser) return navItems;
-
-    // Filtrar por permisos
-    return navItems.filter((item) => {
-      // Si no requiere permiso, mostrar siempre
-      if (!item.requiredPermission) return true;
-
-      // Verificar si el usuario tiene el permiso
-      return hasPermission(item.requiredPermission);
-    });
-  }, [hasPermission, isSuperuser]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -201,7 +186,7 @@ export default function Sidebar() {
         {/* Navegación */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-3">
-            {visibleNavItems.map((item, index) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               // Validación exacta: solo activo si la ruta coincide exactamente
               // o si es una subruta directa (pero no para /dashboard en /dashboard/clients)

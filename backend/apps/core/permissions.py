@@ -80,6 +80,13 @@ class PermissionCodes:
     DISCIPLINE_EDIT = "discipline.edit"
     DISCIPLINE_DELETE = "discipline.delete"
     
+    # ===== INSTRUCTORES =====
+    INSTRUCTOR_VIEW = "instructor.view"
+    INSTRUCTOR_CREATE = "instructor.create"
+    INSTRUCTOR_EDIT = "instructor.edit"
+    INSTRUCTOR_DELETE = "instructor.delete"
+    INSTRUCTOR_VIEW_DETAILS = "instructor.view_details"
+    
     # ===== SALONES =====
     SALON_VIEW = "salon.view"
     SALON_CREATE = "salon.create"

@@ -48,7 +48,16 @@ export class HttpClient {
       try {
         const data = await response.json();
         error.message = data.message || data.detail || "Error en la petición";
-        error.errors = data.errors;
+        error.errors = data.errors || data; // 🔥 Capturar todos los errores del backend
+
+        // 🔥 Log detallado para debugging
+        console.error("❌ Error de API:", {
+          status: response.status,
+          url: response.url,
+          message: error.message,
+          errors: error.errors,
+          fullResponse: data,
+        });
       } catch {
         error.message = `Error ${response.status}: ${response.statusText}`;
       }
