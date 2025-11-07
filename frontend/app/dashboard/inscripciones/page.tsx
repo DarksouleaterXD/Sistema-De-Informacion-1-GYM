@@ -77,7 +77,8 @@ function InscribirModal({ isOpen, onClose, onSuccess }: InscribirModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.clase || !formData.cliente) {
+    // Validación estricta: debe ser mayor a 0
+    if (!formData.clase || formData.clase === 0 || !formData.cliente || formData.cliente === 0) {
       setError("Debe seleccionar una clase y un cliente");
       return;
     }
