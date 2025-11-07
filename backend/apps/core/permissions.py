@@ -105,6 +105,13 @@ class PermissionCodes:
     INSCRIPCION_CLASE_EDIT = "inscripcion_clase.edit"
     INSCRIPCION_CLASE_DELETE = "inscripcion_clase.delete"
     
+    # ===== ASISTENCIAS A CLASES =====
+    ASISTENCIA_VIEW = "asistencia.view"
+    ASISTENCIA_CREATE = "asistencia.create"
+    ASISTENCIA_EDIT = "asistencia.edit"
+    ASISTENCIA_DELETE = "asistencia.delete"
+    ASISTENCIA_VIEW_DETAILS = "asistencia.view_details"
+    
     # ===== AUDITORÍA =====
     AUDIT_VIEW = "audit.view"
     AUDIT_VIEW_DETAILS = "audit.view_details"
@@ -164,6 +171,13 @@ class PermissionGroups:
         PermissionCodes.PROMOTION_DELETE,
         PermissionCodes.PROMOTION_VIEW_DETAILS,
         
+        # Asistencias - Control completo
+        PermissionCodes.ASISTENCIA_VIEW,
+        PermissionCodes.ASISTENCIA_CREATE,
+        PermissionCodes.ASISTENCIA_EDIT,
+        PermissionCodes.ASISTENCIA_DELETE,
+        PermissionCodes.ASISTENCIA_VIEW_DETAILS,
+        
         # Auditoría solo ver
         PermissionCodes.AUDIT_VIEW,
         PermissionCodes.AUDIT_VIEW_DETAILS,
@@ -204,6 +218,13 @@ class PermissionGroups:
         PermissionCodes.INSCRIPCION_CLASE_CREATE,
         PermissionCodes.INSCRIPCION_CLASE_EDIT,
         PermissionCodes.INSCRIPCION_CLASE_DELETE,
+        
+        # Asistencias - Control completo (CU22: Controlar asistencia a clase)
+        PermissionCodes.ASISTENCIA_VIEW,
+        PermissionCodes.ASISTENCIA_CREATE,
+        PermissionCodes.ASISTENCIA_EDIT,
+        PermissionCodes.ASISTENCIA_DELETE,
+        PermissionCodes.ASISTENCIA_VIEW_DETAILS,
     ]
     
     # Alias para compatibilidad

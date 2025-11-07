@@ -93,6 +93,13 @@ export const PermissionCodes = {
   INSCRIPCION_CLASE_EDIT: "inscripcion_clase.edit",
   INSCRIPCION_CLASE_DELETE: "inscripcion_clase.delete",
 
+  // Asistencias a Clases
+  ASISTENCIA_VIEW: "asistencia.view",
+  ASISTENCIA_CREATE: "asistencia.create",
+  ASISTENCIA_EDIT: "asistencia.edit",
+  ASISTENCIA_DELETE: "asistencia.delete",
+  ASISTENCIA_VIEW_DETAILS: "asistencia.view_details",
+
   // Auditoría
   AUDIT_VIEW: "audit.view",
   AUDIT_VIEW_DETAILS: "audit.view_details",

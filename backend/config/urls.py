@@ -21,6 +21,12 @@ from apps.clases.views import (
     ClaseListCreateView, ClaseDetailView,
     InscripcionClaseListCreateView, InscripcionClaseDetailView
 )
+from rest_framework.routers import DefaultRouter
+from apps.asistencias.views import AsistenciaClaseViewSet
+
+# Router para ViewSets
+router = DefaultRouter()
+router.register(r'asistencias', AsistenciaClaseViewSet, basename='asistencia')
 
 urlpatterns = [
     # Django Admin
@@ -104,5 +110,8 @@ urlpatterns = [
     # Inscripciones a Clases
     path("api/inscripciones-clase/", InscripcionClaseListCreateView.as_view(), name="inscripcion-clase-list-create"),
     path("api/inscripciones-clase/<int:pk>/", InscripcionClaseDetailView.as_view(), name="inscripcion-clase-detail"),
+    
+    # CU22: Control de Asistencias a Clases
+    path("api/", include(router.urls)),
     
 ]

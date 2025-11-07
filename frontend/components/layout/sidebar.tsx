@@ -86,6 +86,12 @@ const navItems: NavItem[] = [
     requiredPermission: PermissionCodes.ENROLLMENT_VIEW,
   },
   {
+    name: "Asistencias",
+    href: "/dashboard/asistencias",
+    icon: Activity,
+    requiredPermission: PermissionCodes.ASISTENCIA_VIEW,
+  },
+  {
     name: "Promociones",
     href: "/dashboard/promociones",
     icon: Tag,
