@@ -20,12 +20,12 @@ def run_all_seeders():
     
     seeders = [
         SuperUserSeeder(),
-        RolesSeeder(),
+        PermissionSeeder(),  # 🔥 PRIMERO: Crear permisos
+        RolesSeeder(),       # LUEGO: Crear roles y asignar permisos
         UsersSeeder(),
         ClientsSeeder(),
         PlanMembresiaSeeder(),
         PromocionSeeder(),
-        PermissionSeeder(),
     ]
     
     success_count = 0
