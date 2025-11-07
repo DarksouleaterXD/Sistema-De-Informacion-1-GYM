@@ -1,128 +1,185 @@
 /**
- * Servicio para gestión de inscripciones a clases
  * CU21: Inscribir Cliente a Clase
+ * Servicio para gestionar inscripciones de clientes a clases programadas
+ * 
+ * Funcionalidades:
+ * - Listar inscripciones con filtros
+ * - Crear nueva inscripción (con validaciones)
+ * - Actualizar estado de inscripción
+ * - Eliminar inscripción
  */
 
-import { httpClient } from "../config/http-client";
+import { httpClient } from '@/lib/config/http-client';
+import { API_ENDPOINTS } from '@/lib/config/api';
+
+// ==================== INTERFACES ====================
 
 export interface InscripcionClase {
   id: number;
   clase: number;
-  clase_info: string;
-  disciplina_nombre: string;
-  instructor_nombre: string;
-  fecha_clase: string;
-  hora_clase: string;
+  clase_info?: string;
+  disciplina_nombre?: string;
+  fecha_clase?: string;
+  hora_inicio?: string;
+  hora_fin?: string;
+  cupos_disponibles?: number;
   cliente: number;
-  cliente_nombre: string;
-  cliente_ci: string;
-  estado: string;
-  estado_display: string;
+  cliente_nombre?: string;
+  cliente_ci?: string;
+  estado: 'confirmada' | 'cancelada' | 'asistio' | 'no_asistio';
+  estado_display?: string;
   fecha_inscripcion: string;
   observaciones?: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export interface InscripcionClaseList {
-  id: number;
-  cliente_nombre: string;
-  cliente_ci: string;
-  disciplina: string;
-  fecha_clase: string;
-  hora_inicio: string;
-  instructor: string;
-  estado: string;
-  estado_display: string;
-  fecha_inscripcion: string;
-}
-
-export interface CreateInscripcionClaseData {
+export interface CreateInscripcionDTO {
   clase: number;
   cliente: number;
   observaciones?: string;
 }
 
-export interface UpdateInscripcionClaseData {
-  estado?: string;
+export interface UpdateInscripcionDTO {
+  estado?: 'confirmada' | 'cancelada' | 'asistio' | 'no_asistio';
   observaciones?: string;
 }
 
-/**
- * Obtener todas las inscripciones a clases con filtros opcionales
- */
-export const getInscripcionesClase = async (params?: {
+export interface InscripcionListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: InscripcionClase[];
+}
+
+export interface InscripcionFilters {
   clase?: number;
   cliente?: number;
   estado?: string;
-}): Promise<InscripcionClase[]> => {
-  let url = "/api/inscripciones-clase/";
-  
-  if (params) {
-    const searchParams = new URLSearchParams();
-    if (params.clase) searchParams.append("clase", params.clase.toString());
-    if (params.cliente) searchParams.append("cliente", params.cliente.toString());
-    if (params.estado) searchParams.append("estado", params.estado);
-    
-    const queryString = searchParams.toString();
-    if (queryString) {
-      url += `?${queryString}`;
+  fecha_desde?: string;
+  fecha_hasta?: string;
+  search?: string;
+  page?: number;
+  page_size?: number;
+}
+
+// ==================== SERVICE CLASS ====================
+
+class InscripcionClaseService {
+  private readonly baseUrl = '/api/inscripciones-clase/';
+
+  /**
+   * Obtener lista de inscripciones con filtros y paginación
+   */
+  async getAll(filters?: InscripcionFilters): Promise<InscripcionListResponse> {
+    const params = new URLSearchParams();
+
+    if (filters?.clase) params.append('clase', filters.clase.toString());
+    if (filters?.cliente) params.append('cliente', filters.cliente.toString());
+    if (filters?.estado) params.append('estado', filters.estado);
+    if (filters?.fecha_desde) params.append('fecha_desde', filters.fecha_desde);
+    if (filters?.fecha_hasta) params.append('fecha_hasta', filters.fecha_hasta);
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.page_size) params.append('page_size', filters.page_size.toString());
+
+    const url = `${this.baseUrl}${params.toString() ? '?' + params.toString() : ''}`;
+    return httpClient.get<InscripcionListResponse>(url);
+  }
+
+  /**
+   * Obtener una inscripción por ID
+   */
+  async getById(id: number): Promise<InscripcionClase> {
+    return httpClient.get<InscripcionClase>(`${this.baseUrl}${id}/`);
+  }
+
+  /**
+   * Crear nueva inscripción
+   * CU21: Validaciones en backend:
+   * - Cliente debe tener membresía activa
+   * - Clase debe tener cupos disponibles
+   * - Cliente no puede inscribirse dos veces a la misma clase
+   */
+  async create(data: CreateInscripcionDTO): Promise<InscripcionClase> {
+    return httpClient.post<InscripcionClase>(this.baseUrl, data);
+  }
+
+  /**
+   * Actualizar inscripción (cambiar estado, observaciones)
+   */
+  async update(id: number, data: UpdateInscripcionDTO): Promise<InscripcionClase> {
+    return httpClient.patch<InscripcionClase>(`${this.baseUrl}${id}/`, data);
+  }
+
+  /**
+   * Eliminar inscripción
+   */
+  async delete(id: number): Promise<void> {
+    return httpClient.delete<void>(`${this.baseUrl}${id}/`);
+  }
+
+  /**
+   * Marcar asistencia de un cliente a una clase
+   */
+  async marcarAsistencia(id: number, asistio: boolean): Promise<InscripcionClase> {
+    return this.update(id, {
+      estado: asistio ? 'asistio' : 'no_asistio'
+    });
+  }
+
+  /**
+   * Cancelar inscripción
+   */
+  async cancelar(id: number, observaciones?: string): Promise<InscripcionClase> {
+    return this.update(id, {
+      estado: 'cancelada',
+      observaciones
+    });
+  }
+
+  /**
+   * Obtener inscripciones de un cliente específico
+   */
+  async getByCliente(clienteId: number): Promise<InscripcionClase[]> {
+    const response = await this.getAll({ 
+      cliente: clienteId,
+      page_size: 1000 
+    });
+    return response.results;
+  }
+
+  /**
+   * Obtener inscripciones de una clase específica
+   */
+  async getByClase(claseId: number): Promise<InscripcionClase[]> {
+    const response = await this.getAll({ 
+      clase: claseId,
+      page_size: 1000 
+    });
+    return response.results;
+  }
+
+  /**
+   * Verificar si un cliente está inscrito en una clase
+   */
+  async isClienteInscrito(claseId: number, clienteId: number): Promise<boolean> {
+    try {
+      const response = await this.getAll({ 
+        clase: claseId,
+        cliente: clienteId,
+        page_size: 1
+      });
+      return response.results.length > 0 && 
+             response.results[0].estado !== 'cancelada';
+    } catch (error) {
+      console.error('Error verificando inscripción:', error);
+      return false;
     }
   }
-  
-  return await httpClient.get<InscripcionClase[]>(url);
-};
+}
 
-/**
- * Obtener detalle de una inscripción
- */
-export const getInscripcionClaseById = async (
-  id: number
-): Promise<InscripcionClase> => {
-  return await httpClient.get<InscripcionClase>(
-    `/api/inscripciones-clase/${id}/`
-  );
-};
+// ==================== EXPORT ====================
 
-/**
- * Crear nueva inscripción a clase
- * Valida: cupo disponible y membresía activa
- */
-export const createInscripcionClase = async (
-  data: CreateInscripcionClaseData
-): Promise<InscripcionClase> => {
-  return await httpClient.post<InscripcionClase>(
-    "/api/inscripciones-clase/",
-    data
-  );
-};
-
-/**
- * Actualizar inscripción (cambiar estado)
- */
-export const updateInscripcionClase = async (
-  id: number,
-  data: UpdateInscripcionClaseData
-): Promise<InscripcionClase> => {
-  return await httpClient.patch<InscripcionClase>(
-    `/api/inscripciones-clase/${id}/`,
-    data
-  );
-};
-
-/**
- * Eliminar/Cancelar inscripción
- */
-export const deleteInscripcionClase = async (id: number): Promise<void> => {
-  await httpClient.delete(`/api/inscripciones-clase/${id}/`);
-};
-
-const inscripcionClaseService = {
-  getInscripcionesClase,
-  getInscripcionClaseById,
-  createInscripcionClase,
-  updateInscripcionClase,
-  deleteInscripcionClase,
-};
-
+export const inscripcionClaseService = new InscripcionClaseService();
 export default inscripcionClaseService;

@@ -177,50 +177,59 @@ export const deleteInscripcion = async (id: number): Promise<void> => {
   await httpClient.delete(`/api/inscripciones-clase/${id}/`);
 };
 
-// Helper para obtener clases con filtros opcionales
+// ==================== HELPERS ====================
+
+/**
+ * Obtener clases disponibles para inscripción
+ * Filtra solo clases programadas con cupos disponibles
+ */
 export const getClasesDisponibles = async (filtros?: {
-  estado?: string;
-  fecha?: string;
   disciplina?: number;
   instructor?: number;
+  salon?: number;
+  fecha_desde?: string;
+  fecha_hasta?: string;
+  estado?: string;
 }): Promise<Clase[]> => {
-  const params = new URLSearchParams();
+  try {
+    const params = new URLSearchParams({
+      page_size: '1000',
+      estado: filtros?.estado || 'programada',
+    });
 
-  if (filtros?.estado) params.append('estado', filtros.estado);
-  if (filtros?.fecha) params.append('fecha', filtros.fecha);
-  if (filtros?.disciplina) params.append('disciplina', filtros.disciplina.toString());
-  if (filtros?.instructor) params.append('instructor', filtros.instructor.toString());
+    if (filtros?.disciplina) params.append('disciplina', filtros.disciplina.toString());
+    if (filtros?.instructor) params.append('instructor', filtros.instructor.toString());
+    if (filtros?.salon) params.append('salon', filtros.salon.toString());
+    if (filtros?.fecha_desde) params.append('fecha_desde', filtros.fecha_desde);
+    if (filtros?.fecha_hasta) params.append('fecha_hasta', filtros.fecha_hasta);
 
-  const queryString = params.toString();
-  const url = queryString ? `/api/clases/?${queryString}` : '/api/clases/';
-  
-  const response = await httpClient.get<PaginatedResponse<Clase> | Clase[]>(url);
-  
-  // Si es paginado, retornar los resultados, sino retornar el array completo
-  if (response && typeof response === 'object' && 'results' in response) {
-    return response.results;
+    const response = await httpClient.get<PaginatedResponse<Clase> | Clase[]>(
+      `/api/clases/?${params.toString()}`
+    );
+
+    // Manejar respuesta paginada o array directo
+    const clases = Array.isArray(response) ? response : response.results;
+
+    // Filtrar solo clases con cupos disponibles
+    return clases.filter(clase => 
+      !clase.esta_llena && (clase.cupos_disponibles ?? 0) > 0
+    );
+  } catch (error) {
+    console.error('Error obteniendo clases disponibles:', error);
+    throw error;
   }
-  
-  return Array.isArray(response) ? response : [];
 };
 
-const claseService = {
+export default {
+  getClases,
+  getClaseById,
+  createClase,
+  updateClase,
+  deleteClase,
   getSalones,
   getSalonById,
   createSalon,
   updateSalon,
   deleteSalon,
-  getClases,
   getClasesDisponibles,
-  getClaseById,
-  createClase,
-  updateClase,
-  deleteClase,
-  getInscripciones,
-  getInscripcionById,
-  createInscripcion,
-  updateInscripcion,
-  deleteInscripcion,
 };
-
-export default claseService;

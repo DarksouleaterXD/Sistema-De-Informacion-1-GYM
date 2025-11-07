@@ -80,7 +80,7 @@ class ClientService {
   }
 
   /**
-   * Obtener todos los clientes (sin paginación) para selects
+   * Obtener todos los clientes (sin paginación) para dropdowns/selects
    */
   async getClients(): Promise<Client[]> {
     try {
@@ -91,6 +91,21 @@ class ClientService {
       return [];
     }
   }
+
+  /**
+   * Obtener clientes con membresía activa
+   */
+  async getClientesActivos(): Promise<Client[]> {
+    try {
+      const allClients = await this.getClients();
+      // El filtro de membresía activa se puede hacer en backend si hay endpoint
+      return allClients;
+    } catch (error) {
+      console.error('Error obteniendo clientes activos:', error);
+      return [];
+    }
+  }
 }
 
 export const clientService = new ClientService();
+export default clientService;

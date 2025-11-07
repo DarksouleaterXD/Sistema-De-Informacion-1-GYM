@@ -147,20 +147,29 @@ class ClaseListSerializer(serializers.ModelSerializer):
 
 
 class InscripcionClaseSerializer(serializers.ModelSerializer):
+    """
+    CU21: Inscribir Cliente a Clase
+    Serializer con validaciones de negocio:
+    - Cliente debe tener membresía activa
+    - Clase debe tener cupos disponibles
+    - Cliente no puede inscribirse dos veces a la misma clase
+    """
     cliente_nombre = serializers.CharField(source='cliente.nombre_completo', read_only=True)
     cliente_ci = serializers.CharField(source='cliente.ci', read_only=True)
     clase_info = serializers.SerializerMethodField()
     disciplina_nombre = serializers.CharField(source='clase.disciplina.nombre', read_only=True)
-    instructor_nombre = serializers.SerializerMethodField()
     fecha_clase = serializers.DateField(source='clase.fecha', read_only=True)
-    hora_clase = serializers.TimeField(source='clase.hora_inicio', read_only=True)
+    hora_inicio = serializers.TimeField(source='clase.hora_inicio', read_only=True)
+    hora_fin = serializers.TimeField(source='clase.hora_fin', read_only=True)
+    cupos_disponibles = serializers.IntegerField(source='clase.cupos_disponibles', read_only=True)
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
 
     class Meta:
         model = InscripcionClase
         fields = [
-            'id', 'clase', 'clase_info', 'disciplina_nombre', 'instructor_nombre',
-            'fecha_clase', 'hora_clase', 'cliente', 'cliente_nombre', 'cliente_ci',
+            'id', 'clase', 'clase_info', 'disciplina_nombre', 'fecha_clase',
+            'hora_inicio', 'hora_fin', 'cupos_disponibles',
+            'cliente', 'cliente_nombre', 'cliente_ci',
             'estado', 'estado_display', 'fecha_inscripcion', 'observaciones',
             'created_at', 'updated_at'
         ]
@@ -169,74 +178,53 @@ class InscripcionClaseSerializer(serializers.ModelSerializer):
     def get_clase_info(self, obj):
         return f"{obj.clase.disciplina.nombre} - {obj.clase.fecha} {obj.clase.hora_inicio}"
 
-    def get_instructor_nombre(self, obj):
-        return obj.clase.instructor.get_full_name()
-
     def validate(self, data):
         """
-        CU21: Validar cupos disponibles y membresía activa del cliente
+        CU21: Validaciones de negocio para inscripción a clase
         """
         clase = data.get('clase')
         cliente = data.get('cliente')
         
         # Solo validar al crear nueva inscripción
         if not self.instance:
-            # Validación 1: Verificar cupo disponible
-            if clase and clase.esta_llena:
-                raise serializers.ValidationError({
-                    'clase': 'La clase ya está llena. No hay cupos disponibles.'
-                })
-
-            # Validación 2: Verificar que el cliente tenga membresía activa
+            # 1. Validar que el cliente tenga membresía activa
             if cliente:
-                # Importar aquí para evitar importaciones circulares
                 from apps.membresias.models import Membresia
-                from django.utils import timezone
+                from apps.core.constants import ESTADO_ACTIVO
                 
-                membresia_activa = Membresia.objects.filter(
+                tiene_membresia_activa = Membresia.objects.filter(
                     cliente=cliente,
-                    estado='activa',
-                    fecha_inicio__lte=timezone.now().date(),
-                    fecha_fin__gte=timezone.now().date()
+                    estado=ESTADO_ACTIVO
                 ).exists()
                 
-                if not membresia_activa:
+                if not tiene_membresia_activa:
                     raise serializers.ValidationError({
-                        'cliente': f'El cliente {cliente.nombre_completo} no tiene una membresía activa.'
+                        'cliente': 'El cliente debe tener una membresía activa para inscribirse a una clase.'
                     })
-
-            # Validación 3: Verificar que el cliente no esté ya inscrito
+            
+            # 2. Validar que la clase tenga cupos disponibles
+            if clase:
+                if clase.esta_llena:
+                    raise serializers.ValidationError({
+                        'clase': f'La clase ya está llena. No hay cupos disponibles. (Cupo máximo: {clase.cupo_maximo})'
+                    })
+                
+                # Verificar que la clase esté en estado programada
+                if clase.estado != CLASE_PROGRAMADA:
+                    raise serializers.ValidationError({
+                        'clase': f'Solo se puede inscribir a clases en estado "Programada". Estado actual: {clase.get_estado_display()}'
+                    })
+            
+            # 3. Validar que el cliente no esté ya inscrito en esta clase
             if clase and cliente:
-                existe_inscripcion = InscripcionClase.objects.filter(
+                ya_inscrito = InscripcionClase.objects.filter(
                     clase=clase,
                     cliente=cliente
-                ).exists()
+                ).exclude(estado='cancelada').exists()
                 
-                if existe_inscripcion:
-                    raise serializers.ValidationError(
-                        f'El cliente {cliente.nombre_completo} ya está inscrito en esta clase.'
-                    )
+                if ya_inscrito:
+                    raise serializers.ValidationError({
+                        'non_field_errors': ['El cliente ya está inscrito en esta clase.']
+                    })
 
         return data
-
-
-class InscripcionClaseListSerializer(serializers.ModelSerializer):
-    """Serializer simplificado para listados de inscripciones"""
-    cliente_nombre = serializers.CharField(source='cliente.nombre_completo', read_only=True)
-    cliente_ci = serializers.CharField(source='cliente.ci', read_only=True)
-    disciplina = serializers.CharField(source='clase.disciplina.nombre', read_only=True)
-    fecha_clase = serializers.DateField(source='clase.fecha', read_only=True)
-    hora_inicio = serializers.TimeField(source='clase.hora_inicio', read_only=True)
-    instructor = serializers.SerializerMethodField()
-    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
-
-    class Meta:
-        model = InscripcionClase
-        fields = [
-            'id', 'cliente_nombre', 'cliente_ci', 'disciplina', 'fecha_clase',
-            'hora_inicio', 'instructor', 'estado', 'estado_display', 'fecha_inscripcion'
-        ]
-
-    def get_instructor(self, obj):
-        return obj.clase.instructor.get_full_name()
-
