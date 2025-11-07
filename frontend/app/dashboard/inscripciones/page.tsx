@@ -269,16 +269,18 @@ function InscripcionesClasePageContent() {
   };
 
   // Filtrar inscripciones
-  const inscripcionesFiltradas = inscripciones.filter((inscripcion) => {
-    const matchSearch =
-      inscripcion.cliente_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inscripcion.disciplina_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inscripcion.cliente_ci.includes(searchTerm);
+  const inscripcionesFiltradas = Array.isArray(inscripciones) 
+    ? inscripciones.filter((inscripcion) => {
+        const matchSearch =
+          inscripcion.cliente_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          inscripcion.disciplina_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          inscripcion.cliente_ci?.includes(searchTerm);
 
-    const matchEstado = !filterEstado || inscripcion.estado === filterEstado;
+        const matchEstado = !filterEstado || inscripcion.estado === filterEstado;
 
-    return matchSearch && matchEstado;
-  });
+        return matchSearch && matchEstado;
+      })
+    : [];
 
   const getEstadoBadgeColor = (estado: string) => {
     switch (estado) {
