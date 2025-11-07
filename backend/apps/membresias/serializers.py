@@ -1,4 +1,8 @@
 from rest_framework import serializers
+from django.utils import timezone
+from decimal import Decimal
+from datetime import timedelta
+from apps.core.constants import METODOS_PAGO, ESTADOS_MEMBRESIA
 from .models import Membresia, InscripcionMembresia, PlanMembresia, MembresiaPromocion
 from apps.clients.serializers import ClientListSerializer
 
@@ -185,7 +189,7 @@ class MembresiaCreateSerializer(serializers.Serializer):
     # Datos de Inscripción
     cliente = serializers.IntegerField()
     monto = serializers.DecimalField(max_digits=10, decimal_places=2)
-    metodo_de_pago = serializers.ChoiceField(choices=['efectivo', 'tarjeta', 'transferencia', 'qr'])
+    metodo_de_pago = serializers.ChoiceField(choices=[choice[0] for choice in METODOS_PAGO])
     
     # Datos de Membresía
     plan = serializers.IntegerField()  # ✨ NUEVO: Campo plan requerido
@@ -194,7 +198,7 @@ class MembresiaCreateSerializer(serializers.Serializer):
         required=False,
         allow_empty=True
     )  # ✨ NUEVO: Promociones opcionales (M2M)
-    estado = serializers.ChoiceField(choices=['activo', 'vencido', 'suspendido'])
+    estado = serializers.ChoiceField(choices=[choice[0] for choice in ESTADOS_MEMBRESIA])
     fecha_inicio = serializers.DateField()
     fecha_fin = serializers.DateField()
     

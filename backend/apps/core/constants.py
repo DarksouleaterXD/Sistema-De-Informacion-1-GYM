@@ -17,6 +17,32 @@ ESTADOS_MEMBRESIA = [
     (ESTADO_CANCELADO, 'Cancelado'),
 ]
 
+# Estados de clase
+CLASE_PROGRAMADA = 'programada'
+CLASE_EN_CURSO = 'en_curso'
+CLASE_FINALIZADA = 'finalizada'
+CLASE_CANCELADA = 'cancelada'
+
+ESTADOS_CLASE = [
+    (CLASE_PROGRAMADA, 'Programada'),
+    (CLASE_EN_CURSO, 'En Curso'),
+    (CLASE_FINALIZADA, 'Finalizada'),
+    (CLASE_CANCELADA, 'Cancelada'),
+]
+
+# Estados de inscripción a clase
+INSCRIPCION_CONFIRMADA = 'confirmada'
+INSCRIPCION_CANCELADA_CLASE = 'cancelada'
+INSCRIPCION_ASISTIO = 'asistio'
+INSCRIPCION_NO_ASISTIO = 'no_asistio'
+
+ESTADOS_INSCRIPCION_CLASE = [
+    (INSCRIPCION_CONFIRMADA, 'Confirmada'),
+    (INSCRIPCION_CANCELADA_CLASE, 'Cancelada'),
+    (INSCRIPCION_ASISTIO, 'Asistió'),
+    (INSCRIPCION_NO_ASISTIO, 'No Asistió'),
+]
+
 # Métodos de pago
 METODO_EFECTIVO = 'efectivo'
 METODO_TARJETA = 'tarjeta'

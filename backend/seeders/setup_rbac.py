@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from permissions_seeder import PermissionSeeder
-from roles_default_seeder import create_default_roles
+from seeders.permissions_seeder import PermissionSeeder
+from seeders.roles_default_seeder import create_default_roles
 
 
 def setup_rbac():

@@ -2,6 +2,7 @@ from django.db import models  # type: ignore
 from django.core.exceptions import ValidationError
 from apps.core.models import TimeStampedModel
 from apps.core.utils import validar_ci, normalizar_telefono
+from apps.core.constants import NIVELES_EXPERIENCIA, EXPERIENCIA_PRINCIPIANTE
 
 
 class Client(TimeStampedModel):
@@ -32,12 +33,8 @@ class Client(TimeStampedModel):
     )
     experiencia = models.CharField(
         max_length=20,
-        choices=[
-            ('PRINCIPIANTE', 'Principiante'),
-            ('INTERMEDIO', 'Intermedio'),
-            ('AVANZADO', 'Avanzado'),
-        ],
-        default='PRINCIPIANTE',
+        choices=NIVELES_EXPERIENCIA,
+        default=EXPERIENCIA_PRINCIPIANTE,
         verbose_name="Nivel de Experiencia"
     )
     

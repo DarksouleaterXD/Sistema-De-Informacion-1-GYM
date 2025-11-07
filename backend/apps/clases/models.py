@@ -1,5 +1,9 @@
 from django.db import models
 from apps.core.models import TimeStampedModel
+from apps.core.constants import (
+    ESTADOS_CLASE, CLASE_PROGRAMADA,
+    ESTADOS_INSCRIPCION_CLASE, INSCRIPCION_CONFIRMADA
+)
 from apps.disciplinas.models import Disciplina
 from apps.users.models import User
 
@@ -43,13 +47,7 @@ class Clase(TimeStampedModel):
     """
     CU20: Modelo para clases programadas del gimnasio
     """
-    ESTADO_CHOICES = [
-        ('programada', 'Programada'),
-        ('en_curso', 'En Curso'),
-        ('finalizada', 'Finalizada'),
-        ('cancelada', 'Cancelada'),
-    ]
-
+    
     disciplina = models.ForeignKey(
         Disciplina,
         on_delete=models.PROTECT,
@@ -84,8 +82,8 @@ class Clase(TimeStampedModel):
     )
     estado = models.CharField(
         max_length=20,
-        choices=ESTADO_CHOICES,
-        default='programada',
+        choices=ESTADOS_CLASE,
+        default=CLASE_PROGRAMADA,
         verbose_name="Estado"
     )
     observaciones = models.TextField(
@@ -126,13 +124,7 @@ class InscripcionClase(TimeStampedModel):
     """
     Modelo para inscripciones de clientes a clases
     """
-    ESTADO_CHOICES = [
-        ('confirmada', 'Confirmada'),
-        ('cancelada', 'Cancelada'),
-        ('asistio', 'Asistió'),
-        ('no_asistio', 'No Asistió'),
-    ]
-
+    
     clase = models.ForeignKey(
         Clase,
         on_delete=models.CASCADE,
@@ -147,8 +139,8 @@ class InscripcionClase(TimeStampedModel):
     )
     estado = models.CharField(
         max_length=20,
-        choices=ESTADO_CHOICES,
-        default='confirmada',
+        choices=ESTADOS_INSCRIPCION_CLASE,
+        default=INSCRIPCION_CONFIRMADA,
         verbose_name="Estado"
     )
     fecha_inscripcion = models.DateTimeField(

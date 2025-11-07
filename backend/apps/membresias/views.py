@@ -6,6 +6,13 @@ from django.db.models import Q, Count, Sum
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from datetime import date
 
+from apps.core.constants import (
+    METODO_EFECTIVO, 
+    METODOS_PAGO, 
+    ESTADOS_MEMBRESIA,
+    ESTADO_ACTIVO,
+    ESTADO_VENCIDO
+)
 from .models import Membresia, InscripcionMembresia, PlanMembresia
 from .serializers import (
     MembresiaSerializer,
@@ -82,8 +89,8 @@ class MembresiaListCreateView(APIView):
                 value={
                     "cliente": 1,
                     "monto": 150.00,
-                    "metodo_de_pago": "efectivo",
-                    "estado": "activo",
+                    "metodo_de_pago": METODO_EFECTIVO,
+                    "estado": ESTADO_ACTIVO,
                     "fecha_inicio": "2025-10-23",
                     "fecha_fin": "2025-11-23"
                 },
@@ -241,13 +248,13 @@ class MembresiaStatsView(APIView):
         
         # Membresías activas
         activas = Membresia.objects.filter(
-            estado='activo',
+            estado=ESTADO_ACTIVO,
             fecha_fin__gte=date.today()
         ).count()
         
         # Membresías vencidas
         vencidas = Membresia.objects.filter(
-            Q(estado='vencido') | Q(fecha_fin__lt=date.today())
+            Q(estado=ESTADO_VENCIDO) | Q(fecha_fin__lt=date.today())
         ).count()
         
         # Ingresos totales

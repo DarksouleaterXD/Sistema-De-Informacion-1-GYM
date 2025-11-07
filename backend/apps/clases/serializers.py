@@ -1,10 +1,15 @@
 from rest_framework import serializers
-from .models import Salon, Clase, InscripcionClase
-from apps.disciplinas.models import Disciplina
-from apps.users.models import User
-from apps.clients.models import Client
+from django.utils import timezone
 from django.db.models import Q
 from datetime import datetime, time
+from apps.core.constants import CLASE_PROGRAMADA, CLASE_EN_CURSO
+from .models import Salon, Clase, InscripcionClase
+from apps.disciplinas.models import Disciplina
+from apps.disciplinas.serializers import DisciplinaSerializer
+from apps.users.models import User
+from apps.users.serializers import UserListSerializer
+from apps.clients.models import Client
+from apps.clients.serializers import ClientListSerializer
 
 
 class SalonSerializer(serializers.ModelSerializer):
@@ -82,7 +87,7 @@ class ClaseSerializer(serializers.ModelSerializer):
             clases_conflicto = Clase.objects.filter(
                 salon=salon,
                 fecha=fecha,
-                estado__in=['programada', 'en_curso']
+                estado__in=[CLASE_PROGRAMADA, CLASE_EN_CURSO]
             ).filter(
                 Q(hora_inicio__lt=hora_fin, hora_fin__gt=hora_inicio)  # Solapamiento
             )
@@ -104,7 +109,7 @@ class ClaseSerializer(serializers.ModelSerializer):
             clases_instructor = Clase.objects.filter(
                 instructor=instructor,
                 fecha=fecha,
-                estado__in=['programada', 'en_curso']
+                estado__in=[CLASE_PROGRAMADA, CLASE_EN_CURSO]
             ).filter(
                 Q(hora_inicio__lt=hora_fin, hora_fin__gt=hora_inicio)
             )

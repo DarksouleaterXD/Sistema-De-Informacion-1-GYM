@@ -92,9 +92,9 @@ def setup_rbac():
     
     try:
         # Importar el setup_rbac
-        from seeders.setup_rbac import setup_complete_rbac
+        from seeders.setup_rbac import setup_rbac
         
-        setup_complete_rbac()
+        setup_rbac()
         
         # Verificar resultados
         permisos_count = Permiso.objects.count()
@@ -143,6 +143,10 @@ def seed_data():
     print_step(5, "Cargando Datos de Prueba")
     
     try:
+        # Disciplinas
+        from seeders.disciplinas_seeder import DisciplinasSeeder
+        DisciplinasSeeder().run()
+        
         # Plan de Membresías
         from seeders.plan_membresia_seeder import PlanMembresiaSeeder
         PlanMembresiaSeeder().run()
@@ -159,10 +163,22 @@ def seed_data():
         from seeders.clients_seeder import ClientsSeeder
         ClientsSeeder().run()
         
+        # Salones
+        from seeders.salones_clases_seeder import SalonSeeder
+        SalonSeeder().run()
+        
+        # Clases (requiere salones, disciplinas e instructores)
+        from seeders.salones_clases_seeder import ClaseSeeder
+        ClaseSeeder().run()
+        
         # Verificar datos
+        from apps.disciplinas.models import Disciplina
+        from apps.clases.models import Salon
         print(f"\n📊 Datos Cargados:")
         print(f"   • Usuarios: {User.objects.count()}")
         print(f"   • Clientes: {Client.objects.count()}")
+        print(f"   • Disciplinas: {Disciplina.objects.count()}")
+        print(f"   • Salones: {Salon.objects.count()}")
         print(f"   • Planes: {PlanMembresia.objects.count()}")
         print(f"   • Promociones: {Promocion.objects.count()}")
         

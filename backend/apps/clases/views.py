@@ -48,11 +48,11 @@ class SalonListCreateView(generics.ListCreateAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="SALONES",
-            actividad="CREAR",
-            descripcion=f"Creó el salón: {salon.nombre}",
-            dato_modificado=f"Salón ID: {salon.id}"
+            accion="CREAR",
+            descripcion=f"Creó el salón: {salon.nombre} (ID: {salon.id})"
         )
 
 
@@ -72,11 +72,11 @@ class SalonDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="SALONES",
-            actividad="ACTUALIZAR",
-            descripcion=f"Actualizó el salón: {salon.nombre}",
-            dato_modificado=f"Salón ID: {salon.id}"
+            accion="ACTUALIZAR",
+            descripcion=f"Actualizó el salón: {salon.nombre} (ID: {salon.id})"
         )
 
     def perform_destroy(self, instance):
@@ -84,11 +84,11 @@ class SalonDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="SALONES",
-            actividad="ELIMINAR",
-            descripcion=f"Eliminó el salón: {nombre}",
-            dato_modificado=f"Salón ID: {instance.id}"
+            accion="ELIMINAR",
+            descripcion=f"Eliminó el salón: {nombre} (ID: {instance.id})"
         )
         
         instance.delete()
@@ -152,11 +152,11 @@ class ClaseListCreateView(generics.ListCreateAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="CLASES",
-            actividad="PROGRAMAR",
-            descripcion=f"Programó clase de {clase.disciplina.nombre} para {clase.fecha} {clase.hora_inicio}",
-            dato_modificado=f"Clase ID: {clase.id}, Instructor: {clase.instructor.get_full_name()}, Salón: {clase.salon.nombre}"
+            accion="PROGRAMAR",
+            descripcion=f"Programó clase de {clase.disciplina.nombre} para {clase.fecha} {clase.hora_inicio} (ID: {clase.id}, Instructor: {clase.instructor.get_full_name()}, Salón: {clase.salon.nombre})"
         )
 
 
@@ -176,11 +176,11 @@ class ClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="CLASES",
-            actividad="EDITAR",
-            descripcion=f"Editó clase de {clase.disciplina.nombre} del {clase.fecha}",
-            dato_modificado=f"Clase ID: {clase.id}"
+            accion="EDITAR",
+            descripcion=f"Editó clase de {clase.disciplina.nombre} del {clase.fecha} (ID: {clase.id})"
         )
 
     def perform_destroy(self, instance):
@@ -188,11 +188,11 @@ class ClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="CLASES",
-            actividad="ELIMINAR",
-            descripcion=f"Eliminó clase: {descripcion_clase}",
-            dato_modificado=f"Clase ID: {instance.id}"
+            accion="ELIMINAR",
+            descripcion=f"Eliminó clase: {descripcion_clase} (ID: {instance.id})"
         )
         
         instance.delete()
@@ -236,11 +236,11 @@ class InscripcionClaseListCreateView(generics.ListCreateAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="INSCRIPCIONES_CLASE",
-            actividad="INSCRIBIR",
-            descripcion=f"Inscribió a {inscripcion.cliente.nombre_completo} en clase de {inscripcion.clase.disciplina.nombre}",
-            dato_modificado=f"Inscripción ID: {inscripcion.id}, Clase: {inscripcion.clase.fecha} {inscripcion.clase.hora_inicio}"
+            accion="INSCRIBIR",
+            descripcion=f"Inscribió a {inscripcion.cliente.nombre_completo} en clase de {inscripcion.clase.disciplina.nombre} (ID: {inscripcion.id}, Clase: {inscripcion.clase.fecha} {inscripcion.clase.hora_inicio})"
         )
 
 
@@ -260,11 +260,11 @@ class InscripcionClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="INSCRIPCIONES_CLASE",
-            actividad="ACTUALIZAR",
-            descripcion=f"Actualizó inscripción de {inscripcion.cliente.nombre_completo} - Estado: {inscripcion.get_estado_display()}",
-            dato_modificado=f"Inscripción ID: {inscripcion.id}"
+            accion="ACTUALIZAR",
+            descripcion=f"Actualizó inscripción de {inscripcion.cliente.nombre_completo} - Estado: {inscripcion.get_estado_display()} (ID: {inscripcion.id})"
         )
 
     def perform_destroy(self, instance):
@@ -273,11 +273,11 @@ class InscripcionClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         # Auditoría
         registrar_bitacora(
+            request=self.request,
             usuario=self.request.user,
             modulo="INSCRIPCIONES_CLASE",
-            actividad="CANCELAR",
-            descripcion=f"Canceló inscripción de {cliente_nombre} en {clase_info}",
-            dato_modificado=f"Inscripción ID: {instance.id}"
+            accion="CANCELAR",
+            descripcion=f"Canceló inscripción de {cliente_nombre} en {clase_info} (ID: {instance.id})"
         )
         
         instance.delete()

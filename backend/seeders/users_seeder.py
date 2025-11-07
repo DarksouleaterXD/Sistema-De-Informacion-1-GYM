@@ -21,38 +21,38 @@ class UsersSeeder(BaseSeeder):
         
         # Obtener roles
         try:
-            rol_gerente = Role.objects.get(nombre='Gerente')
-            rol_recepcionista = Role.objects.get(nombre='Recepcionista')
-            rol_entrenador = Role.objects.get(nombre='Entrenador')
-        except Role.DoesNotExist:
-            print("⚠️  Primero debes ejecutar el seeder de roles")
+            rol_administrativo = Role.objects.get(nombre='Administrativo')
+            rol_instructor = Role.objects.get(nombre='Instructor')
+        except Role.DoesNotExist as e:
+            print(f"⚠️  Error: No se encontró el rol - {e}")
+            print("   Primero debes ejecutar el seeder de roles")
             return
         
         # Usuarios de prueba
         usuarios_data = [
             {
-                'email': 'gerente@gym-spartan.com',
-                'username': 'gerente1',
-                'first_name': 'Juan',
-                'last_name': 'Pérez',
-                'password': 'gerente123',
-                'roles': [rol_gerente]
-            },
-            {
-                'email': 'recepcion@gym-spartan.com',
-                'username': 'recepcion1',
+                'email': 'administrativo@gym-spartan.com',
+                'username': 'administrativo1',
                 'first_name': 'María',
                 'last_name': 'González',
-                'password': 'recepcion123',
-                'roles': [rol_recepcionista]
+                'password': 'admin123',
+                'roles': [rol_administrativo]
             },
             {
-                'email': 'entrenador@gym-spartan.com',
-                'username': 'entrenador1',
+                'email': 'instructor@gym-spartan.com',
+                'username': 'instructor1',
                 'first_name': 'Carlos',
                 'last_name': 'López',
-                'password': 'entrenador123',
-                'roles': [rol_entrenador]
+                'password': 'instructor123',
+                'roles': [rol_instructor]
+            },
+            {
+                'email': 'instructor2@gym-spartan.com',
+                'username': 'instructor2',
+                'first_name': 'Ana',
+                'last_name': 'Martínez',
+                'password': 'instructor123',
+                'roles': [rol_instructor]
             },
         ]
         
@@ -69,10 +69,14 @@ class UsersSeeder(BaseSeeder):
                     password=password,
                     **user_data
                 )
-                user.is_staff = True
-                user.roles.set(roles)
-                user.save()
+                
+                # Asignar roles usando UserRole
+                from apps.roles.models import UserRole
+                for role in roles:
+                    UserRole.objects.create(usuario=user, rol=role)
                 
                 print(f"   ✅ Usuario creado: {user_data['email']}")
+                print(f"      Username: {user.username}")
                 print(f"      Password: {password}")
+                print(f"      Rol(es): {', '.join([r.nombre for r in roles])}")
                 self.created_count += 1
