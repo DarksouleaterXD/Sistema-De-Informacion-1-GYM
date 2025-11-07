@@ -30,6 +30,7 @@ class ClientService {
     search?: string;
     page?: number;
     page_size?: number;
+    con_membresia_activa?: boolean;
   }): Promise<ClientListResponse> {
     const queryParams = new URLSearchParams();
 
@@ -37,6 +38,8 @@ class ClientService {
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.page_size)
       queryParams.append("page_size", params.page_size.toString());
+    if (params?.con_membresia_activa)
+      queryParams.append("con_membresia_activa", "true");
 
     const url = `${API_ENDPOINTS.CLIENTS.BASE}${
       queryParams.toString() ? "?" + queryParams.toString() : ""
@@ -78,6 +81,36 @@ class ClientService {
   async delete(id: number): Promise<void> {
     return httpClient.delete<void>(API_ENDPOINTS.CLIENTS.DETAIL(id));
   }
+
+  /**
+   * Obtener todos los clientes (sin paginación) para dropdowns/selects
+   */
+  async getClients(): Promise<Client[]> {
+    try {
+      const response = await this.getAll({ page_size: 1000 });
+      return response.results || [];
+    } catch (error) {
+      console.error('Error obteniendo clientes:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtener clientes con membresía activa (para inscripciones)
+   */
+  async getClientesConMembresia(): Promise<Client[]> {
+    try {
+      const response = await this.getAll({ 
+        page_size: 1000,
+        con_membresia_activa: true 
+      });
+      return response.results || [];
+    } catch (error) {
+      console.error('Error obteniendo clientes con membresía:', error);
+      return [];
+    }
+  }
 }
 
 export const clientService = new ClientService();
+export default clientService;

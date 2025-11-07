@@ -20,6 +20,8 @@ import {
   GraduationCap,
   Calendar,
   Activity,
+  ScrollText,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -31,16 +33,79 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Clientes", href: "/dashboard/clients", icon: UserCircle },
-  { name: "Instructores", href: "/dashboard/instructores", icon: GraduationCap },
-  { name: "Disciplinas", href: "/dashboard/disciplinas", icon: Activity },
-  { name: "Clases", href: "/dashboard/clases", icon: Calendar },
-  { name: "Membresías", href: "/dashboard/membresias", icon: CreditCard },
-  { name: "Usuarios", href: "/dashboard/users", icon: Users },
-  { name: "Roles", href: "/dashboard/roles", icon: Shield },
-  { name: "Promociones", href: "/dashboard/promociones", icon: Tag },
-  { name: "Bitácora", href: "/dashboard/audit", icon: FileText },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: Home,
+    requiredPermission: PermissionCodes.DASHBOARD_VIEW,
+  },
+  {
+    name: "Clientes",
+    href: "/dashboard/clients",
+    icon: UserCircle,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+  },
+  {
+    name: "Membresías",
+    href: "/dashboard/membresias",
+    icon: CreditCard,
+    requiredPermission: PermissionCodes.MEMBERSHIP_VIEW,
+  },
+  {
+    name: "Planes",
+    href: "/dashboard/planes-membresia",
+    icon: FileText,
+    requiredPermission: PermissionCodes.PLAN_VIEW,
+  },
+  {
+    name: "Disciplinas",
+    href: "/dashboard/disciplinas",
+    icon: Dumbbell,
+    requiredPermission: PermissionCodes.DISCIPLINE_VIEW,
+  },
+  {
+    name: "Clases",
+    href: "/dashboard/clases",
+    icon: Calendar,
+    requiredPermission: PermissionCodes.CLASE_VIEW,
+  },
+  {
+    name: "Salones",
+    href: "/dashboard/salones",
+    icon: Building2,
+    requiredPermission: PermissionCodes.CLASE_VIEW,
+  },
+  {
+    name: "Inscripciones",
+    href: "/dashboard/inscripciones",
+    icon: ClipboardList,
+    requiredPermission: PermissionCodes.ENROLLMENT_VIEW,
+  },
+  {
+    name: "Promociones",
+    href: "/dashboard/promociones",
+    icon: Tag,
+    requiredPermission: PermissionCodes.PROMOTION_VIEW,
+  },
+  {
+    name: "Usuarios",
+    href: "/dashboard/users",
+    icon: Users,
+    requiredPermission: PermissionCodes.USER_VIEW,
+  },
+  {
+    name: "Roles",
+    href: "/dashboard/roles",
+    icon: Shield,
+    requiredPermission: PermissionCodes.ROLE_VIEW,
+  },
+  {
+    name: "Bitácora",
+    href: "/dashboard/audit",
+    icon: ScrollText,
+    requiredPermission: PermissionCodes.AUDIT_VIEW,
+  },
+   { name: "Instructores", href: "/dashboard/instructores", icon: GraduationCap },
 ];
 
 export default function Sidebar() {

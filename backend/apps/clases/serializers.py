@@ -147,14 +147,29 @@ class ClaseListSerializer(serializers.ModelSerializer):
 
 
 class InscripcionClaseSerializer(serializers.ModelSerializer):
+    """
+    CU21: Inscribir Cliente a Clase
+    Serializer con validaciones de negocio:
+    - Cliente debe tener membresía activa
+    - Clase debe tener cupos disponibles
+    - Cliente no puede inscribirse dos veces a la misma clase
+    """
     cliente_nombre = serializers.CharField(source='cliente.nombre_completo', read_only=True)
+    cliente_ci = serializers.CharField(source='cliente.ci', read_only=True)
     clase_info = serializers.SerializerMethodField()
+    disciplina_nombre = serializers.CharField(source='clase.disciplina.nombre', read_only=True)
+    fecha_clase = serializers.DateField(source='clase.fecha', read_only=True)
+    hora_inicio = serializers.TimeField(source='clase.hora_inicio', read_only=True)
+    hora_fin = serializers.TimeField(source='clase.hora_fin', read_only=True)
+    cupos_disponibles = serializers.IntegerField(source='clase.cupos_disponibles', read_only=True)
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
 
     class Meta:
         model = InscripcionClase
         fields = [
-            'id', 'clase', 'clase_info', 'cliente', 'cliente_nombre',
+            'id', 'clase', 'clase_info', 'disciplina_nombre', 'fecha_clase',
+            'hora_inicio', 'hora_fin', 'cupos_disponibles',
+            'cliente', 'cliente_nombre', 'cliente_ci',
             'estado', 'estado_display', 'fecha_inscripcion', 'observaciones',
             'created_at', 'updated_at'
         ]
@@ -164,13 +179,53 @@ class InscripcionClaseSerializer(serializers.ModelSerializer):
         return f"{obj.clase.disciplina.nombre} - {obj.clase.fecha} {obj.clase.hora_inicio}"
 
     def validate(self, data):
-        """Validar que haya cupos disponibles"""
+        """
+        CU21: Validaciones de negocio para inscripción a clase
+        """
         clase = data.get('clase')
+        cliente = data.get('cliente')
         
-        if clase and not self.instance:  # Solo al crear
-            if clase.esta_llena:
-                raise serializers.ValidationError({
-                    'clase': 'La clase ya está llena. No hay cupos disponibles.'
-                })
+        # Solo validar al crear nueva inscripción
+        if not self.instance:
+            # 1. Validar que el cliente tenga membresía activa
+            if cliente:
+                from apps.membresias.models import Membresia
+                from apps.core.constants import ESTADO_ACTIVO
+                
+                # Acceso correcto: Membresia -> InscripcionMembresia -> Cliente
+                tiene_membresia_activa = Membresia.objects.filter(
+                    inscripcion__cliente=cliente,
+                    estado=ESTADO_ACTIVO
+                ).exists()
+                
+                if not tiene_membresia_activa:
+                    raise serializers.ValidationError({
+                        'cliente': 'El cliente debe tener una membresía activa para inscribirse a una clase.'
+                    })
+            
+            # 2. Validar que la clase tenga cupos disponibles
+            if clase:
+                if clase.esta_llena:
+                    raise serializers.ValidationError({
+                        'clase': f'La clase ya está llena. No hay cupos disponibles. (Cupo máximo: {clase.cupo_maximo})'
+                    })
+                
+                # Verificar que la clase esté en estado programada
+                if clase.estado != CLASE_PROGRAMADA:
+                    raise serializers.ValidationError({
+                        'clase': f'Solo se puede inscribir a clases en estado "Programada". Estado actual: {clase.get_estado_display()}'
+                    })
+            
+            # 3. Validar que el cliente no esté ya inscrito en esta clase
+            if clase and cliente:
+                ya_inscrito = InscripcionClase.objects.filter(
+                    clase=clase,
+                    cliente=cliente
+                ).exclude(estado='cancelada').exists()
+                
+                if ya_inscrito:
+                    raise serializers.ValidationError({
+                        'non_field_errors': ['El cliente ya está inscrito en esta clase.']
+                    })
 
         return data

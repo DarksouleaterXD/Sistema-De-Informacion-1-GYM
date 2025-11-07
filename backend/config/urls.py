@@ -6,7 +6,14 @@ from apps.users.views import CreateAdminView, CurrentUserView, LoginView, Logout
 from apps.roles.views import PermissionDetailView, PermissionListCreateView, RoleAssignView, RoleDetailView, RoleListCreateView, RolePermissionAssignView, RolePermissionRemoveView, RolePermissionSetView, RoleRemoveView
 from apps.audit.views import AuditLogDetailView, AuditLogListView
 from apps.clients.views import ClientListCreateView, ClientDetailView
-from apps.membresias.views import MembresiaListCreateView, MembresiaDetailView, MembresiaStatsView, PlanMembresiaListView, ConsultarEstadoVigenciaView
+from apps.membresias.views import (
+    MembresiaListCreateView, 
+    MembresiaDetailView, 
+    MembresiaStatsView, 
+    ConsultarEstadoVigenciaView,
+    PlanMembresiaListCreateView,
+    PlanMembresiaDetailView
+)
 from apps.promociones.views import PromocionListCreateView, PromocionDetailView
 from apps.disciplinas.views import DisciplinaListCreateView, DisciplinaDetailView
 from apps.clases.views import (
@@ -71,8 +78,9 @@ urlpatterns = [
     # CU17: Consultar Estado/Vigencia de Membresía
     path("api/membresias/consultar-estado/", ConsultarEstadoVigenciaView.as_view(), name="membresia-consultar-estado"),
     
-    # Planes de Membresía
-    path("api/planes-membresia/", PlanMembresiaListView.as_view(), name="plan-membresia-list"),
+    # Planes de Membresía CRUD
+    path("api/planes-membresia/", PlanMembresiaListCreateView.as_view(), name="plan-membresia-list-create"),
+    path("api/planes-membresia/<int:pk>/", PlanMembresiaDetailView.as_view(), name="plan-membresia-detail"),
     
     # Promociones CRUD
     path("api/promociones/", PromocionListCreateView.as_view(), name="promocion-list-create"),

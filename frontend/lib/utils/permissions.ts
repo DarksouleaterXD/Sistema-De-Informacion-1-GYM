@@ -107,6 +107,62 @@ export const PermissionCodes = {
 export type PermissionCode =
   (typeof PermissionCodes)[keyof typeof PermissionCodes];
 
+// ==========================================
+// MAPEO DE RUTAS A PERMISOS
+// ==========================================
+
+export const RoutePermissions: Record<string, PermissionCode[]> = {
+  // Dashboard principal
+  "/dashboard": [PermissionCodes.DASHBOARD_VIEW],
+
+  // Usuarios
+  "/dashboard/users": [PermissionCodes.USER_VIEW],
+  "/dashboard/users/create": [PermissionCodes.USER_CREATE],
+  "/dashboard/users/[id]": [PermissionCodes.USER_VIEW_DETAILS],
+  "/dashboard/users/[id]/edit": [PermissionCodes.USER_EDIT],
+
+  // Roles
+  "/dashboard/roles": [PermissionCodes.ROLE_VIEW],
+  "/dashboard/roles/create": [PermissionCodes.ROLE_CREATE],
+  "/dashboard/roles/[id]": [PermissionCodes.ROLE_VIEW],
+  "/dashboard/roles/[id]/edit": [PermissionCodes.ROLE_EDIT],
+
+  // Clientes
+  "/dashboard/clients": [PermissionCodes.CLIENT_VIEW],
+  "/dashboard/clients/create": [PermissionCodes.CLIENT_CREATE],
+  "/dashboard/clients/[id]": [PermissionCodes.CLIENT_VIEW_DETAILS],
+  "/dashboard/clients/[id]/edit": [PermissionCodes.CLIENT_EDIT],
+
+  // Membresías
+  "/dashboard/memberships": [PermissionCodes.MEMBERSHIP_VIEW],
+  "/dashboard/memberships/create": [PermissionCodes.MEMBERSHIP_CREATE],
+  "/dashboard/memberships/[id]": [PermissionCodes.MEMBERSHIP_VIEW_DETAILS],
+  "/dashboard/memberships/[id]/edit": [PermissionCodes.MEMBERSHIP_EDIT],
+
+  // Planes de Membresía
+  "/dashboard/planes-membresia": [PermissionCodes.PLAN_VIEW],
+
+  // Promociones
+  "/dashboard/promotions": [PermissionCodes.PROMOTION_VIEW],
+  "/dashboard/promotions/create": [PermissionCodes.PROMOTION_CREATE],
+  "/dashboard/promotions/[id]": [PermissionCodes.PROMOTION_VIEW_DETAILS],
+  "/dashboard/promotions/[id]/edit": [PermissionCodes.PROMOTION_EDIT],
+
+  // Disciplinas
+  "/dashboard/disciplinas": [PermissionCodes.DISCIPLINE_VIEW],
+
+  // Clases
+  "/dashboard/clases": [PermissionCodes.CLASE_VIEW],
+
+  // Auditoría
+  "/dashboard/audit": [PermissionCodes.AUDIT_VIEW],
+  "/dashboard/audit/[id]": [PermissionCodes.AUDIT_VIEW_DETAILS],
+};
+
+// ==========================================
+// HELPER FUNCTIONS
+// ==========================================
+
 /**
  * Verifica si el usuario tiene un permiso específico
  */

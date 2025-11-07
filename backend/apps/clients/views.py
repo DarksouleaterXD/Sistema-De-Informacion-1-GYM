@@ -20,6 +20,7 @@ class ClientPagination(PageNumberPagination):
     tags=["Clientes"],
     parameters=[
         OpenApiParameter(name='search', description='Buscar por nombre, apellido, CI o email', required=False, type=str),
+        OpenApiParameter(name='con_membresia_activa', description='Filtrar solo clientes con membresía activa', required=False, type=bool),
         OpenApiParameter(name='page', description='Número de página', required=False, type=int),
         OpenApiParameter(name='page_size', description='Cantidad de resultados por página', required=False, type=int),
     ],
@@ -35,8 +36,21 @@ class ClientListCreateView(APIView):
     def get(self, request):
         """Listar clientes con búsqueda y paginación"""
         search = request.query_params.get('search', '').strip()
+        con_membresia_activa = request.query_params.get('con_membresia_activa', '').lower() == 'true'
         
         queryset = Client.objects.all()
+        
+        # Filtrar solo clientes con membresía activa (para inscripciones a clases)
+        if con_membresia_activa:
+            from apps.membresias.models import Membresia
+            from apps.core.constants import ESTADO_ACTIVO
+            
+            # Obtener IDs de clientes con membresía activa
+            clientes_con_membresia = Membresia.objects.filter(
+                estado=ESTADO_ACTIVO
+            ).values_list('inscripcion__cliente_id', flat=True).distinct()
+            
+            queryset = queryset.filter(id__in=clientes_con_membresia)
         
         # Aplicar búsqueda
         if search:
