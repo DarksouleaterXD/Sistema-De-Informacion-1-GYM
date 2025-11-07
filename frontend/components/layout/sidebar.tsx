@@ -20,6 +20,7 @@ import {
   ClipboardList,
   Calendar,
   ScrollText,
+  Building2,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -67,6 +68,12 @@ const navItems: NavItem[] = [
     name: "Clases",
     href: "/dashboard/clases",
     icon: Calendar,
+    requiredPermission: PermissionCodes.CLASE_VIEW,
+  },
+  {
+    name: "Salones",
+    href: "/dashboard/salones",
+    icon: Building2,
     requiredPermission: PermissionCodes.CLASE_VIEW,
   },
   {
