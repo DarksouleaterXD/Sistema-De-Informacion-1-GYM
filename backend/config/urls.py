@@ -14,6 +14,7 @@ from apps.clases.views import (
     ClaseListCreateView, ClaseDetailView,
     InscripcionClaseListCreateView, InscripcionClaseDetailView
 )
+from apps.proveedores.views import ProveedorListCreateView, ProveedorDetailView
 
 urlpatterns = [
     # Django Admin
@@ -93,5 +94,9 @@ urlpatterns = [
     # Inscripciones a Clases
     path("api/inscripciones-clase/", InscripcionClaseListCreateView.as_view(), name="inscripcion-clase-list-create"),
     path("api/inscripciones-clase/<int:pk>/", InscripcionClaseDetailView.as_view(), name="inscripcion-clase-detail"),
+    
+    # CU29: Registrar Proveedor
+    path("api/proveedores/", ProveedorListCreateView.as_view(), name="proveedor-list-create"),
+    path("api/proveedores/<int:pk>/", ProveedorDetailView.as_view(), name="proveedor-detail"),
     
 ]
