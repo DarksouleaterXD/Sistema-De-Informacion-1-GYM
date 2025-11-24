@@ -14,7 +14,7 @@ from apps.clases.views import (
     ClaseListCreateView, ClaseDetailView,
     InscripcionClaseListCreateView, InscripcionClaseDetailView
 )
-from apps.proveedores.views import ProveedorListCreateView, ProveedorDetailView
+from apps.proveedores.views import ProveedorListCreateView, ProveedorDetailView, ProveedorActivateView
 
 urlpatterns = [
     # Django Admin
@@ -98,5 +98,6 @@ urlpatterns = [
     # CU29: Registrar Proveedor
     path("api/proveedores/", ProveedorListCreateView.as_view(), name="proveedor-list-create"),
     path("api/proveedores/<int:pk>/", ProveedorDetailView.as_view(), name="proveedor-detail"),
+    path("api/proveedores/<int:pk>/activate/", ProveedorActivateView.as_view(), name="proveedor-activate"),
     
 ]

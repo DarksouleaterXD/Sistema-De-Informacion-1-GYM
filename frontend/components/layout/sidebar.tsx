@@ -20,6 +20,7 @@ import {
   ClipboardList,
   Calendar,
   ScrollText,
+  Truck,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -74,6 +75,12 @@ const navItems: NavItem[] = [
     href: "/dashboard/promociones",
     icon: Tag,
     requiredPermission: PermissionCodes.PROMOTION_VIEW,
+  },
+  {
+    name: "Proveedores",
+    href: "/dashboard/proveedores",
+    icon: Truck,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
   },
   {
     name: "Usuarios",

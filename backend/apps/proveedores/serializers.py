@@ -206,6 +206,9 @@ class ProveedorListSerializer(serializers.ModelSerializer):
             'nit',
             'telefono',
             'email',
+            'direccion',
+            'contacto_nombre',
+            'notas',
             'estado',
             'estado_display',
             'created_at'
@@ -255,3 +258,14 @@ class ProveedorUpdateSerializer(serializers.ModelSerializer):
         """Reutiliza validación de ProveedorCreateSerializer"""
         serializer = ProveedorCreateSerializer(instance=self.instance)
         return serializer.validate_contacto_nombre(value)
+    
+    def update(self, instance, validated_data):
+        """
+        Actualizar proveedor - solo actualiza campos que vienen en el request
+        """
+        # Actualizar campos normalmente
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        
+        instance.save()
+        return instance

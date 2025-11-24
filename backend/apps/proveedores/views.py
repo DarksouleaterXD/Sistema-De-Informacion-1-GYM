@@ -235,8 +235,8 @@ class ProveedorListCreateView(APIView):
             registrar_bitacora(
                 request=request,
                 usuario=request.user,
-                accion="Proveedor creado",
-                descripcion=f"Proveedor '{proveedor.razon_social}' (NIT: {proveedor.nit}) creado exitosamente",
+                accion="Registrar Proveedor",
+                descripcion=f"Proveedor '{proveedor.razon_social}' con NIT {proveedor.nit} registrado exitosamente en el sistema",
                 modulo="PROVEEDORES",
                 tipo_accion="create",
                 nivel="info",
@@ -340,8 +340,8 @@ class ProveedorDetailView(APIView):
             registrar_bitacora(
                 request=request,
                 usuario=request.user,
-                accion="Proveedor actualizado",
-                descripcion=f"Proveedor '{updated_proveedor.razon_social}' (ID: {updated_proveedor.id}) actualizado",
+                accion="Actualizar Proveedor",
+                descripcion=f"Información del proveedor '{updated_proveedor.razon_social}' (NIT: {updated_proveedor.nit}) actualizada correctamente",
                 modulo="PROVEEDORES",
                 tipo_accion="update",
                 nivel="info",
@@ -404,8 +404,8 @@ class ProveedorDetailView(APIView):
             registrar_bitacora(
                 request=request,
                 usuario=request.user,
-                accion="Proveedor actualizado (parcial)",
-                descripcion=f"Proveedor '{updated_proveedor.razon_social}' (ID: {updated_proveedor.id}) actualizado parcialmente",
+                accion="Actualizar Proveedor",
+                descripcion=f"Información del proveedor '{updated_proveedor.razon_social}' (NIT: {updated_proveedor.nit}) actualizada parcialmente",
                 modulo="PROVEEDORES",
                 tipo_accion="update",
                 nivel="info",
@@ -436,11 +436,22 @@ class ProveedorDetailView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
-    @extend_schema(responses={204: None})
+    @extend_schema(
+        responses={204: None},
+        parameters=[
+            OpenApiParameter(
+                name='permanent',
+                description='Si es true, elimina permanentemente. Si es false o no está presente, solo desactiva (soft delete)',
+                required=False,
+                type=bool
+            )
+        ]
+    )
     def delete(self, request, pk):
         """
-        Eliminar (desactivar) proveedor
-        Soft delete: cambia estado a Inactivo
+        Eliminar proveedor
+        - Query param 'permanent=true': Hard delete (eliminación permanente)
+        - Sin param o 'permanent=false': Soft delete (desactivar, cambia estado a Inactivo)
         """
         proveedor = self.get_object(pk)
         
@@ -450,31 +461,58 @@ class ProveedorDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        # Verificar si es eliminación permanente
+        permanent = request.query_params.get('permanent', 'false').lower() == 'true'
+        
         try:
-            # Soft delete: desactivar en lugar de eliminar
-            proveedor.desactivar()
-            
-            # Registrar en bitácora
-            registrar_bitacora(
-                request=request,
-                usuario=request.user,
-                accion="Proveedor desactivado",
-                descripcion=f"Proveedor '{proveedor.razon_social}' (ID: {proveedor.id}) desactivado",
-                modulo="PROVEEDORES",
-                tipo_accion="delete",
-                nivel="info",
-                datos_adicionales={
-                    'proveedor_id': proveedor.id,
+            if permanent:
+                # Hard delete: eliminación permanente de la base de datos
+                proveedor_data = {
+                    'id': proveedor.id,
+                    'razon_social': proveedor.razon_social,
                     'nit': proveedor.nit
                 }
-            )
+                
+                proveedor.delete()
+                
+                # Registrar en bitácora
+                registrar_bitacora(
+                    request=request,
+                    usuario=request.user,
+                    accion="Eliminar Proveedor Permanentemente",
+                    descripcion=f"Proveedor '{proveedor_data['razon_social']}' con NIT {proveedor_data['nit']} eliminado permanentemente de la base de datos",
+                    modulo="PROVEEDORES",
+                    tipo_accion="delete",
+                    nivel="warning",
+                    datos_adicionales=proveedor_data
+                )
+            else:
+                # Soft delete: desactivar en lugar de eliminar
+                proveedor.desactivar()
+                
+                # Registrar en bitácora
+                registrar_bitacora(
+                    request=request,
+                    usuario=request.user,
+                    accion="Desactivar Proveedor",
+                    descripcion=f"Proveedor '{proveedor.razon_social}' con NIT {proveedor.nit} cambiado a estado Inactivo",
+                    modulo="PROVEEDORES",
+                    tipo_accion="update",
+                    nivel="info",
+                    datos_adicionales={
+                        'proveedor_id': proveedor.id,
+                        'nit': proveedor.nit,
+                        'estado_anterior': 'A',
+                        'estado_nuevo': 'I'
+                    }
+                )
             
             return Response(status=status.HTTP_204_NO_CONTENT)
         
         except Exception as e:
             registrar_bitacora(
                 request=request,
-                accion="Error al desactivar proveedor",
+                accion=f"Error al {'eliminar permanentemente' if permanent else 'desactivar'} proveedor",
                 descripcion=f"Error: {str(e)}",
                 modulo="PROVEEDORES",
                 tipo_accion="delete",
@@ -483,7 +521,78 @@ class ProveedorDetailView(APIView):
             
             return Response(
                 {
-                    "error": "Error al desactivar proveedor",
+                    "error": f"Error al {'eliminar' if permanent else 'desactivar'} proveedor",
+                    "detail": str(e) if request.user.is_staff else "Error interno del servidor"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(tags=["Proveedores"])
+class ProveedorActivateView(APIView):
+    """
+    POST: Activar un proveedor inactivo
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @extend_schema(
+        responses={
+            200: ProveedorResponseSerializer,
+            404: OpenApiExample(
+                "Proveedor no encontrado",
+                value={"error": "Proveedor no encontrado"}
+            )
+        }
+    )
+    def post(self, request, pk):
+        """
+        Activar un proveedor cambiando su estado a Activo
+        """
+        try:
+            proveedor = Proveedor.objects.get(pk=pk)
+        except Proveedor.DoesNotExist:
+            return Response(
+                {"error": "Proveedor no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        try:
+            # Activar proveedor
+            proveedor.activar()
+            
+            # Registrar en bitácora
+            registrar_bitacora(
+                request=request,
+                usuario=request.user,
+                accion="Activar Proveedor",
+                descripcion=f"Proveedor '{proveedor.razon_social}' con NIT {proveedor.nit} reactivado y cambiado a estado Activo",
+                modulo="PROVEEDORES",
+                tipo_accion="update",
+                nivel="info",
+                datos_adicionales={
+                    'proveedor_id': proveedor.id,
+                    'nit': proveedor.nit,
+                    'estado_anterior': proveedor.estado,
+                    'estado_nuevo': 'A'
+                }
+            )
+            
+            response_serializer = ProveedorResponseSerializer(proveedor)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            registrar_bitacora(
+                request=request,
+                accion="Error al activar proveedor",
+                descripcion=f"Error: {str(e)}",
+                modulo="PROVEEDORES",
+                tipo_accion="update",
+                nivel="error"
+            )
+            
+            return Response(
+                {
+                    "error": "Error al activar proveedor",
                     "detail": str(e) if request.user.is_staff else "Error interno del servidor"
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
