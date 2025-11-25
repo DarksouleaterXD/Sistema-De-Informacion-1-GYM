@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'apps.disciplinas',
     'apps.clases',
     'apps.proveedores',
+    'apps.productos',
 ]
 
 MIDDLEWARE = [

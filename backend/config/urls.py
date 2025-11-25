@@ -98,6 +98,9 @@ urlpatterns = [
     # CU29: Registrar Proveedor
     path("api/proveedores/", ProveedorListCreateView.as_view(), name="proveedor-list-create"),
     path("api/proveedores/<int:pk>/", ProveedorDetailView.as_view(), name="proveedor-detail"),
+    
+    # CU24: Registrar Producto
+    path('api/', include('apps.productos.urls')),
     path("api/proveedores/<int:pk>/activate/", ProveedorActivateView.as_view(), name="proveedor-activate"),
     
 ]
