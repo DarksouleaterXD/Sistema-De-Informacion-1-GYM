@@ -47,13 +47,17 @@ from apps.clases.views import (
     InscripcionClaseListCreateView,
     InscripcionClaseDetailView,
 )
+from apps.proveedores.views import (
+    ProveedorListCreateView,
+    ProveedorDetailView,
+    ProveedorActivateView,
+)
 from rest_framework.routers import DefaultRouter
 from apps.asistencias.views import AsistenciaClaseViewSet
 
 # Router para ViewSets
 router = DefaultRouter()
 router.register(r"asistencias", AsistenciaClaseViewSet, basename="asistencia")
-from apps.proveedores.views import ProveedorListCreateView, ProveedorDetailView, ProveedorActivateView
 
 urlpatterns = [
     # Django Admin
@@ -192,7 +196,6 @@ urlpatterns = [
     path("api/clases/", ClaseListCreateView.as_view(), name="clase-list-create"),
     path("api/clases/<int:pk>/", ClaseDetailView.as_view(), name="clase-detail"),
     # Inscripciones a Clases
-
     path(
         "api/inscripciones-clase/",
         InscripcionClaseListCreateView.as_view(),
@@ -205,14 +208,20 @@ urlpatterns = [
     ),
     # CU22: Control de Asistencias a Clases
     path("api/", include(router.urls)),
-    # Productos
-    path("api/products/", include("apps.products.urls")),
-]
-
     # CU29: Registrar Proveedor
-    path("api/proveedores/", ProveedorListCreateView.as_view(), name="proveedor-list-create"),
-    path("api/proveedores/<int:pk>/", ProveedorDetailView.as_view(), name="proveedor-detail"),
-    path("api/proveedores/<int:pk>/activate/", ProveedorActivateView.as_view(), name="proveedor-activate"),
-    
+    path(
+        "api/proveedores/",
+        ProveedorListCreateView.as_view(),
+        name="proveedor-list-create",
+    ),
+    path(
+        "api/proveedores/<int:pk>/",
+        ProveedorDetailView.as_view(),
+        name="proveedor-detail",
+    ),
+    path(
+        "api/proveedores/<int:pk>/activate/",
+        ProveedorActivateView.as_view(),
+        name="proveedor-activate",
+    ),
 ]
-
