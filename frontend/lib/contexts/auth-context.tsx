@@ -16,6 +16,34 @@ import {
   type PermissionCode,
 } from "../utils/permissions";
 
+// Helper para acceso seguro a localStorage (fix SSR)
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('Error saving to localStorage:', error);
+    }
+  },
+  removeItem: (key: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn('Error removing from localStorage:', error);
+    }
+  }
+};
+
 interface Role {
   id: number;
   nombre: string;
@@ -62,20 +90,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setPermissions(currentUser.permissions || []);
               setRoles(currentUser.roles || []);
               setIsSuperuser(currentUser.is_superuser || false);
-              localStorage.setItem("user", JSON.stringify(currentUser));
-              localStorage.setItem(
+              safeLocalStorage.setItem("user", JSON.stringify(currentUser));
+              safeLocalStorage.setItem(
                 "permissions",
                 JSON.stringify(currentUser.permissions || [])
               );
-              localStorage.setItem(
+              safeLocalStorage.setItem(
                 "roles",
                 JSON.stringify(currentUser.roles || [])
               );
             } catch (error) {
               // Si falla, cargar permisos del localStorage
               console.error("Error verificando usuario:", error);
-              const storedPermissions = localStorage.getItem("permissions");
-              const storedRoles = localStorage.getItem("roles");
+              const storedPermissions = safeLocalStorage.getItem("permissions");
+              const storedRoles = safeLocalStorage.getItem("roles");
               if (storedPermissions)
                 setPermissions(JSON.parse(storedPermissions));
               if (storedRoles) setRoles(JSON.parse(storedRoles));
@@ -104,11 +132,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setRoles(currentUser.roles || []);
       setIsSuperuser(currentUser.is_superuser || false);
 
-      localStorage.setItem(
+      safeLocalStorage.setItem(
         "permissions",
         JSON.stringify(currentUser.permissions || [])
       );
-      localStorage.setItem("roles", JSON.stringify(currentUser.roles || []));
+      safeLocalStorage.setItem("roles", JSON.stringify(currentUser.roles || []));
 
       router.push("/dashboard");
     } catch (error) {
@@ -125,8 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setPermissions([]);
       setRoles([]);
       setIsSuperuser(false);
-      localStorage.removeItem("permissions");
-      localStorage.removeItem("roles");
+      safeLocalStorage.removeItem("permissions");
+      safeLocalStorage.removeItem("roles");
       router.push("/login");
     }
   };

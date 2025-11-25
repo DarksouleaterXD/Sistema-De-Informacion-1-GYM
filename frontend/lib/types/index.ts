@@ -28,7 +28,7 @@ export interface Client {
   fecha_registro: string;
   peso: string; // DecimalField
   altura: string; // DecimalField
-  experiencia: "PRINCIPIANTE" | "INTERMEDIO" | "AVANZADO";
+  experiencia: "principiante" | "intermedio" | "avanzado";
   nombre_completo?: string;
   created_at: string;
   updated_at: string;
@@ -161,5 +161,5 @@ export interface BaseFilters {
 // Estados (✅ CORREGIDO: membresías minúsculas, promociones MAYÚSCULAS)
 export type EstadoMembresia = "activo" | "inactivo" | "vencido" | "suspendido";
 export type EstadoPromocion = "ACTIVA" | "INACTIVA" | "VENCIDA";
-export type ExperienciaCliente = "PRINCIPIANTE" | "INTERMEDIO" | "AVANZADO";
+export type ExperienciaCliente = "principiante" | "intermedio" | "avanzado";
 export type MetodoPago = "efectivo" | "tarjeta" | "transferencia" | "qr";

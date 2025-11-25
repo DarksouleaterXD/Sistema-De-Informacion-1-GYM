@@ -80,6 +80,13 @@ class PermissionCodes:
     DISCIPLINE_EDIT = "discipline.edit"
     DISCIPLINE_DELETE = "discipline.delete"
     
+    # ===== INSTRUCTORES =====
+    INSTRUCTOR_VIEW = "instructor.view"
+    INSTRUCTOR_CREATE = "instructor.create"
+    INSTRUCTOR_EDIT = "instructor.edit"
+    INSTRUCTOR_DELETE = "instructor.delete"
+    INSTRUCTOR_VIEW_DETAILS = "instructor.view_details"
+    
     # ===== SALONES =====
     SALON_VIEW = "salon.view"
     SALON_CREATE = "salon.create"
@@ -97,6 +104,13 @@ class PermissionCodes:
     INSCRIPCION_CLASE_CREATE = "inscripcion_clase.create"
     INSCRIPCION_CLASE_EDIT = "inscripcion_clase.edit"
     INSCRIPCION_CLASE_DELETE = "inscripcion_clase.delete"
+    
+    # ===== ASISTENCIAS A CLASES =====
+    ASISTENCIA_VIEW = "asistencia.view"
+    ASISTENCIA_CREATE = "asistencia.create"
+    ASISTENCIA_EDIT = "asistencia.edit"
+    ASISTENCIA_DELETE = "asistencia.delete"
+    ASISTENCIA_VIEW_DETAILS = "asistencia.view_details"
     
     # ===== AUDITORÍA =====
     AUDIT_VIEW = "audit.view"
@@ -157,6 +171,13 @@ class PermissionGroups:
         PermissionCodes.PROMOTION_DELETE,
         PermissionCodes.PROMOTION_VIEW_DETAILS,
         
+        # Asistencias - Control completo
+        PermissionCodes.ASISTENCIA_VIEW,
+        PermissionCodes.ASISTENCIA_CREATE,
+        PermissionCodes.ASISTENCIA_EDIT,
+        PermissionCodes.ASISTENCIA_DELETE,
+        PermissionCodes.ASISTENCIA_VIEW_DETAILS,
+        
         # Auditoría solo ver
         PermissionCodes.AUDIT_VIEW,
         PermissionCodes.AUDIT_VIEW_DETAILS,
@@ -180,11 +201,30 @@ class PermissionGroups:
         PermissionCodes.MEMBERSHIP_VIEW,
         PermissionCodes.MEMBERSHIP_VIEW_DETAILS,
         
-        # Nota: Permisos de clases se agregarán cuando se implemente ese módulo
-        # - class.view (ver sus clases)
-        # - class.create (programar sus clases - CU20)
-        # - class.enroll_client (inscribir clientes - CU21)
-        # - class.take_attendance (controlar asistencia - CU22)
+        # Disciplinas - Ver disciplinas disponibles
+        PermissionCodes.DISCIPLINE_VIEW,
+        
+        # Salones - Ver salones disponibles para programar clases
+        PermissionCodes.SALON_VIEW,
+        
+        # Clases - Gestión completa de sus clases (CU20: Programar clase)
+        PermissionCodes.CLASE_VIEW,
+        PermissionCodes.CLASE_CREATE,
+        PermissionCodes.CLASE_EDIT,
+        PermissionCodes.CLASE_DELETE,
+        
+        # Inscripciones a Clases - Gestión de inscripciones (CU21: Inscribir cliente, CU22: Asistencia)
+        PermissionCodes.INSCRIPCION_CLASE_VIEW,
+        PermissionCodes.INSCRIPCION_CLASE_CREATE,
+        PermissionCodes.INSCRIPCION_CLASE_EDIT,
+        PermissionCodes.INSCRIPCION_CLASE_DELETE,
+        
+        # Asistencias - Control completo (CU22: Controlar asistencia a clase)
+        PermissionCodes.ASISTENCIA_VIEW,
+        PermissionCodes.ASISTENCIA_CREATE,
+        PermissionCodes.ASISTENCIA_EDIT,
+        PermissionCodes.ASISTENCIA_DELETE,
+        PermissionCodes.ASISTENCIA_VIEW_DETAILS,
     ]
     
     # Alias para compatibilidad

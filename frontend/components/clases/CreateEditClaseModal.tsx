@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, Users, MapPin } from 'lucide-react';
 import { createClase, updateClase, Clase, ClaseFormData, getSalones, Salon } from '@/lib/services/clase.service';
 import disciplinaService, { Disciplina } from '@/lib/services/disciplina.service';
+import { authService } from '@/lib/services/auth.service';
 
 interface CreateEditClaseModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export default function CreateEditClaseModal({
   useEffect(() => {
     if (isOpen) {
       loadOptions();
+      loadCurrentUser();
       if (clase) {
         setFormData({
           disciplina: clase.disciplina,
@@ -55,6 +57,18 @@ export default function CreateEditClaseModal({
       }
     }
   }, [isOpen, clase]);
+
+  const loadCurrentUser = async () => {
+    try {
+      const user = await authService.getCurrentUser();
+      // Si no estamos editando, establecer el instructor como el usuario actual
+      if (!clase) {
+        setFormData(prev => ({ ...prev, instructor: user.id }));
+      }
+    } catch (err) {
+      console.error('Error cargando usuario:', err);
+    }
+  };
 
   const loadOptions = async () => {
     try {
