@@ -209,6 +209,7 @@ urlpatterns = [
     # CU22: Control de Asistencias a Clases
     path("api/", include(router.urls)),
     # CU29: Registrar Proveedor
+
     path(
         "api/proveedores/",
         ProveedorListCreateView.as_view(),
@@ -219,9 +220,11 @@ urlpatterns = [
         ProveedorDetailView.as_view(),
         name="proveedor-detail",
     ),
+    path('api/', include('apps.productos.urls')),
     path(
         "api/proveedores/<int:pk>/activate/",
         ProveedorActivateView.as_view(),
         name="proveedor-activate",
     ),
 ]
+

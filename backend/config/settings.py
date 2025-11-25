@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework_simplejwt.token_blacklist",  # para invalidar refresh en logout
     # Local apps
+  
     "apps.core",
     "apps.users",
     "apps.clients",
@@ -65,6 +66,7 @@ INSTALLED_APPS = [
     "apps.clases",
     "apps.asistencias",
     "apps.proveedores",
+    'apps.productos',
 ]
 
 MIDDLEWARE = [

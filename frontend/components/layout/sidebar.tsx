@@ -26,6 +26,7 @@ import {
   ClipboardList,
 
   Truck,
+  Package,
 
 } from "lucide-react";
 import { useState } from "react";
@@ -105,6 +106,12 @@ const navItems: NavItem[] = [
     name: "Proveedores",
     href: "/dashboard/proveedores",
     icon: Truck,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+  },
+  {
+    name: "Productos",
+    href: "/dashboard/productos",
+    icon: Package,
     requiredPermission: PermissionCodes.CLIENT_VIEW,
   },
   {
