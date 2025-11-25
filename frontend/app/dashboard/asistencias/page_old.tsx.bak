@@ -1,0 +1,345 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Activity, Search, Calendar, Filter, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import asistenciaService, {
+  InscritoClase,
+  InscritosClaseResponse,
+} from "@/lib/services/asistencia.service";
+import { getClases } from "@/lib/services/clase.service";
+
+export default function AsistenciasPage() {
+  const [clases, setClases] = useState<any[]>([]);
+  const [claseSeleccionada, setClaseSeleccionada] = useState<number | null>(null);
+  const [inscritos, setInscritos] = useState<InscritoClase[]>([]);
+  const [claseInfo, setClaseInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+
+  // Cargar clases disponibles
+  useEffect(() => {
+    loadClases();
+  }, []);
+
+  const loadClases = async () => {
+    try {
+      const response = await getClases(1, "");
+      setClases(response.results);
+    } catch (error) {
+      console.error("Error cargando clases:", error);
+    }
+  };
+
+  // Cargar inscritos cuando se selecciona una clase
+  const handleSeleccionarClase = async (claseId: number) => {
+    setClaseSeleccionada(claseId);
+    setLoading(true);
+
+    try {
+      const response: InscritosClaseResponse =
+        await asistenciaService.getInscritosClase(claseId);
+      setInscritos(response.inscritos);
+      setClaseInfo(response.clase_info);
+    } catch (error) {
+      console.error("Error cargando inscritos:", error);
+      alert("Error al cargar la lista de inscritos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Marcar asistencia individual
+  const handleMarcarAsistencia = async (
+    inscrito: InscritoClase,
+    estado: string
+  ) => {
+    setGuardando(true);
+
+    try {
+      if (inscrito.tiene_asistencia && inscrito.asistencia_id) {
+        // Actualizar asistencia existente
+        await asistenciaService.update(inscrito.asistencia_id, { estado } as any);
+      } else {
+        // Registrar nueva asistencia
+        await asistenciaService.registrarAsistencia({
+          inscripcion_id: inscrito.inscripcion_id,
+          estado: estado as any,
+        });
+      }
+
+      // Recargar lista
+      if (claseSeleccionada) {
+        await handleSeleccionarClase(claseSeleccionada);
+      }
+    } catch (error: any) {
+      console.error("Error guardando asistencia:", error);
+      
+      // Mostrar mensaje de error específico
+      let mensaje = "Error al registrar asistencia";
+      
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Si hay un error de validación de fecha
+        if (errorData.clase) {
+          mensaje = Array.isArray(errorData.clase) 
+            ? errorData.clase[0] 
+            : errorData.clase;
+        } else if (errorData.detail) {
+          mensaje = errorData.detail;
+        } else if (errorData.non_field_errors) {
+          mensaje = Array.isArray(errorData.non_field_errors)
+            ? errorData.non_field_errors[0]
+            : errorData.non_field_errors;
+        } else if (typeof errorData === 'string') {
+          mensaje = errorData;
+        } else {
+          // Intentar extraer el primer mensaje de error
+          const primerError = Object.values(errorData)[0];
+          if (Array.isArray(primerError)) {
+            mensaje = primerError[0];
+          } else {
+            mensaje = String(primerError);
+          }
+        }
+      }
+      
+      alert(mensaje);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // Guardar todas las asistencias
+  const handleGuardarTodas = async () => {
+    if (!claseSeleccionada) return;
+
+    setGuardando(true);
+
+    try {
+      const asistencias = inscritos
+        .filter((i) => i.estado) // Solo los que tienen estado marcado
+        .map((i) => ({
+          inscripcion_id: i.inscripcion_id,
+          estado: i.estado as any,
+        }));
+
+      if (asistencias.length === 0) {
+        alert("No hay asistencias para guardar");
+        return;
+      }
+
+      await asistenciaService.registrarAsistenciasMasivas({
+        clase_id: claseSeleccionada,
+        asistencias,
+      });
+
+      alert("Asistencias guardadas exitosamente");
+      
+      // Recargar
+      await handleSeleccionarClase(claseSeleccionada);
+    } catch (error) {
+      console.error("Error guardando asistencias:", error);
+      alert("Error al guardar asistencias");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const getEstadoIcon = (estado?: string) => {
+    switch (estado) {
+      case "presente":
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case "ausente":
+        return <XCircle className="w-5 h-5 text-red-600" />;
+      case "tardanza":
+        return <Clock className="w-5 h-5 text-yellow-600" />;
+      case "justificado":
+        return <AlertCircle className="w-5 h-5 text-blue-600" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <Activity className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Control de Asistencias
+          </h1>
+        </div>
+        <p className="text-gray-600 dark:text-gray-400">
+          Registra la asistencia de clientes a las clases programadas
+        </p>
+      </div>
+
+      {/* Selector de Clase */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Seleccionar Clase
+        </label>
+        <select
+          value={claseSeleccionada || ""}
+          onChange={(e) => handleSeleccionarClase(Number(e.target.value))}
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+        >
+          <option value="">-- Seleccione una clase --</option>
+          {clases.map((clase) => (
+            <option key={clase.id} value={clase.id}>
+              {clase.disciplina_nombre} - {clase.fecha} {clase.hora_inicio} (
+              {clase.salon_nombre})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Información de la Clase */}
+      {claseInfo && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+            Información de la Clase
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="text-blue-700 dark:text-blue-300 font-medium">Disciplina:</span>
+              <p className="text-blue-900 dark:text-blue-100">{claseInfo.disciplina}</p>
+            </div>
+            <div>
+              <span className="text-blue-700 dark:text-blue-300 font-medium">Fecha:</span>
+              <p className="text-blue-900 dark:text-blue-100">{claseInfo.fecha}</p>
+            </div>
+            <div>
+              <span className="text-blue-700 dark:text-blue-300 font-medium">Horario:</span>
+              <p className="text-blue-900 dark:text-blue-100">
+                {claseInfo.hora_inicio} - {claseInfo.hora_fin}
+              </p>
+            </div>
+            <div>
+              <span className="text-blue-700 dark:text-blue-300 font-medium">Salón:</span>
+              <p className="text-blue-900 dark:text-blue-100">{claseInfo.salon}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabla de Asistencia */}
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Cargando inscritos...</p>
+        </div>
+      ) : inscritos.length > 0 ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  Cliente
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  CI
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {inscritos.map((inscrito) => (
+                <tr key={inscrito.inscripcion_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-6 py-4">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {inscrito.cliente_nombre}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                    {inscrito.cliente_ci}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {inscrito.tiene_asistencia ? (
+                      <div className="flex items-center justify-center gap-2">
+                        {getEstadoIcon(inscrito.estado)}
+                        <span className="text-sm font-medium">
+                          {inscrito.estado_display}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Sin registrar</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() =>
+                          handleMarcarAsistencia(inscrito, "presente")
+                        }
+                        disabled={guardando}
+                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                        title="Presente"
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleMarcarAsistencia(inscrito, "ausente")
+                        }
+                        disabled={guardando}
+                        className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
+                        title="Ausente"
+                      >
+                        ✗
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleMarcarAsistencia(inscrito, "tardanza")
+                        }
+                        disabled={guardando}
+                        className="px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
+                        title="Tardanza"
+                      >
+                        ⏰
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleMarcarAsistencia(inscrito, "justificado")
+                        }
+                        disabled={guardando}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                        title="Justificado"
+                      >
+                        ⓘ
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Resumen */}
+          <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Total: {inscritos.length} inscritos |
+                Registrados: {inscritos.filter((i) => i.tiene_asistencia).length}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : claseSeleccionada ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+          <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
+            No hay inscritos para esta clase
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}

@@ -11,11 +11,23 @@ export interface PlanMembresiaCreate {
 
 export interface PlanMembresiaUpdate extends Partial<PlanMembresiaCreate> {}
 
+export interface PaginatedPlanMembresiaResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: PlanMembresia[];
+}
+
 class PlanMembresiaService {
   private baseUrl = "/api/planes-membresia";
 
-  async getAll(): Promise<PlanMembresia[]> {
-    return await httpClient.get<PlanMembresia[]>(this.baseUrl + "/");
+  async getAll(params?: { page?: number; search?: string }): Promise<PaginatedPlanMembresiaResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.search) queryParams.append('search', params.search);
+    
+    const url = `${this.baseUrl}/?${queryParams.toString()}`;
+    return await httpClient.get<PaginatedPlanMembresiaResponse>(url);
   }
 
   async getById(id: number): Promise<PlanMembresia> {
@@ -39,11 +51,20 @@ class PlanMembresiaService {
   }
 
   /**
+   * Obtener todos los planes sin paginación (para dropdowns)
+   */
+  async getAllPlansSimple(): Promise<PlanMembresia[]> {
+    // Obtener la primera página con todos los resultados
+    const response = await this.getAll({ page: 1 });
+    return response.results;
+  }
+
+  /**
    * Obtener planes activos (ordenados por duración)
    */
   async getActivePlans(): Promise<PlanMembresia[]> {
-    const plans = await this.getAll();
-    return plans.sort((a, b) => a.duracion - b.duracion);
+    const response = await this.getAllPlansSimple();
+    return response.sort((a, b) => a.duracion - b.duracion);
   }
 }
 

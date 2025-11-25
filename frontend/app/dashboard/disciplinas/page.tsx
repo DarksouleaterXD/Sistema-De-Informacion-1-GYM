@@ -189,9 +189,6 @@ export default function DisciplinasPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Estado
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Creada
-                    </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
@@ -223,11 +220,6 @@ export default function DisciplinasPage() {
                         >
                           {disciplina.activa ? "Activa" : "Inactiva"}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(disciplina.created_at).toLocaleDateString(
-                          "es-ES"
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
