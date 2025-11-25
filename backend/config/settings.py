@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'apps.instructores',
     'apps.clases',
     'apps.asistencias',
+    'apps.products',
 ]
 
 MIDDLEWARE = [
@@ -225,4 +226,4 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Password reset token TTL (hours)
-PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.environ.get('PASSWORD_RESET_TOKEN_TTL_HOURS', 24))   
+PASSWORD_RESET_TOKEN_TTL_HOURS = int(os.environ.get('PASSWORD_RESET_TOKEN_TTL_HOURS', 24))
