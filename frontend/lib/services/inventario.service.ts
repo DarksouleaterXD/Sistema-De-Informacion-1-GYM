@@ -7,6 +7,7 @@ import {
   MovimientoInventario,
   AjustarStockRequest,
   AjustarStockResponse,
+  AlertasResponse,
   PaginatedResponse,
 } from '../types';
 
@@ -104,6 +105,16 @@ class InventarioService {
     precio_promedio: number;
   }> {
     return await httpClient.get('/api/productos/productos/estadisticas/');
+  }
+
+  /**
+   * Obtener alertas de inventario
+   * Consulta alertas de stock bajo, stock crítico, próximos a vencer y vencidos
+   */
+  async getAlertas(tipo?: 'stock_bajo' | 'stock_critico' | 'proximo_vencer' | 'vencido'): Promise<AlertasResponse> {
+    const query = tipo ? `?tipo=${tipo}` : '';
+    console.log('📡 GET /api/productos/productos/alertas/' + query);
+    return await httpClient.get<AlertasResponse>(`/api/productos/productos/alertas/${query}`);
   }
 }
 
