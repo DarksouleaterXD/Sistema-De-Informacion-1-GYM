@@ -214,6 +214,10 @@ urlpatterns = [
     path("api/", include("apps.categorias.urls")),
     # CU24: Gestión de Productos
     path("api/productos/", include("apps.productos.urls")),
+    # Gestión de Ventas
+    path("api/", include("apps.ventas.urls")),
+    # Gestión de Compras
+    path("api/", include("apps.compras.urls")),
     # CU29: Registrar Proveedor
     path(
         "api/proveedores/",
