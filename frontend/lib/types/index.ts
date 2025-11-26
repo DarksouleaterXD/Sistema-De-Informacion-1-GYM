@@ -163,3 +163,74 @@ export type EstadoMembresia = "activo" | "inactivo" | "vencido" | "suspendido";
 export type EstadoPromocion = "ACTIVA" | "INACTIVA" | "VENCIDA";
 export type ExperienciaCliente = "principiante" | "intermedio" | "avanzado";
 export type MetodoPago = "efectivo" | "tarjeta" | "transferencia" | "qr";
+
+// Producto
+export interface Producto {
+  id: number;
+  nombre: string;
+  codigo: string;
+  descripcion?: string;
+  categoria: number;
+  categoria_nombre?: string;
+  proveedor: number;
+  proveedor_nombre?: string;
+  precio: string;
+  costo?: string;
+  precio_con_descuento?: string;
+  stock: number;
+  stock_minimo: number;
+  unidad_medida: string;
+  necesita_reposicion?: boolean;
+  promocion?: number | null;
+  promocion_nombre?: string | null;
+  estado: string;
+  imagen?: string | null;
+  imagen_url?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Movimiento de Inventario
+export interface MovimientoInventario {
+  id: number;
+  producto: number;
+  producto_nombre?: string;
+  producto_codigo?: string;
+  usuario: number;
+  usuario_nombre?: string;
+  tipo: "ENTRADA" | "SALIDA" | "AJUSTE";
+  tipo_display?: string;
+  cantidad: number;
+  cantidad_anterior: number;
+  cantidad_nueva: number;
+  motivo: string;
+  referencia?: string;
+  created_at: string;
+}
+
+// Request para ajustar stock
+export interface AjustarStockRequest {
+  producto_id: number;
+  cantidad_real: number;
+  motivo: string;
+  referencia?: string;
+}
+
+// Response de ajustar stock
+export interface AjustarStockResponse {
+  message: string;
+  producto: {
+    id: number;
+    nombre: string;
+    codigo: string;
+  };
+  ajuste: {
+    stock_anterior: number;
+    stock_actual: number;
+    diferencia: number;
+    tipo_ajuste: string;
+    motivo: string;
+    referencia?: string;
+  };
+  movimiento_id: number;
+}

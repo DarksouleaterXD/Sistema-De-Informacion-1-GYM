@@ -28,6 +28,7 @@ import {
   Truck,
   Package,
   FolderTree,
+  BarChart3,
 
 } from "lucide-react";
 import { useState } from "react";
@@ -119,6 +120,12 @@ const navItems: NavItem[] = [
     name: "Productos",
     href: "/dashboard/productos",
     icon: Package,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+  },
+  {
+    name: "Inventario",
+    href: "/dashboard/inventario",
+    icon: BarChart3,
     requiredPermission: PermissionCodes.CLIENT_VIEW,
   },
   {

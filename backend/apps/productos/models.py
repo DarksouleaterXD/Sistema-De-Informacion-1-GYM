@@ -258,3 +258,103 @@ class Producto(TimeStampedModel):
             self.estado = self.ESTADO_ACTIVO
 
         self.save()
+
+
+class MovimientoInventario(TimeStampedModel):
+    """
+    Registro de movimientos de inventario para auditoría y trazabilidad
+    Tipos: ENTRADA, SALIDA, AJUSTE
+    """
+
+    # Tipos de movimiento
+    TIPO_ENTRADA = "ENTRADA"
+    TIPO_SALIDA = "SALIDA"
+    TIPO_AJUSTE = "AJUSTE"
+
+    TIPO_CHOICES = [
+        (TIPO_ENTRADA, "Entrada"),
+        (TIPO_SALIDA, "Salida"),
+        (TIPO_AJUSTE, "Ajuste"),
+    ]
+
+    # Relaciones
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.PROTECT,
+        related_name="movimientos",
+        verbose_name="Producto",
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="movimientos_inventario",
+        verbose_name="Usuario que realizó el movimiento",
+    )
+
+    # Información del movimiento
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPO_CHOICES,
+        verbose_name="Tipo de Movimiento",
+    )
+
+    cantidad = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name="Cantidad",
+        help_text="Cantidad del movimiento (siempre positivo)",
+    )
+
+    cantidad_anterior = models.IntegerField(
+        verbose_name="Stock Anterior",
+        help_text="Stock antes del movimiento",
+    )
+
+    cantidad_nueva = models.IntegerField(
+        verbose_name="Stock Nuevo",
+        help_text="Stock después del movimiento",
+    )
+
+    motivo = models.TextField(
+        verbose_name="Motivo",
+        help_text="Descripción del motivo del movimiento",
+    )
+
+    # Metadatos adicionales
+    referencia = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Referencia",
+        help_text="Número de documento, orden de compra, etc.",
+    )
+
+    class Meta:
+        db_table = "movimiento_inventario"
+        verbose_name = "Movimiento de Inventario"
+        verbose_name_plural = "Movimientos de Inventario"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["producto", "-created_at"]),
+            models.Index(fields=["tipo", "-created_at"]),
+            models.Index(fields=["usuario", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.tipo} - {self.producto.nombre} - {self.cantidad} ({self.created_at.strftime('%Y-%m-%d')})"
+
+    def clean(self):
+        """Validaciones de negocio"""
+        super().clean()
+
+        if self.cantidad <= 0:
+            raise ValidationError({"cantidad": "La cantidad debe ser mayor a 0."})
+
+        if self.cantidad_nueva < 0:
+            raise ValidationError(
+                {"cantidad_nueva": "El stock resultante no puede ser negativo."}
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
