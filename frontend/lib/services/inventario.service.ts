@@ -1,7 +1,7 @@
 /**
  * Servicio para gestión de inventario y ajustes de stock
  */
-import { httpClient } from '../config/http-client';
+import { httpClient } from "../config/http-client";
 import {
   Producto,
   MovimientoInventario,
@@ -9,18 +9,23 @@ import {
   AjustarStockResponse,
   AlertasResponse,
   PaginatedResponse,
-} from '../types';
+} from "../types";
 
 /**
  * Construye query string a partir de parámetros
  */
 const buildQueryString = (params?: Record<string, any>): string => {
-  if (!params) return '';
+  if (!params) return "";
   const query = Object.entries(params)
-    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join('&');
-  return query ? `?${query}` : '';
+    .filter(
+      ([_, value]) => value !== undefined && value !== null && value !== ""
+    )
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+    )
+    .join("&");
+  return query ? `?${query}` : "";
 };
 
 class InventarioService {
@@ -38,8 +43,10 @@ class InventarioService {
     ordering?: string;
   }): Promise<PaginatedResponse<Producto>> {
     const query = buildQueryString(params);
-    console.log('📡 GET /api/productos/productos/' + query);
-    return await httpClient.get<PaginatedResponse<Producto>>(`/api/productos/productos/${query}`);
+    console.log("📡 GET /api/productos/productos/" + query);
+    return await httpClient.get<PaginatedResponse<Producto>>(
+      `/api/productos/productos/${query}`
+    );
   }
 
   /**
@@ -53,8 +60,11 @@ class InventarioService {
    * Ajustar stock de un producto
    */
   async ajustarStock(data: AjustarStockRequest): Promise<AjustarStockResponse> {
-    console.log('📡 POST /api/productos/productos/ajustar-stock/', data);
-    return await httpClient.post<AjustarStockResponse>('/api/productos/productos/ajustar-stock/', data);
+    console.log("📡 POST /api/productos/productos/ajustar-stock/", data);
+    return await httpClient.post<AjustarStockResponse>(
+      "/api/productos/productos/ajustar-stock/",
+      data
+    );
   }
 
   /**
@@ -64,21 +74,25 @@ class InventarioService {
     page?: number;
     page_size?: number;
     producto?: number;
-    tipo?: 'ENTRADA' | 'SALIDA' | 'AJUSTE';
+    tipo?: "ENTRADA" | "SALIDA" | "AJUSTE";
     fecha_desde?: string;
     fecha_hasta?: string;
     search?: string;
     ordering?: string;
   }): Promise<PaginatedResponse<MovimientoInventario>> {
     const query = buildQueryString(params);
-    return await httpClient.get<PaginatedResponse<MovimientoInventario>>(`/api/productos/movimientos-inventario/${query}`);
+    return await httpClient.get<PaginatedResponse<MovimientoInventario>>(
+      `/api/productos/movimientos-inventario/${query}`
+    );
   }
 
   /**
    * Obtener detalle de un movimiento
    */
   async getMovimiento(id: number): Promise<MovimientoInventario> {
-    return await httpClient.get<MovimientoInventario>(`/api/productos/movimientos-inventario/${id}/`);
+    return await httpClient.get<MovimientoInventario>(
+      `/api/productos/movimientos-inventario/${id}/`
+    );
   }
 
   /**
@@ -89,7 +103,9 @@ class InventarioService {
     page_size?: number;
   }): Promise<PaginatedResponse<Producto>> {
     const query = buildQueryString(params);
-    return await httpClient.get<PaginatedResponse<Producto>>(`/api/productos/productos/bajo-stock/${query}`);
+    return await httpClient.get<PaginatedResponse<Producto>>(
+      `/api/productos/productos/bajo-stock/${query}`
+    );
   }
 
   /**
@@ -104,17 +120,21 @@ class InventarioService {
     stock_total: number;
     precio_promedio: number;
   }> {
-    return await httpClient.get('/api/productos/productos/estadisticas/');
+    return await httpClient.get("/api/productos/productos/estadisticas/");
   }
 
   /**
    * Obtener alertas de inventario
    * Consulta alertas de stock bajo, stock crítico, próximos a vencer y vencidos
    */
-  async getAlertas(tipo?: 'stock_bajo' | 'stock_critico' | 'proximo_vencer' | 'vencido'): Promise<AlertasResponse> {
-    const query = tipo ? `?tipo=${tipo}` : '';
-    console.log('📡 GET /api/productos/productos/alertas/' + query);
-    return await httpClient.get<AlertasResponse>(`/api/productos/productos/alertas/${query}`);
+  async getAlertas(
+    tipo?: "stock_bajo" | "stock_critico" | "proximo_vencer" | "vencido"
+  ): Promise<AlertasResponse> {
+    const query = tipo ? `?tipo=${tipo}` : "";
+    console.log("📡 GET /api/productos/productos/alertas" + query);
+    return await httpClient.get<AlertasResponse>(
+      `/api/productos/productos/alertas${query}`
+    );
   }
 }
 
