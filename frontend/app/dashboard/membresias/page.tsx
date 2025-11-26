@@ -50,7 +50,9 @@ function MembresiasPageContent() {
   const [selectedMembresia, setSelectedMembresia] = useState<Membresia | null>(
     null
   );
-  const [selectedMembresiaId, setSelectedMembresiaId] = useState<number | undefined>();
+  const [selectedMembresiaId, setSelectedMembresiaId] = useState<
+    number | undefined
+  >();
 
   // Formulario
   const [formData, setFormData] = useState<MembresiaCreate>({
@@ -473,7 +475,9 @@ function MembresiasPageContent() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
                             <button
-                              onClick={() => handleViewEstadoVigencia(membresia.id)}
+                              onClick={() =>
+                                handleViewEstadoVigencia(membresia.id)
+                              }
                               className="text-green-600 hover:text-green-900"
                               title="Ver estado y vigencia"
                             >
@@ -609,7 +613,7 @@ function MembresiasPageContent() {
                           cliente: Number(e.target.value),
                         })
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                       required
                     >
                       <option value={0}>Seleccione un cliente</option>
@@ -645,7 +649,7 @@ function MembresiasPageContent() {
                               : formData.fecha_fin,
                         });
                       }}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                       required
                     >
                       <option value={0}>Seleccione un plan</option>
