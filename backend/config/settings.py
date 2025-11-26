@@ -32,7 +32,10 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# ALLOWED_HOSTS: Puede configurarse mediante variable de entorno
+# Ejemplo: ALLOWED_HOSTS=localhost,127.0.0.1,51.57.78.32,tu-dominio.com
+default_hosts = "localhost,127.0.0.1,51.57.78.32"
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", default_hosts).split(",")]
 
 
 # Application definition
