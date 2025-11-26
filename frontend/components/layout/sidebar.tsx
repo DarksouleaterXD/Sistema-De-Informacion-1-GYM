@@ -31,6 +31,7 @@ import {
   ShoppingBag,
   ChevronDown,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -153,6 +154,13 @@ const navItems: NavItem[] = [
     name: "Inventario",
     href: "/dashboard/inventario",
     icon: BarChart3,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+    group: "Gestión de Productos",
+  },
+  {
+    name: "Alertas",
+    href: "/dashboard/inventario/alertas",
+    icon: AlertTriangle,
     requiredPermission: PermissionCodes.CLIENT_VIEW,
     group: "Gestión de Productos",
   },

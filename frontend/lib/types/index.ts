@@ -181,11 +181,16 @@ export interface Producto {
   stock_minimo: number;
   unidad_medida: string;
   necesita_reposicion?: boolean;
+  stock_critico?: boolean;
   promocion?: number | null;
   promocion_nombre?: string | null;
   estado: string;
   imagen?: string | null;
   imagen_url?: string | null;
+  fecha_vencimiento?: string | null;
+  dias_hasta_vencimiento?: number | null;
+  esta_vencido?: boolean;
+  proximo_a_vencer?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -233,4 +238,30 @@ export interface AjustarStockResponse {
     referencia?: string;
   };
   movimiento_id: number;
+}
+
+// Alerta de Inventario
+export interface AlertaInventario {
+  id: number;
+  codigo: string;
+  nombre: string;
+  tipo: 'stock_bajo' | 'stock_critico' | 'proximo_vencer' | 'vencido';
+  severidad: 'alta' | 'critica';
+  mensaje: string;
+  stock_actual?: number;
+  stock_minimo?: number;
+  fecha_vencimiento?: string;
+  dias_hasta_vencimiento?: number;
+  categoria?: string;
+  proveedor?: string;
+  unidad_medida?: string;
+}
+
+// Response de alertas
+export interface AlertasResponse {
+  stock_bajo: AlertaInventario[];
+  stock_critico: AlertaInventario[];
+  proximo_vencer: AlertaInventario[];
+  vencido: AlertaInventario[];
+  total_alertas: number;
 }

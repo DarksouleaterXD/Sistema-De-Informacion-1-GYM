@@ -50,6 +50,10 @@ class ProductoViewSet(viewsets.ModelViewSet):
         'partial_update': ['productos.edit'],
         'destroy': ['productos.delete'],
         'actualizar_stock': ['productos.edit'],
+        'alertas': ['productos.view'],
+        'bajo_stock': ['productos.view'],
+        'activos': ['productos.view'],
+        'estadisticas': ['productos.view'],
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['categoria', 'proveedor', 'estado', 'promocion']
@@ -218,6 +222,122 @@ class ProductoViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=False, methods=['get'])
+    def alertas(self, request):
+        """
+        Consultar alertas de inventario
+        
+        Identifica productos con condiciones de riesgo:
+        - Stock bajo (stock <= stock_minimo)
+        - Stock crítico (stock <= 50% stock_minimo)
+        - Próximos a vencer (<=30 días)
+        - Vencidos
+        
+        GET /api/productos/productos/alertas/
+        
+        Query params:
+        - tipo: filtrar por tipo de alerta (stock_bajo, stock_critico, proximo_vencer, vencido)
+        """
+        from datetime import date, timedelta
+        from django.db.models import F, Q
+        
+        queryset = self.get_queryset().filter(estado=Producto.ESTADO_ACTIVO)
+        tipo_alerta = request.query_params.get('tipo', None)
+        
+        alertas = {
+            'stock_bajo': [],
+            'stock_critico': [],
+            'proximo_vencer': [],
+            'vencido': [],
+            'total_alertas': 0
+        }
+        
+        # Productos con stock bajo
+        productos_stock_bajo = queryset.filter(stock__lte=F('stock_minimo'))
+        
+        for producto in productos_stock_bajo:
+            alerta_data = {
+                'id': producto.id,
+                'codigo': producto.codigo,
+                'nombre': producto.nombre,
+                'stock_actual': producto.stock,
+                'stock_minimo': producto.stock_minimo,
+                'categoria': producto.categoria.nombre if producto.categoria else None,
+                'proveedor': producto.proveedor.razon_social if producto.proveedor else None,
+                'unidad_medida': producto.unidad_medida,
+            }
+            
+            # Determinar si es crítico o solo bajo
+            if producto.stock_critico:
+                alerta_data['tipo'] = 'stock_critico'
+                alerta_data['severidad'] = 'critica'
+                alerta_data['mensaje'] = f'Stock crítico: {producto.stock} unidades (mínimo: {producto.stock_minimo})'
+                alertas['stock_critico'].append(alerta_data)
+            else:
+                alerta_data['tipo'] = 'stock_bajo'
+                alerta_data['severidad'] = 'alta'
+                alerta_data['mensaje'] = f'Stock bajo: {producto.stock} unidades (mínimo: {producto.stock_minimo})'
+                alertas['stock_bajo'].append(alerta_data)
+        
+        # Productos próximos a vencer o vencidos
+        fecha_limite = date.today() + timedelta(days=30)
+        productos_con_vencimiento = queryset.filter(
+            fecha_vencimiento__isnull=False
+        )
+        
+        for producto in productos_con_vencimiento:
+            alerta_data = {
+                'id': producto.id,
+                'codigo': producto.codigo,
+                'nombre': producto.nombre,
+                'stock_actual': producto.stock,
+                'fecha_vencimiento': producto.fecha_vencimiento.isoformat(),
+                'dias_hasta_vencimiento': producto.dias_hasta_vencimiento,
+                'categoria': producto.categoria.nombre if producto.categoria else None,
+                'proveedor': producto.proveedor.razon_social if producto.proveedor else None,
+                'unidad_medida': producto.unidad_medida,
+            }
+            
+            if producto.esta_vencido:
+                alerta_data['tipo'] = 'vencido'
+                alerta_data['severidad'] = 'critica'
+                alerta_data['mensaje'] = f'Producto vencido desde hace {abs(producto.dias_hasta_vencimiento)} días'
+                alertas['vencido'].append(alerta_data)
+            elif producto.proximo_a_vencer:
+                alerta_data['tipo'] = 'proximo_vencer'
+                alerta_data['severidad'] = 'alta'
+                alerta_data['mensaje'] = f'Vence en {producto.dias_hasta_vencimiento} días'
+                alertas['proximo_vencer'].append(alerta_data)
+        
+        # Calcular total
+        alertas['total_alertas'] = (
+            len(alertas['stock_bajo']) +
+            len(alertas['stock_critico']) +
+            len(alertas['proximo_vencer']) +
+            len(alertas['vencido'])
+        )
+        
+        # Filtrar por tipo si se especifica
+        if tipo_alerta and tipo_alerta in alertas:
+            return Response({
+                'tipo': tipo_alerta,
+                'alertas': alertas[tipo_alerta],
+                'total': len(alertas[tipo_alerta])
+            })
+        
+        # Registrar consulta en auditoría
+        from apps.audit.helpers import registrar_bitacora
+        registrar_bitacora(
+            request=request,
+            accion="Consultar Alertas de Inventario",
+            descripcion=f"Usuario consultó alertas de inventario. Total: {alertas['total_alertas']}",
+            modulo="Inventario",
+            tipo_accion="read",
+            nivel="info"
+        )
+        
+        return Response(alertas)
     
     @action(detail=False, methods=['post'], url_path='ajustar-stock')
     def ajustar_stock(self, request):

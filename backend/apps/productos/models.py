@@ -146,6 +146,14 @@ class Producto(TimeStampedModel):
         verbose_name="Unidad de Medida",
     )
 
+    # Fecha de vencimiento (para productos perecederos)
+    fecha_vencimiento = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Vencimiento",
+        help_text="Fecha de vencimiento del producto (si aplica)",
+    )
+
     # Promoción (opcional)
     promocion = models.ForeignKey(
         Promocion,
@@ -230,6 +238,34 @@ class Producto(TimeStampedModel):
     def necesita_reposicion(self):
         """Indica si el producto necesita reposición"""
         return self.stock <= self.stock_minimo
+
+    @property
+    def stock_critico(self):
+        """Indica si el stock está en nivel crítico (50% o menos del mínimo)"""
+        if self.stock_minimo > 0:
+            return self.stock <= (self.stock_minimo * 0.5)
+        return self.stock == 0
+
+    @property
+    def dias_hasta_vencimiento(self):
+        """Calcula los días hasta el vencimiento"""
+        if self.fecha_vencimiento:
+            from datetime import date
+            delta = self.fecha_vencimiento - date.today()
+            return delta.days
+        return None
+
+    @property
+    def esta_vencido(self):
+        """Indica si el producto está vencido"""
+        dias = self.dias_hasta_vencimiento
+        return dias is not None and dias < 0
+
+    @property
+    def proximo_a_vencer(self):
+        """Indica si el producto está próximo a vencer (30 días o menos)"""
+        dias = self.dias_hasta_vencimiento
+        return dias is not None and 0 <= dias <= 30
 
     @property
     def margen_ganancia(self):

@@ -16,6 +16,9 @@ class ProductoListSerializer(serializers.ModelSerializer):
     promocion_nombre = serializers.CharField(source='promocion.nombre', read_only=True, allow_null=True)
     precio_con_descuento = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     necesita_reposicion = serializers.BooleanField(read_only=True)
+    dias_hasta_vencimiento = serializers.IntegerField(read_only=True, allow_null=True)
+    esta_vencido = serializers.BooleanField(read_only=True)
+    proximo_a_vencer = serializers.BooleanField(read_only=True)
     
     imagen_url = serializers.SerializerMethodField()
     
@@ -25,7 +28,9 @@ class ProductoListSerializer(serializers.ModelSerializer):
             'id', 'nombre', 'codigo', 'categoria', 'categoria_nombre',
             'proveedor', 'proveedor_nombre', 'precio', 'precio_con_descuento',
             'stock', 'stock_minimo', 'necesita_reposicion', 'estado',
-            'promocion', 'promocion_nombre', 'imagen', 'imagen_url', 'created_at'
+            'promocion', 'promocion_nombre', 'imagen', 'imagen_url', 
+            'fecha_vencimiento', 'dias_hasta_vencimiento', 'esta_vencido', 'proximo_a_vencer',
+            'created_at'
         ]
     
     def get_imagen_url(self, obj):
@@ -56,6 +61,10 @@ class ProductoDetailSerializer(serializers.ModelSerializer):
     precio_con_descuento = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     necesita_reposicion = serializers.BooleanField(read_only=True)
     margen_ganancia = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True, allow_null=True)
+    dias_hasta_vencimiento = serializers.IntegerField(read_only=True, allow_null=True)
+    esta_vencido = serializers.BooleanField(read_only=True)
+    proximo_a_vencer = serializers.BooleanField(read_only=True)
+    stock_critico = serializers.BooleanField(read_only=True)
     creado_por_nombre = serializers.CharField(source='creado_por.get_full_name', read_only=True)
     modificado_por_nombre = serializers.CharField(source='modificado_por.get_full_name', read_only=True)
     imagen_url = serializers.SerializerMethodField()
@@ -67,9 +76,10 @@ class ProductoDetailSerializer(serializers.ModelSerializer):
             'categoria', 'categoria_info',
             'proveedor', 'proveedor_info',
             'precio', 'costo', 'precio_con_descuento', 'margen_ganancia',
-            'stock', 'stock_minimo', 'unidad_medida', 'necesita_reposicion',
+            'stock', 'stock_minimo', 'unidad_medida', 'necesita_reposicion', 'stock_critico',
             'promocion', 'promocion_info', 'estado',
             'imagen', 'imagen_url',
+            'fecha_vencimiento', 'dias_hasta_vencimiento', 'esta_vencido', 'proximo_a_vencer',
             'creado_por', 'creado_por_nombre',
             'modificado_por', 'modificado_por_nombre',
             'created_at', 'updated_at'
@@ -94,7 +104,7 @@ class ProductoCreateUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'nombre', 'codigo', 'descripcion', 'imagen', 'categoria', 'proveedor',
             'precio', 'costo', 'stock', 'stock_minimo', 'unidad_medida',
-            'promocion', 'estado'
+            'promocion', 'estado', 'fecha_vencimiento'
         ]
     
     def validate_codigo(self, value):
