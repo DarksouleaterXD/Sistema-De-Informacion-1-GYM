@@ -383,7 +383,7 @@ export default function CreateEditOrdenCompraModal({
           {/* Lista de Productos */}
           {formData.items.length > 0 && (
             <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
+              <table className="w-full bg-white">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
@@ -408,7 +408,7 @@ export default function CreateEditOrdenCompraModal({
                     )}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white">
                   {formData.items.map((item, index) => {
                     const producto = productos.find(
                       (p) => p.id === item.producto
@@ -417,20 +417,20 @@ export default function CreateEditOrdenCompraModal({
                       item.cantidad * item.precio_unitario -
                       (item.descuento || 0);
                     return (
-                      <tr key={index} className="border-t border-gray-200">
-                        <td className="px-4 py-2">
+                      <tr key={index} className="border-t border-gray-200 bg-white">
+                        <td className="px-4 py-2 text-gray-900">
                           {producto?.nombre || `Producto #${item.producto}`}
                         </td>
-                        <td className="px-4 py-2 text-center">
+                        <td className="px-4 py-2 text-center text-gray-900">
                           {item.cantidad}
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right text-gray-900">
                           ${item.precio_unitario.toFixed(2)}
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right text-gray-900">
                           ${(item.descuento || 0).toFixed(2)}
                         </td>
-                        <td className="px-4 py-2 text-right font-medium">
+                        <td className="px-4 py-2 text-right font-medium text-gray-900">
                           ${subtotalItem.toFixed(2)}
                         </td>
                         {!orden && (

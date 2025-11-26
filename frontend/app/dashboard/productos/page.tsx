@@ -51,7 +51,9 @@ function ProductosPageContent() {
   const [categoriaFilter, setCategoriaFilter] = useState<string>("");
   const [estadoFilter, setEstadoFilter] = useState<string>("");
   const [modalMode, setModalMode] = useState<ModalMode>(null);
-  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
+  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(
+    null
+  );
   const [formData, setFormData] = useState<CreateProductoDTO>({
     nombre: "",
     codigo: "",
@@ -178,7 +180,11 @@ function ProductosPageContent() {
   };
 
   const handleDelete = async (id: number, nombre: string) => {
-    if (!confirm(`¿Está seguro de eliminar el producto "${nombre}"?\n\nEsta acción no se puede deshacer.`))
+    if (
+      !confirm(
+        `¿Está seguro de eliminar el producto "${nombre}"?\n\nEsta acción no se puede deshacer.`
+      )
+    )
       return;
 
     try {
@@ -287,7 +293,10 @@ function ProductosPageContent() {
   };
 
   return (
-    <DashboardLayout title="Productos" description="Gestión de productos del gimnasio">
+    <DashboardLayout
+      title="Productos"
+      description="Gestión de productos del gimnasio"
+    >
       <div className="space-y-6">
         {/* Barra de búsqueda y filtros */}
         <Card className="p-6">
@@ -379,7 +388,8 @@ function ProductosPageContent() {
                               alt={producto.nombre}
                               className="w-12 h-12 object-cover rounded-lg mr-3"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
+                                (e.target as HTMLImageElement).style.display =
+                                  "none";
                               }}
                             />
                           ) : (
@@ -482,7 +492,9 @@ function ProductosPageContent() {
                             <Edit className="w-5 h-5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(producto.id, producto.nombre)}
+                            onClick={() =>
+                              handleDelete(producto.id, producto.nombre)
+                            }
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                             title="Eliminar"
                           >
@@ -503,20 +515,29 @@ function ProductosPageContent() {
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Mostrando {(pagination.page - 1) * pagination.pageSize + 1} a{" "}
-              {Math.min(pagination.page * pagination.pageSize, pagination.total)} de{" "}
-              {pagination.total} productos
+              {Math.min(
+                pagination.page * pagination.pageSize,
+                pagination.total
+              )}{" "}
+              de {pagination.total} productos
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                onClick={() =>
+                  setPagination((p) => ({ ...p, page: p.page - 1 }))
+                }
                 disabled={pagination.page === 1}
                 variant="outline"
               >
                 Anterior
               </Button>
               <Button
-                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                disabled={pagination.page * pagination.pageSize >= pagination.total}
+                onClick={() =>
+                  setPagination((p) => ({ ...p, page: p.page + 1 }))
+                }
+                disabled={
+                  pagination.page * pagination.pageSize >= pagination.total
+                }
                 variant="outline"
               >
                 Siguiente
@@ -532,8 +553,10 @@ function ProductosPageContent() {
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">
-                  {modalMode === "create" ? "Nuevo Producto" : "Editar Producto"}
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {modalMode === "create"
+                    ? "Nuevo Producto"
+                    : "Editar Producto"}
                 </h2>
                 <button
                   onClick={() => setModalMode(null)}
@@ -548,7 +571,8 @@ function ProductosPageContent() {
                   {/* Nombre */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre del Producto <span className="text-red-500">*</span>
+                      Nombre del Producto{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -558,12 +582,16 @@ function ProductosPageContent() {
                         onChange={(e) =>
                           setFormData({ ...formData, nombre: e.target.value })
                         }
-                        className={`pl-10 ${formErrors.nombre ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          formErrors.nombre ? "border-red-500" : ""
+                        }`}
                         placeholder="Ej: Proteína Whey Gold"
                       />
                     </div>
                     {formErrors.nombre && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.nombre}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.nombre}
+                      </p>
                     )}
                   </div>
 
@@ -580,13 +608,17 @@ function ProductosPageContent() {
                         onChange={(e) =>
                           setFormData({ ...formData, codigo: e.target.value })
                         }
-                        className={`pl-10 ${formErrors.codigo ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          formErrors.codigo ? "border-red-500" : ""
+                        }`}
                         placeholder="Ej: PROT-001"
                         disabled={modalMode === "edit"}
                       />
                     </div>
                     {formErrors.codigo && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.codigo}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.codigo}
+                      </p>
                     )}
                     {modalMode === "edit" && (
                       <p className="text-gray-500 text-sm mt-1">
@@ -654,7 +686,8 @@ function ProductosPageContent() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                     />
                     <p className="text-xs text-gray-500">
-                      Formatos soportados: JPG, PNG, GIF. Tamaño máximo recomendado: 2MB
+                      Formatos soportados: JPG, PNG, GIF. Tamaño máximo
+                      recomendado: 2MB
                     </p>
                   </div>
                 </div>
@@ -668,10 +701,15 @@ function ProductosPageContent() {
                     <select
                       value={formData.categoria}
                       onChange={(e) =>
-                        setFormData({ ...formData, categoria: parseInt(e.target.value) })
+                        setFormData({
+                          ...formData,
+                          categoria: parseInt(e.target.value),
+                        })
                       }
                       className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 ${
-                        formErrors.categoria ? "border-red-500" : "border-gray-300"
+                        formErrors.categoria
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                     >
                       <option value={0}>Seleccione una categoría</option>
@@ -682,7 +720,9 @@ function ProductosPageContent() {
                       ))}
                     </select>
                     {formErrors.categoria && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.categoria}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.categoria}
+                      </p>
                     )}
                   </div>
 
@@ -696,7 +736,9 @@ function ProductosPageContent() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          proveedor: e.target.value ? parseInt(e.target.value) : null,
+                          proveedor: e.target.value
+                            ? parseInt(e.target.value)
+                            : null,
                         })
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
@@ -725,15 +767,22 @@ function ProductosPageContent() {
                         min="0"
                         value={formData.precio || ""}
                         onChange={(e) => {
-                          const value = e.target.value === "" ? 0 : parseFloat(e.target.value) || 0;
+                          const value =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value) || 0;
                           setFormData({ ...formData, precio: value });
                         }}
-                        className={`pl-10 ${formErrors.precio ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          formErrors.precio ? "border-red-500" : ""
+                        }`}
                         placeholder="0.00"
                       />
                     </div>
                     {formErrors.precio && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.precio}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.precio}
+                      </p>
                     )}
                   </div>
 
@@ -748,14 +797,19 @@ function ProductosPageContent() {
                       min="0"
                       value={formData.costo || ""}
                       onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : parseFloat(e.target.value) || 0;
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
                         setFormData({ ...formData, costo: value });
                       }}
                       className={formErrors.costo ? "border-red-500" : ""}
                       placeholder="0.00"
                     />
                     {formErrors.costo && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.costo}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.costo}
+                      </p>
                     )}
                   </div>
 
@@ -767,7 +821,10 @@ function ProductosPageContent() {
                     <select
                       value={formData.unidad_medida}
                       onChange={(e) =>
-                        setFormData({ ...formData, unidad_medida: e.target.value })
+                        setFormData({
+                          ...formData,
+                          unidad_medida: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                     >
@@ -791,14 +848,19 @@ function ProductosPageContent() {
                       min="0"
                       value={formData.stock || ""}
                       onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : parseInt(e.target.value) || 0;
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseInt(e.target.value) || 0;
                         setFormData({ ...formData, stock: value });
                       }}
                       className={formErrors.stock ? "border-red-500" : ""}
                       placeholder="0"
                     />
                     {formErrors.stock && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.stock}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.stock}
+                      </p>
                     )}
                   </div>
 
@@ -812,14 +874,21 @@ function ProductosPageContent() {
                       min="0"
                       value={formData.stock_minimo || ""}
                       onChange={(e) => {
-                        const value = e.target.value === "" ? 0 : parseInt(e.target.value) || 0;
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseInt(e.target.value) || 0;
                         setFormData({ ...formData, stock_minimo: value });
                       }}
-                      className={formErrors.stock_minimo ? "border-red-500" : ""}
+                      className={
+                        formErrors.stock_minimo ? "border-red-500" : ""
+                      }
                       placeholder="5"
                     />
                     {formErrors.stock_minimo && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.stock_minimo}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.stock_minimo}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -843,7 +912,9 @@ function ProductosPageContent() {
                     ) : (
                       <>
                         <Plus className="w-5 h-5 mr-2" />
-                        {modalMode === "create" ? "Crear Producto" : "Guardar Cambios"}
+                        {modalMode === "create"
+                          ? "Crear Producto"
+                          : "Guardar Cambios"}
                       </>
                     )}
                   </Button>
@@ -860,7 +931,9 @@ function ProductosPageContent() {
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Actualizar Stock</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Actualizar Stock
+                </h2>
                 <button
                   onClick={() => setModalMode(null)}
                   className="text-gray-400 hover:text-gray-600"
@@ -871,10 +944,13 @@ function ProductosPageContent() {
 
               <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Producto</p>
-                <p className="font-medium">{selectedProducto.nombre}</p>
+                <p className="font-medium text-gray-900">
+                  {selectedProducto.nombre}
+                </p>
                 <p className="text-sm text-gray-600 mt-2">Stock actual</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {selectedProducto.stock} {selectedProducto.unidad_medida_display}
+                  {selectedProducto.stock}{" "}
+                  {selectedProducto.unidad_medida_display}
                 </p>
               </div>
 
@@ -888,7 +964,10 @@ function ProductosPageContent() {
                     <button
                       type="button"
                       onClick={() =>
-                        setStockData({ ...stockData, tipo_movimiento: "entrada" })
+                        setStockData({
+                          ...stockData,
+                          tipo_movimiento: "entrada",
+                        })
                       }
                       className={`px-4 py-2 rounded-lg border-2 font-medium ${
                         stockData.tipo_movimiento === "entrada"
@@ -902,7 +981,10 @@ function ProductosPageContent() {
                     <button
                       type="button"
                       onClick={() =>
-                        setStockData({ ...stockData, tipo_movimiento: "salida" })
+                        setStockData({
+                          ...stockData,
+                          tipo_movimiento: "salida",
+                        })
                       }
                       className={`px-4 py-2 rounded-lg border-2 font-medium ${
                         stockData.tipo_movimiento === "salida"
@@ -926,7 +1008,10 @@ function ProductosPageContent() {
                     min="1"
                     value={stockData.cantidad || ""}
                     onChange={(e) => {
-                      const value = e.target.value === "" ? 0 : parseInt(e.target.value) || 0;
+                      const value =
+                        e.target.value === ""
+                          ? 0
+                          : parseInt(e.target.value) || 0;
                       setStockData({ ...stockData, cantidad: value });
                     }}
                     placeholder="0"
@@ -955,7 +1040,10 @@ function ProductosPageContent() {
                   <p className="text-2xl font-bold text-blue-600">
                     {stockData.tipo_movimiento === "entrada"
                       ? selectedProducto.stock + (stockData.cantidad || 0)
-                      : Math.max(0, selectedProducto.stock - (stockData.cantidad || 0))}{" "}
+                      : Math.max(
+                          0,
+                          selectedProducto.stock - (stockData.cantidad || 0)
+                        )}{" "}
                     {selectedProducto.unidad_medida_display}
                   </p>
                 </div>

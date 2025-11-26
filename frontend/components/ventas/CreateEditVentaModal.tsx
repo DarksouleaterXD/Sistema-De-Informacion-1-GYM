@@ -388,7 +388,7 @@ export default function CreateEditVentaModal({
           {/* Lista de Productos */}
           {formData.detalles.length > 0 && (
             <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <table className="w-full">
+              <table className="w-full bg-white">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
@@ -413,7 +413,7 @@ export default function CreateEditVentaModal({
                     )}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white">
                   {formData.detalles.map((detalle, index) => {
                     const producto = productos.find(
                       (p) => p.id === detalle.producto
@@ -422,20 +422,20 @@ export default function CreateEditVentaModal({
                       detalle.cantidad * detalle.precio_unitario -
                       (detalle.descuento || 0);
                     return (
-                      <tr key={index} className="border-t border-gray-200">
-                        <td className="px-4 py-2">
+                      <tr key={index} className="border-t border-gray-200 bg-white">
+                        <td className="px-4 py-2 text-gray-900">
                           {producto?.nombre || `Producto #${detalle.producto}`}
                         </td>
-                        <td className="px-4 py-2 text-center">
+                        <td className="px-4 py-2 text-center text-gray-900">
                           {detalle.cantidad}
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right text-gray-900">
                           ${detalle.precio_unitario.toFixed(2)}
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right text-gray-900">
                           ${(detalle.descuento || 0).toFixed(2)}
                         </td>
-                        <td className="px-4 py-2 text-right font-medium">
+                        <td className="px-4 py-2 text-right font-medium text-gray-900">
                           ${subtotalDetalle.toFixed(2)}
                         </td>
                         {!venta && (
