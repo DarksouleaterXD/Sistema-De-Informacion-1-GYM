@@ -12,7 +12,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from decimal import Decimal
-from apps.productos.models import CategoriaProducto, Producto
+from apps.categorias.models import CategoriaProducto
+from apps.productos.models import Producto
 from apps.proveedores.models import Proveedor
 from apps.users.models import User
 
@@ -27,46 +28,17 @@ class ProductosSeeder:
     
     def run(self):
         """Ejecutar seeder"""
-        print("\n🏋️  Creando Categorías de Productos...")
-        self.create_categorias()
-        
-        print("\n📦 Creando Productos...")
-        self.create_productos()
-        
-        self.print_summary()
-    
-    def create_categorias(self):
-        """Crear categorías de productos"""
-        categorias = [
-            {"nombre": "Suplementos Proteicos", "codigo": "SUP-PROT", "descripcion": "Proteínas, aminoácidos y ganadores de masa"},
-            {"nombre": "Suplementos Energéticos", "codigo": "SUP-ENER", "descripcion": "Pre-entrenos, energizantes y termogénicos"},
-            {"nombre": "Vitaminas y Minerales", "codigo": "VIT-MIN", "descripcion": "Multivitamínicos y suplementos minerales"},
-            {"nombre": "Equipamiento", "codigo": "EQUIP", "descripcion": "Equipamiento deportivo y accesorios"},
-            {"nombre": "Indumentaria", "codigo": "INDUM", "descripcion": "Ropa deportiva y calzado"},
-            {"nombre": "Bebidas", "codigo": "BEB", "descripcion": "Bebidas isotónicas y energéticas"},
-            {"nombre": "Snacks Saludables", "codigo": "SNACK", "descripcion": "Barras proteicas y snacks fitness"},
-        ]
-        
-        for cat_data in categorias:
-            try:
-                categoria, created = CategoriaProducto.objects.get_or_create(
-                    codigo=cat_data["codigo"],
-                    defaults={
-                        "nombre": cat_data["nombre"],
-                        "descripcion": cat_data["descripcion"]
-                    }
-                )
-                
-                if created:
-                    print(f"   ✅ Categoría creada: {categoria.nombre}")
-                    self.created_count += 1
-                else:
-                    print(f"   ⚠️  Categoría ya existe: {categoria.nombre}")
-                    self.updated_count += 1
-                    
-            except Exception as e:
-                print(f"   ❌ Error creando categoría {cat_data['nombre']}: {e}")
-                self.error_count += 1
+        try:
+            print("\n📦 Creando Productos...")
+            self.create_productos()
+            
+            self.print_summary()
+            return True
+        except Exception as e:
+            print(f"\n❌ Error al ejecutar ProductosSeeder: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
     
     def create_productos(self):
         """Crear productos de ejemplo"""

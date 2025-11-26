@@ -7,7 +7,8 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from decimal import Decimal
 
-from .models import CategoriaProducto, Producto
+from .models import Producto
+from apps.categorias.models import CategoriaProducto
 from apps.proveedores.models import Proveedor
 
 User = get_user_model()

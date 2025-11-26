@@ -36,6 +36,8 @@ export interface Producto {
   precio_con_descuento: string;
   necesita_reposicion: boolean;
   margen_ganancia: string;
+  imagen?: string | null;
+  imagen_url?: string | null;
   creado_por: number;
   creado_por_username: string;
   modificado_por: number | null;
@@ -48,6 +50,7 @@ export interface CreateProductoDTO {
   nombre: string;
   codigo: string;
   descripcion?: string;
+  imagen?: File | null;
   categoria: number;
   proveedor?: number | null;
   precio: number;
@@ -103,7 +106,7 @@ export interface ProductoEstadisticas {
 }
 
 class ProductoService {
-  private baseUrl = "/api/productos";
+  private baseUrl = "/api/productos/productos";
   private categoriaUrl = "/api/categorias-producto";
 
   /**
@@ -136,6 +139,21 @@ class ProductoService {
    * Crear un nuevo producto (CU24)
    */
   async create(data: CreateProductoDTO): Promise<Producto> {
+    // Si hay imagen, usar FormData
+    if (data.imagen) {
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        const value = data[key as keyof CreateProductoDTO];
+        if (value !== null && value !== undefined) {
+          if (key === 'imagen' && value instanceof File) {
+            formData.append('imagen', value);
+          } else if (key !== 'imagen') {
+            formData.append(key, String(value));
+          }
+        }
+      });
+      return await httpClient.postFormData<Producto>(`${this.baseUrl}/`, formData);
+    }
     return await httpClient.post<Producto>(`${this.baseUrl}/`, data);
   }
 
@@ -143,6 +161,21 @@ class ProductoService {
    * Actualizar un producto
    */
   async update(id: number, data: UpdateProductoDTO): Promise<Producto> {
+    // Si hay imagen, usar FormData
+    if (data.imagen) {
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        const value = data[key as keyof UpdateProductoDTO];
+        if (value !== null && value !== undefined) {
+          if (key === 'imagen' && value instanceof File) {
+            formData.append('imagen', value);
+          } else if (key !== 'imagen') {
+            formData.append(key, String(value));
+          }
+        }
+      });
+      return await httpClient.patchFormData<Producto>(`${this.baseUrl}/${id}/`, formData);
+    }
     return await httpClient.patch<Producto>(`${this.baseUrl}/${id}/`, data);
   }
 
@@ -157,7 +190,13 @@ class ProductoService {
    * Actualizar stock de un producto
    */
   async actualizarStock(id: number, data: ActualizarStockDTO): Promise<Producto> {
-    return await httpClient.post<Producto>(`${this.baseUrl}/${id}/actualizar_stock/`, data);
+    // Mapear tipo_movimiento a operacion según lo que espera el backend
+    const payload = {
+      cantidad: data.cantidad,
+      operacion: data.tipo_movimiento === "entrada" ? "sumar" : "restar",
+      motivo: data.motivo || "",
+    };
+    return await httpClient.post<Producto>(`${this.baseUrl}/${id}/actualizar-stock/`, payload);
   }
 
   /**
@@ -183,9 +222,20 @@ class ProductoService {
 
   /**
    * Obtener todas las categorías de productos
+   * Nota: El endpoint devuelve un objeto paginado, extraemos el array results
    */
   async getCategorias(): Promise<CategoriaProducto[]> {
-    return await httpClient.get<CategoriaProducto[]>(`${this.categoriaUrl}/`);
+    const response = await httpClient.get<PaginatedResponse<CategoriaProducto>>(`${this.categoriaUrl}/`);
+    // Si la respuesta es un objeto paginado, extraer results
+    if (response && 'results' in response && Array.isArray(response.results)) {
+      return response.results;
+    }
+    // Si ya es un array (fallback), retornarlo directamente
+    if (Array.isArray(response)) {
+      return response;
+    }
+    // Si no es ninguno de los casos anteriores, retornar array vacío
+    return [];
   }
 
   /**

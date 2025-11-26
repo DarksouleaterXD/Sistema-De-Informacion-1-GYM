@@ -27,6 +27,7 @@ import {
 
   Truck,
   Package,
+  FolderTree,
 
 } from "lucide-react";
 import { useState } from "react";
@@ -106,6 +107,12 @@ const navItems: NavItem[] = [
     name: "Proveedores",
     href: "/dashboard/proveedores",
     icon: Truck,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+  },
+  {
+    name: "Categorías",
+    href: "/dashboard/categorias-producto",
+    icon: FolderTree,
     requiredPermission: PermissionCodes.CLIENT_VIEW,
   },
   {

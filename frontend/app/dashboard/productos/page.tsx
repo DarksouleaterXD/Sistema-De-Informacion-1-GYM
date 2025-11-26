@@ -56,6 +56,7 @@ function ProductosPageContent() {
     nombre: "",
     codigo: "",
     descripcion: "",
+    imagen: null,
     categoria: 0,
     proveedor: null,
     precio: 0,
@@ -65,6 +66,7 @@ function ProductosPageContent() {
     unidad_medida: "UNIDAD",
     promocion: null,
   });
+  const [imagenPreview, setImagenPreview] = useState<string | null>(null);
   const [stockData, setStockData] = useState({
     cantidad: 0,
     tipo_movimiento: "entrada" as "entrada" | "salida",
@@ -129,6 +131,7 @@ function ProductosPageContent() {
       nombre: "",
       codigo: "",
       descripcion: "",
+      imagen: null,
       categoria: categorias[0]?.id || 0,
       proveedor: null,
       precio: 0,
@@ -138,6 +141,7 @@ function ProductosPageContent() {
       unidad_medida: "UNIDAD",
       promocion: null,
     });
+    setImagenPreview(null);
     setFormErrors({});
     setSelectedProducto(null);
   };
@@ -149,6 +153,7 @@ function ProductosPageContent() {
       nombre: producto.nombre,
       codigo: producto.codigo,
       descripcion: producto.descripcion || "",
+      imagen: null,
       categoria: producto.categoria,
       proveedor: producto.proveedor,
       precio: parseFloat(producto.precio),
@@ -158,6 +163,7 @@ function ProductosPageContent() {
       unidad_medida: producto.unidad_medida,
       promocion: producto.promocion,
     });
+    setImagenPreview(producto.imagen_url || null);
     setFormErrors({});
   };
 
@@ -299,7 +305,7 @@ function ProductosPageContent() {
             <select
               value={categoriaFilter}
               onChange={(e) => setCategoriaFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
             >
               <option value="">Todas las categorías</option>
               {categorias.map((cat) => (
@@ -311,7 +317,7 @@ function ProductosPageContent() {
             <select
               value={estadoFilter}
               onChange={(e) => setEstadoFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
             >
               <option value="">Todos los estados</option>
               <option value="ACTIVO">Activos</option>
@@ -367,7 +373,18 @@ function ProductosPageContent() {
                     <tr key={producto.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
-                          <Package className="w-5 h-5 text-gray-400 mr-3" />
+                          {producto.imagen_url ? (
+                            <img
+                              src={producto.imagen_url}
+                              alt={producto.nombre}
+                              className="w-12 h-12 object-cover rounded-lg mr-3"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <Package className="w-5 h-5 text-gray-400 mr-3" />
+                          )}
                           <div>
                             <div className="text-sm font-medium text-gray-900">
                               {producto.nombre}
@@ -595,6 +612,53 @@ function ProductosPageContent() {
                   />
                 </div>
 
+                {/* Imagen */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Imagen del Producto
+                  </label>
+                  <div className="space-y-2">
+                    {imagenPreview && (
+                      <div className="relative w-32 h-32 border border-gray-300 rounded-lg overflow-hidden">
+                        <img
+                          src={imagenPreview}
+                          alt="Vista previa"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagenPreview(null);
+                            setFormData({ ...formData, imagen: null });
+                          }}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormData({ ...formData, imagen: file });
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setImagenPreview(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Formatos soportados: JPG, PNG, GIF. Tamaño máximo recomendado: 2MB
+                    </p>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Categoría */}
                   <div>
@@ -606,7 +670,7 @@ function ProductosPageContent() {
                       onChange={(e) =>
                         setFormData({ ...formData, categoria: parseInt(e.target.value) })
                       }
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 ${
                         formErrors.categoria ? "border-red-500" : "border-gray-300"
                       }`}
                     >
@@ -635,7 +699,7 @@ function ProductosPageContent() {
                           proveedor: e.target.value ? parseInt(e.target.value) : null,
                         })
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                     >
                       <option value="">Sin proveedor</option>
                       {proveedores.map((prov) => (
@@ -659,10 +723,11 @@ function ProductosPageContent() {
                         type="number"
                         step="0.01"
                         min="0"
-                        value={formData.precio}
-                        onChange={(e) =>
-                          setFormData({ ...formData, precio: parseFloat(e.target.value) })
-                        }
+                        value={formData.precio || ""}
+                        onChange={(e) => {
+                          const value = e.target.value === "" ? 0 : parseFloat(e.target.value) || 0;
+                          setFormData({ ...formData, precio: value });
+                        }}
                         className={`pl-10 ${formErrors.precio ? "border-red-500" : ""}`}
                         placeholder="0.00"
                       />
@@ -681,10 +746,11 @@ function ProductosPageContent() {
                       type="number"
                       step="0.01"
                       min="0"
-                      value={formData.costo}
-                      onChange={(e) =>
-                        setFormData({ ...formData, costo: parseFloat(e.target.value) })
-                      }
+                      value={formData.costo || ""}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? 0 : parseFloat(e.target.value) || 0;
+                        setFormData({ ...formData, costo: value });
+                      }}
                       className={formErrors.costo ? "border-red-500" : ""}
                       placeholder="0.00"
                     />
@@ -703,7 +769,7 @@ function ProductosPageContent() {
                       onChange={(e) =>
                         setFormData({ ...formData, unidad_medida: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                     >
                       {UNIDADES_MEDIDA.map((unidad) => (
                         <option key={unidad.value} value={unidad.value}>
@@ -723,10 +789,11 @@ function ProductosPageContent() {
                     <Input
                       type="number"
                       min="0"
-                      value={formData.stock}
-                      onChange={(e) =>
-                        setFormData({ ...formData, stock: parseInt(e.target.value) })
-                      }
+                      value={formData.stock || ""}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? 0 : parseInt(e.target.value) || 0;
+                        setFormData({ ...formData, stock: value });
+                      }}
                       className={formErrors.stock ? "border-red-500" : ""}
                       placeholder="0"
                     />
@@ -743,10 +810,11 @@ function ProductosPageContent() {
                     <Input
                       type="number"
                       min="0"
-                      value={formData.stock_minimo}
-                      onChange={(e) =>
-                        setFormData({ ...formData, stock_minimo: parseInt(e.target.value) })
-                      }
+                      value={formData.stock_minimo || ""}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? 0 : parseInt(e.target.value) || 0;
+                        setFormData({ ...formData, stock_minimo: value });
+                      }}
                       className={formErrors.stock_minimo ? "border-red-500" : ""}
                       placeholder="5"
                     />
@@ -856,10 +924,11 @@ function ProductosPageContent() {
                   <Input
                     type="number"
                     min="1"
-                    value={stockData.cantidad}
-                    onChange={(e) =>
-                      setStockData({ ...stockData, cantidad: parseInt(e.target.value) })
-                    }
+                    value={stockData.cantidad || ""}
+                    onChange={(e) => {
+                      const value = e.target.value === "" ? 0 : parseInt(e.target.value) || 0;
+                      setStockData({ ...stockData, cantidad: value });
+                    }}
                     placeholder="0"
                   />
                 </div>
@@ -885,8 +954,8 @@ function ProductosPageContent() {
                   <p className="text-sm text-gray-600 mb-1">Nuevo stock</p>
                   <p className="text-2xl font-bold text-blue-600">
                     {stockData.tipo_movimiento === "entrada"
-                      ? selectedProducto.stock + stockData.cantidad
-                      : Math.max(0, selectedProducto.stock - stockData.cantidad)}{" "}
+                      ? selectedProducto.stock + (stockData.cantidad || 0)
+                      : Math.max(0, selectedProducto.stock - (stockData.cantidad || 0))}{" "}
                     {selectedProducto.unidad_medida_display}
                   </p>
                 </div>

@@ -9,9 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 
-from .models import CategoriaProducto, Producto
+from .models import Producto
 from .serializers import (
-    CategoriaProductoSerializer,
     ProductoListSerializer,
     ProductoDetailSerializer,
     ProductoCreateUpdateSerializer,
@@ -19,38 +18,6 @@ from .serializers import (
 )
 from apps.core.permissions import HasPermission
 from apps.audit.helpers import registrar_creacion, registrar_actualizacion, registrar_eliminacion
-
-
-class CategoriaProductoViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para Categorías de Productos
-    
-    list: Listar todas las categorías
-    create: Crear nueva categoría
-    retrieve: Ver detalle de categoría
-    update: Actualizar categoría completa
-    partial_update: Actualizar campos específicos
-    destroy: Eliminar categoría
-    """
-    queryset = CategoriaProducto.objects.all()
-    serializer_class = CategoriaProductoSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['nombre', 'codigo', 'descripcion']
-    ordering_fields = ['nombre', 'codigo', 'created_at']
-    ordering = ['nombre']
-    
-    def perform_create(self, serializer):
-        categoria = serializer.save()
-        registrar_creacion(self.request, categoria, modulo="Categorías de Productos")
-    
-    def perform_update(self, serializer):
-        categoria = serializer.save()
-        registrar_actualizacion(self.request, categoria, modulo="Categorías de Productos")
-    
-    def perform_destroy(self, instance):
-        registrar_eliminacion(self.request, instance, modulo="Categorías de Productos")
-        instance.delete()
 
 
 class ProductoViewSet(viewsets.ModelViewSet):
@@ -87,6 +54,12 @@ class ProductoViewSet(viewsets.ModelViewSet):
     search_fields = ['nombre', 'codigo', 'descripcion']
     ordering_fields = ['nombre', 'codigo', 'precio', 'stock', 'created_at']
     ordering = ['-created_at']
+    
+    def get_serializer_context(self):
+        """Agregar request al contexto para generar URLs absolutas de imágenes"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
     def get_serializer_class(self):
         if self.action == 'list':

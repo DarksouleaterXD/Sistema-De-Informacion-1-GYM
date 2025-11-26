@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -208,8 +210,11 @@ urlpatterns = [
     ),
     # CU22: Control de Asistencias a Clases
     path("api/", include(router.urls)),
+    # CU24: Gestión de Categorías de Productos (módulo independiente)
+    path("api/", include("apps.categorias.urls")),
+    # CU24: Gestión de Productos
+    path("api/productos/", include("apps.productos.urls")),
     # CU29: Registrar Proveedor
-
     path(
         "api/proveedores/",
         ProveedorListCreateView.as_view(),
@@ -220,7 +225,6 @@ urlpatterns = [
         ProveedorDetailView.as_view(),
         name="proveedor-detail",
     ),
-    path('api/', include('apps.productos.urls')),
     path(
         "api/proveedores/<int:pk>/activate/",
         ProveedorActivateView.as_view(),
@@ -228,3 +232,6 @@ urlpatterns = [
     ),
 ]
 
+# Servir archivos media en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

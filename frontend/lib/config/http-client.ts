@@ -20,10 +20,12 @@ export class HttpClient {
   /**
    * Obtiene los headers con el token de autenticación
    */
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
+  private getHeaders(includeContentType: boolean = true): HeadersInit {
+    const headers: HeadersInit = {};
+
+    if (includeContentType) {
+      headers["Content-Type"] = "application/json";
+    }
 
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("access_token");
@@ -138,6 +140,32 @@ export class HttpClient {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "DELETE",
       headers: this.getHeaders(),
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
+  /**
+   * POST request with FormData (for file uploads)
+   */
+  async postFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      method: "POST",
+      headers: this.getHeaders(false), // No incluir Content-Type, el navegador lo hace automáticamente
+      body: formData,
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
+  /**
+   * PATCH request with FormData (for file uploads)
+   */
+  async patchFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      method: "PATCH",
+      headers: this.getHeaders(false), // No incluir Content-Type, el navegador lo hace automáticamente
+      body: formData,
     });
 
     return this.handleResponse<T>(response);

@@ -11,6 +11,8 @@ from .promocion_seeder import PromocionSeeder
 from .disciplinas_seeder import DisciplinasSeeder
 from .salones_clases_seeder import SalonSeeder, ClaseSeeder
 from .instructores_seeder import InstructorSeeder
+from .categorias_seeder import CategoriasSeeder
+from .productos_seeder import ProductosSeeder
 
 
 class RolesDefaultSeederWrapper:
@@ -44,6 +46,8 @@ def run_all_seeders():
         DisciplinasSeeder(),  # 🔥 NUEVO: Crear disciplinas
         SalonSeeder(),  # 🔥 NUEVO: Crear salones
         ClaseSeeder(),  # 🔥 NUEVO: Crear clases de prueba
+        CategoriasSeeder(),  # 🔥 CU24: Crear categorías de productos
+        ProductosSeeder(),  # 🔥 CU24: Crear productos (requiere categorías)
     ]
     
     success_count = 0

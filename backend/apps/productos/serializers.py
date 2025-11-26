@@ -2,26 +2,10 @@
 Serializers para Productos
 """
 from rest_framework import serializers
-from .models import CategoriaProducto, Producto
+from .models import Producto
+from apps.categorias.serializers import CategoriaProductoSerializer
 from apps.proveedores.serializers import ProveedorResponseSerializer
 from apps.promociones.serializers import PromocionSerializer
-
-
-class CategoriaProductoSerializer(serializers.ModelSerializer):
-    """Serializer para Categoría de Productos"""
-    
-    total_productos = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = CategoriaProducto
-        fields = [
-            'id', 'nombre', 'codigo', 'descripcion', 'activo',
-            'total_productos', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['created_at', 'updated_at']
-    
-    def get_total_productos(self, obj):
-        return obj.productos.filter(estado=Producto.ESTADO_ACTIVO).count()
 
 
 class ProductoListSerializer(serializers.ModelSerializer):
@@ -33,14 +17,34 @@ class ProductoListSerializer(serializers.ModelSerializer):
     precio_con_descuento = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     necesita_reposicion = serializers.BooleanField(read_only=True)
     
+    imagen_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = Producto
         fields = [
             'id', 'nombre', 'codigo', 'categoria', 'categoria_nombre',
             'proveedor', 'proveedor_nombre', 'precio', 'precio_con_descuento',
             'stock', 'stock_minimo', 'necesita_reposicion', 'estado',
-            'promocion', 'promocion_nombre', 'created_at'
+            'promocion', 'promocion_nombre', 'imagen', 'imagen_url', 'created_at'
         ]
+    
+    def get_imagen_url(self, obj):
+        """Retorna la URL completa de la imagen"""
+        if obj.imagen:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.imagen.url)
+            return obj.imagen.url
+        return None
+    
+    def get_imagen_url(self, obj):
+        """Retorna la URL completa de la imagen"""
+        if obj.imagen:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.imagen.url)
+            return obj.imagen.url
+        return None
 
 
 class ProductoDetailSerializer(serializers.ModelSerializer):
@@ -54,6 +58,7 @@ class ProductoDetailSerializer(serializers.ModelSerializer):
     margen_ganancia = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True, allow_null=True)
     creado_por_nombre = serializers.CharField(source='creado_por.get_full_name', read_only=True)
     modificado_por_nombre = serializers.CharField(source='modificado_por.get_full_name', read_only=True)
+    imagen_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Producto
@@ -64,10 +69,20 @@ class ProductoDetailSerializer(serializers.ModelSerializer):
             'precio', 'costo', 'precio_con_descuento', 'margen_ganancia',
             'stock', 'stock_minimo', 'unidad_medida', 'necesita_reposicion',
             'promocion', 'promocion_info', 'estado',
+            'imagen', 'imagen_url',
             'creado_por', 'creado_por_nombre',
             'modificado_por', 'modificado_por_nombre',
             'created_at', 'updated_at'
         ]
+    
+    def get_imagen_url(self, obj):
+        """Retorna la URL completa de la imagen"""
+        if obj.imagen:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.imagen.url)
+            return obj.imagen.url
+        return None
         read_only_fields = ['created_at', 'updated_at', 'creado_por', 'modificado_por']
 
 
@@ -77,7 +92,7 @@ class ProductoCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
         fields = [
-            'nombre', 'codigo', 'descripcion', 'categoria', 'proveedor',
+            'nombre', 'codigo', 'descripcion', 'imagen', 'categoria', 'proveedor',
             'precio', 'costo', 'stock', 'stock_minimo', 'unidad_medida',
             'promocion', 'estado'
         ]

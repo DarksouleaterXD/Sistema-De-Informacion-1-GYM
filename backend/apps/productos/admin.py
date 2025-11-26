@@ -2,16 +2,7 @@
 Administración de Productos en Django Admin
 """
 from django.contrib import admin
-from .models import CategoriaProducto, Producto
-
-
-@admin.register(CategoriaProducto)
-class CategoriaProductoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'codigo', 'descripcion', 'activo', 'created_at']
-    list_filter = ['activo', 'created_at']
-    search_fields = ['nombre', 'codigo', 'descripcion']
-    ordering = ['nombre']
-    readonly_fields = ['created_at', 'updated_at']
+from .models import Producto
 
 
 @admin.register(Producto)
@@ -35,7 +26,7 @@ class ProductoAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Información Básica', {
-            'fields': ('nombre', 'codigo', 'categoria', 'descripcion')
+            'fields': ('nombre', 'codigo', 'categoria', 'descripcion', 'imagen')
         }),
         ('Proveedor y Precio', {
             'fields': ('proveedor', 'precio', 'costo')

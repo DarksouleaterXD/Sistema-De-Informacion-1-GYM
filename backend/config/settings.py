@@ -66,7 +66,8 @@ INSTALLED_APPS = [
     "apps.clases",
     "apps.asistencias",
     "apps.proveedores",
-    'apps.productos',
+    "apps.categorias",
+    "apps.productos",
 ]
 
 MIDDLEWARE = [
@@ -216,7 +217,7 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "False") == "True"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@gym-spartan.com")
 
 # Media files
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # DRF Spectacular settings
