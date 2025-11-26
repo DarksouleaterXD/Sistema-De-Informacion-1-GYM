@@ -29,6 +29,7 @@ import {
   Package,
   FolderTree,
   BarChart3,
+  ShoppingCart,
 
 } from "lucide-react";
 import { useState } from "react";
@@ -123,9 +124,21 @@ const navItems: NavItem[] = [
     requiredPermission: PermissionCodes.CLIENT_VIEW,
   },
   {
+
     name: "Inventario",
     href: "/dashboard/inventario",
     icon: BarChart3,
+
+    name: "Ventas",
+    href: "/dashboard/ventas",
+    icon: ShoppingCart,
+    requiredPermission: PermissionCodes.CLIENT_VIEW,
+  },
+  {
+    name: "Compras",
+    href: "/dashboard/compras",
+    icon: Truck,
+
     requiredPermission: PermissionCodes.CLIENT_VIEW,
   },
   {
