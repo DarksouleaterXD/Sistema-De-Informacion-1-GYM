@@ -26,14 +26,15 @@ export default function Navbar() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Título de página */}
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Bienvenido, {user?.nombre || "Usuario"}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 truncate">
+              <span className="hidden sm:inline">Bienvenido, </span>
+              {user?.nombre || "Usuario"}
             </h2>
           </div>
 
           {/* Acciones */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Notificaciones de Inventario */}
             <NotificationsDropdown />
 

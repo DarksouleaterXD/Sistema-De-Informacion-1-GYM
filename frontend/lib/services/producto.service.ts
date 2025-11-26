@@ -24,7 +24,7 @@ export interface Producto {
   proveedor: number | null;
   proveedor_nombre: string;
   precio: string;
-  costo: string;
+  costo: string | null;
   stock: number;
   stock_minimo: number;
   unidad_medida: string;
@@ -54,7 +54,7 @@ export interface CreateProductoDTO {
   categoria: number;
   proveedor?: number | null;
   precio: number;
-  costo: number;
+  costo?: number | null;
   stock: number;
   stock_minimo: number;
   unidad_medida: string;
@@ -67,7 +67,7 @@ export interface UpdateProductoDTO {
   categoria?: number;
   proveedor?: number | null;
   precio?: number;
-  costo?: number;
+  costo?: number | null;
   stock?: number;
   stock_minimo?: number;
   unidad_medida?: string;
@@ -112,19 +112,27 @@ class ProductoService {
   /**
    * Obtener todos los productos con filtros
    */
-  async getAll(params?: GetProductosParams): Promise<PaginatedResponse<Producto>> {
+  async getAll(
+    params?: GetProductosParams
+  ): Promise<PaginatedResponse<Producto>> {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append("search", params.search);
-    if (params?.categoria) queryParams.append("categoria", params.categoria.toString());
-    if (params?.proveedor) queryParams.append("proveedor", params.proveedor.toString());
+    if (params?.categoria)
+      queryParams.append("categoria", params.categoria.toString());
+    if (params?.proveedor)
+      queryParams.append("proveedor", params.proveedor.toString());
     if (params?.estado) queryParams.append("estado", params.estado);
-    if (params?.bajo_stock !== undefined) queryParams.append("bajo_stock", params.bajo_stock.toString());
+    if (params?.bajo_stock !== undefined)
+      queryParams.append("bajo_stock", params.bajo_stock.toString());
     if (params?.page) queryParams.append("page", params.page.toString());
-    if (params?.page_size) queryParams.append("page_size", params.page_size.toString());
+    if (params?.page_size)
+      queryParams.append("page_size", params.page_size.toString());
 
     const queryString = queryParams.toString();
-    const url = queryString ? `${this.baseUrl}/?${queryString}` : `${this.baseUrl}/`;
-    
+    const url = queryString
+      ? `${this.baseUrl}/?${queryString}`
+      : `${this.baseUrl}/`;
+
     return await httpClient.get<PaginatedResponse<Producto>>(url);
   }
 
@@ -145,14 +153,17 @@ class ProductoService {
       Object.keys(data).forEach((key) => {
         const value = data[key as keyof CreateProductoDTO];
         if (value !== null && value !== undefined) {
-          if (key === 'imagen' && value instanceof File) {
-            formData.append('imagen', value);
-          } else if (key !== 'imagen') {
+          if (key === "imagen" && value instanceof File) {
+            formData.append("imagen", value);
+          } else if (key !== "imagen") {
             formData.append(key, String(value));
           }
         }
       });
-      return await httpClient.postFormData<Producto>(`${this.baseUrl}/`, formData);
+      return await httpClient.postFormData<Producto>(
+        `${this.baseUrl}/`,
+        formData
+      );
     }
     return await httpClient.post<Producto>(`${this.baseUrl}/`, data);
   }
@@ -167,14 +178,17 @@ class ProductoService {
       Object.keys(data).forEach((key) => {
         const value = data[key as keyof UpdateProductoDTO];
         if (value !== null && value !== undefined) {
-          if (key === 'imagen' && value instanceof File) {
-            formData.append('imagen', value);
-          } else if (key !== 'imagen') {
+          if (key === "imagen" && value instanceof File) {
+            formData.append("imagen", value);
+          } else if (key !== "imagen") {
             formData.append(key, String(value));
           }
         }
       });
-      return await httpClient.patchFormData<Producto>(`${this.baseUrl}/${id}/`, formData);
+      return await httpClient.patchFormData<Producto>(
+        `${this.baseUrl}/${id}/`,
+        formData
+      );
     }
     return await httpClient.patch<Producto>(`${this.baseUrl}/${id}/`, data);
   }
@@ -189,14 +203,20 @@ class ProductoService {
   /**
    * Actualizar stock de un producto
    */
-  async actualizarStock(id: number, data: ActualizarStockDTO): Promise<Producto> {
+  async actualizarStock(
+    id: number,
+    data: ActualizarStockDTO
+  ): Promise<Producto> {
     // Mapear tipo_movimiento a operacion según lo que espera el backend
     const payload = {
       cantidad: data.cantidad,
       operacion: data.tipo_movimiento === "entrada" ? "sumar" : "restar",
       motivo: data.motivo || "",
     };
-    return await httpClient.post<Producto>(`${this.baseUrl}/${id}/actualizar-stock/`, payload);
+    return await httpClient.post<Producto>(
+      `${this.baseUrl}/${id}/actualizar-stock/`,
+      payload
+    );
   }
 
   /**
@@ -217,7 +237,9 @@ class ProductoService {
    * Obtener estadísticas de productos
    */
   async getEstadisticas(): Promise<ProductoEstadisticas> {
-    return await httpClient.get<ProductoEstadisticas>(`${this.baseUrl}/estadisticas/`);
+    return await httpClient.get<ProductoEstadisticas>(
+      `${this.baseUrl}/estadisticas/`
+    );
   }
 
   /**
@@ -225,9 +247,11 @@ class ProductoService {
    * Nota: El endpoint devuelve un objeto paginado, extraemos el array results
    */
   async getCategorias(): Promise<CategoriaProducto[]> {
-    const response = await httpClient.get<PaginatedResponse<CategoriaProducto>>(`${this.categoriaUrl}/`);
+    const response = await httpClient.get<PaginatedResponse<CategoriaProducto>>(
+      `${this.categoriaUrl}/`
+    );
     // Si la respuesta es un objeto paginado, extraer results
-    if (response && 'results' in response && Array.isArray(response.results)) {
+    if (response && "results" in response && Array.isArray(response.results)) {
       return response.results;
     }
     // Si ya es un array (fallback), retornarlo directamente
@@ -243,7 +267,7 @@ class ProductoService {
    */
   async getCategoriasActivas(): Promise<CategoriaProducto[]> {
     const categorias = await this.getCategorias();
-    return categorias.filter(c => c.activo);
+    return categorias.filter((c) => c.activo);
   }
 }
 

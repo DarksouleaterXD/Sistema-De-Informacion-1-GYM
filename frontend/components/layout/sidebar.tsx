@@ -199,6 +199,13 @@ const navItems: NavItem[] = [
     requiredPermission: PermissionCodes.AUDIT_VIEW,
     group: "Administración",
   },
+  {
+    name: "Reportes",
+    href: "/dashboard/reportes",
+    icon: FileText,
+    requiredPermission: PermissionCodes.REPORT_VIEW,
+    group: "Administración",
+  },
 ];
 
 export default function Sidebar() {

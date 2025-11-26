@@ -9,6 +9,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 from django.conf import settings
+from django.utils import timezone
 
 
 def generar_pdf_venta(venta):
@@ -51,9 +52,11 @@ def generar_pdf_venta(venta):
     elements.append(Spacer(1, 0.2*inch))
     
     # Información de la venta
+    # Convertir fecha a zona horaria de Bolivia
+    fecha_venta_local = timezone.localtime(venta.fecha_venta)
     info_data = [
         ['Número de Venta:', venta.numero_venta],
-        ['Fecha:', venta.fecha_venta.strftime('%d/%m/%Y %H:%M')],
+        ['Fecha:', fecha_venta_local.strftime('%d/%m/%Y %H:%M')],
         ['Estado:', venta.get_estado_display()],
         ['Método de Pago:', venta.get_metodo_pago_display()],
     ]

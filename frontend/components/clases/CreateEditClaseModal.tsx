@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { X, Calendar, Clock, Users, MapPin } from 'lucide-react';
-import { createClase, updateClase, Clase, ClaseFormData, getSalones, Salon } from '@/lib/services/clase.service';
-import disciplinaService, { Disciplina } from '@/lib/services/disciplina.service';
-import { authService } from '@/lib/services/auth.service';
+import { useState, useEffect } from "react";
+import { X, Calendar, Clock, Users, MapPin } from "lucide-react";
+import {
+  createClase,
+  updateClase,
+  Clase,
+  ClaseFormData,
+  getSalones,
+  Salon,
+} from "@/lib/services/clase.service";
+import disciplinaService, {
+  Disciplina,
+} from "@/lib/services/disciplina.service";
+import { authService } from "@/lib/services/auth.service";
 
 interface CreateEditClaseModalProps {
   isOpen: boolean;
@@ -23,34 +32,73 @@ export default function CreateEditClaseModal({
     disciplina: 0,
     instructor: 1, // Por ahora, ID del instructor por defecto
     salon: 0,
-    fecha: '',
-    hora_inicio: '',
-    hora_fin: '',
+    fecha: "",
+    hora_inicio: "",
+    hora_fin: "",
     cupo_maximo: 0,
-    estado: 'programada',
-    observaciones: '',
+    estado: "programada",
+    observaciones: "",
   });
 
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [salones, setSalones] = useState<Salon[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  // Función para formatear fecha a YYYY-MM-DD
+  const formatDateForInput = (dateString: string | undefined): string => {
+    if (!dateString) return "";
+    // Si ya está en formato YYYY-MM-DD, retornarlo
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString;
+    }
+    // Si está en otro formato, convertir
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
+  };
+
+  // Función para formatear hora a HH:mm
+  const formatTimeForInput = (timeString: string | undefined): string => {
+    if (!timeString) return "";
+    // Si ya está en formato HH:mm, retornarlo
+    if (timeString.match(/^\d{2}:\d{2}$/)) {
+      return timeString;
+    }
+    // Si está en formato HH:mm:ss, tomar solo HH:mm
+    if (timeString.match(/^\d{2}:\d{2}:\d{2}/)) {
+      return timeString.substring(0, 5);
+    }
+    return timeString;
+  };
 
   useEffect(() => {
     if (isOpen) {
       loadOptions();
       loadCurrentUser();
       if (clase) {
+        // Asegurar que tenemos los IDs correctos (pueden venir como números o como objetos)
+        const disciplinaId =
+          typeof clase.disciplina === "object"
+            ? clase.disciplina.id
+            : clase.disciplina;
+        const instructorId =
+          typeof clase.instructor === "object"
+            ? clase.instructor.id
+            : clase.instructor;
+        const salonId =
+          typeof clase.salon === "object" ? clase.salon.id : clase.salon;
+
         setFormData({
-          disciplina: clase.disciplina,
-          instructor: clase.instructor,
-          salon: clase.salon,
-          fecha: clase.fecha,
-          hora_inicio: clase.hora_inicio,
-          hora_fin: clase.hora_fin,
-          cupo_maximo: clase.cupo_maximo,
-          estado: clase.estado,
-          observaciones: clase.observaciones || '',
+          disciplina: disciplinaId || 0,
+          instructor: instructorId || 0,
+          salon: salonId || 0,
+          fecha: formatDateForInput(clase.fecha),
+          hora_inicio: formatTimeForInput(clase.hora_inicio),
+          hora_fin: formatTimeForInput(clase.hora_fin),
+          cupo_maximo: clase.cupo_maximo || 0,
+          estado: clase.estado || "programada",
+          observaciones: clase.observaciones || "",
         });
       } else {
         resetForm();
@@ -63,24 +111,26 @@ export default function CreateEditClaseModal({
       const user = await authService.getCurrentUser();
       // Si no estamos editando, establecer el instructor como el usuario actual
       if (!clase) {
-        setFormData(prev => ({ ...prev, instructor: user.id }));
+        setFormData((prev) => ({ ...prev, instructor: user.id }));
       }
     } catch (err) {
-      console.error('Error cargando usuario:', err);
+      console.error("Error cargando usuario:", err);
     }
   };
 
   const loadOptions = async () => {
     try {
       // Cargar disciplinas activas
-      const disciplinasRes = await disciplinaService.getDisciplinas({ activa: true });
+      const disciplinasRes = await disciplinaService.getDisciplinas({
+        activa: true,
+      });
       setDisciplinas(disciplinasRes.results);
 
       // Cargar salones activos
-      const salonesRes = await getSalones(1, '', true);
+      const salonesRes = await getSalones(1, "", true);
       setSalones(salonesRes.results);
     } catch (err) {
-      console.error('Error cargando opciones:', err);
+      console.error("Error cargando opciones:", err);
     }
   };
 
@@ -89,20 +139,20 @@ export default function CreateEditClaseModal({
       disciplina: 0,
       instructor: 1,
       salon: 0,
-      fecha: '',
-      hora_inicio: '',
-      hora_fin: '',
+      fecha: "",
+      hora_inicio: "",
+      hora_fin: "",
       cupo_maximo: 0,
-      estado: 'programada',
-      observaciones: '',
+      estado: "programada",
+      observaciones: "",
     });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (clase) {
@@ -113,26 +163,26 @@ export default function CreateEditClaseModal({
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error('Error guardando clase:', err);
-      
+      console.error("Error guardando clase:", err);
+
       if (err.response?.data) {
         const errors = err.response.data;
-        if (typeof errors === 'object') {
+        if (typeof errors === "object") {
           // Mostrar todos los errores de validación
           const errorMessages = Object.entries(errors)
             .map(([field, messages]) => {
               if (Array.isArray(messages)) {
-                return messages.join(', ');
+                return messages.join(", ");
               }
               return String(messages);
             })
-            .join('. ');
+            .join(". ");
           setError(errorMessages);
         } else {
           setError(String(errors));
         }
       } else {
-        setError('Error al guardar la clase. Por favor intente nuevamente.');
+        setError("Error al guardar la clase. Por favor intente nuevamente.");
       }
     } finally {
       setLoading(false);
@@ -140,7 +190,7 @@ export default function CreateEditClaseModal({
   };
 
   const handleSalonChange = (salonId: number) => {
-    const salonSeleccionado = salones.find(s => s.id === salonId);
+    const salonSeleccionado = salones.find((s) => s.id === salonId);
     setFormData({
       ...formData,
       salon: salonId,
@@ -156,7 +206,7 @@ export default function CreateEditClaseModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
-            {clase ? 'Editar Clase' : 'Programar Nueva Clase'}
+            {clase ? "Editar Clase" : "Programar Nueva Clase"}
           </h2>
           <button
             onClick={onClose}
@@ -182,7 +232,12 @@ export default function CreateEditClaseModal({
               </label>
               <select
                 value={formData.disciplina}
-                onChange={(e) => setFormData({ ...formData, disciplina: Number(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    disciplina: Number(e.target.value),
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 required
               >
@@ -224,7 +279,9 @@ export default function CreateEditClaseModal({
               <input
                 type="date"
                 value={formData.fecha}
-                onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, fecha: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 required
               />
@@ -239,7 +296,9 @@ export default function CreateEditClaseModal({
               <input
                 type="time"
                 value={formData.hora_inicio}
-                onChange={(e) => setFormData({ ...formData, hora_inicio: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, hora_inicio: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 required
               />
@@ -254,7 +313,9 @@ export default function CreateEditClaseModal({
               <input
                 type="time"
                 value={formData.hora_fin}
-                onChange={(e) => setFormData({ ...formData, hora_fin: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, hora_fin: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 required
               />
@@ -270,7 +331,12 @@ export default function CreateEditClaseModal({
                 type="number"
                 min="1"
                 value={formData.cupo_maximo}
-                onChange={(e) => setFormData({ ...formData, cupo_maximo: Number(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    cupo_maximo: Number(e.target.value),
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 required
               />
@@ -284,12 +350,14 @@ export default function CreateEditClaseModal({
                 </label>
                 <select
                   value={formData.estado}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value as any })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, estado: e.target.value as any })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 >
                   <option value="programada">Programada</option>
-                  <option value="en_progreso">En Progreso</option>
-                  <option value="completada">Completada</option>
+                  <option value="en_curso">En Curso</option>
+                  <option value="finalizada">Finalizada</option>
                   <option value="cancelada">Cancelada</option>
                 </select>
               </div>
@@ -303,7 +371,9 @@ export default function CreateEditClaseModal({
             </label>
             <textarea
               value={formData.observaciones}
-              onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, observaciones: e.target.value })
+              }
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
               placeholder="Notas adicionales sobre la clase..."
@@ -325,7 +395,11 @@ export default function CreateEditClaseModal({
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={loading}
             >
-              {loading ? 'Guardando...' : clase ? 'Actualizar' : 'Programar Clase'}
+              {loading
+                ? "Guardando..."
+                : clase
+                ? "Actualizar"
+                : "Programar Clase"}
             </button>
           </div>
         </form>

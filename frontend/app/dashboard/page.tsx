@@ -2,13 +2,29 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
-import { Users, CreditCard, TrendingUp, Activity } from "lucide-react";
+import {
+  Users,
+  CreditCard,
+  TrendingUp,
+  Activity,
+  DollarSign,
+  ShoppingCart,
+  Package,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import {
   dashboardService,
   DashboardStats,
   RecentInscription,
   ExpiringMembresia,
+  DashboardChartsData,
 } from "@/lib/services/dashboard.service";
+import IngresosChart from "@/components/dashboard/IngresosChart";
+import VentasComprasChart from "@/components/dashboard/VentasComprasChart";
+import MembresiasEstadoChart from "@/components/dashboard/MembresiasEstadoChart";
+import ClientesTendenciaChart from "@/components/dashboard/ClientesTendenciaChart";
+import TopProductosChart from "@/components/dashboard/TopProductosChart";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -25,6 +41,9 @@ export default function DashboardPage() {
   const [expiringMembresias, setExpiringMembresias] = useState<
     ExpiringMembresia[]
   >([]);
+  const [chartsData, setChartsData] = useState<DashboardChartsData | null>(
+    null
+  );
 
   useEffect(() => {
     loadDashboardData();
@@ -35,11 +54,15 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
 
-      const data = await dashboardService.getDashboardData();
+      const [data, charts] = await Promise.all([
+        dashboardService.getDashboardData(),
+        dashboardService.getChartsData(),
+      ]);
 
       setStats(data.stats);
       setRecentInscriptions(data.recentInscriptions);
       setExpiringMembresias(data.expiringMembresias);
+      setChartsData(charts);
     } catch (err) {
       console.error("Error al cargar datos del dashboard:", err);
       setError("Error al cargar los datos. Por favor, intenta nuevamente.");
@@ -48,34 +71,57 @@ export default function DashboardPage() {
     }
   };
 
+  const getVariacionIcon = (variacion: number) => {
+    if (variacion > 0) return <ArrowUp className="h-4 w-4" />;
+    if (variacion < 0) return <ArrowDown className="h-4 w-4" />;
+    return null;
+  };
+
+  const getVariacionColor = (variacion: number) => {
+    if (variacion > 0) return "text-green-600";
+    if (variacion < 0) return "text-red-600";
+    return "text-gray-600";
+  };
+
   const statCards = [
     {
       title: "Total Clientes",
       value: stats.totalClients,
       icon: Users,
       color: "bg-blue-500",
-      change: "+12%",
+      change: chartsData
+        ? `${chartsData.clientes_tendencia[chartsData.clientes_tendencia.length - 1]?.clientes || 0} este mes`
+        : "Cargando...",
+      showVariation: false,
     },
     {
       title: "Membresías Activas",
       value: stats.activeMembresias,
       icon: CreditCard,
       color: "bg-green-500",
-      change: "+8%",
+      change: chartsData
+        ? `${chartsData.membresias_estado.find((m) => m.name === "Activas")?.value || 0} activas`
+        : "Cargando...",
+      showVariation: false,
     },
     {
       title: "Ingresos del Mes",
-      value: `Bs. ${stats.monthlyRevenue.toLocaleString()}`,
+      value: `Bs. ${stats.monthlyRevenue.toLocaleString("es-BO")}`,
       icon: TrendingUp,
       color: "bg-blue-500",
-      change: "+15%",
+      change: chartsData
+        ? `${chartsData.comparacion_mes.variacion_porcentaje >= 0 ? "+" : ""}${chartsData.comparacion_mes.variacion_porcentaje.toFixed(1)}%`
+        : "Cargando...",
+      showVariation: true,
+      variacion: chartsData?.comparacion_mes.variacion_porcentaje || 0,
     },
     {
       title: "Check-ins Hoy",
       value: stats.todayCheckIns,
       icon: Activity,
       color: "bg-purple-500",
-      change: "+5",
+      change: "Hoy",
+      showVariation: false,
     },
   ];
 
@@ -134,7 +180,14 @@ export default function DashboardPage() {
                     <div className={`${card.color} p-3 rounded-lg`}>
                       <Icon className="h-6 w-6 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-green-600">
+                    <span
+                      className={`text-sm font-medium flex items-center gap-1 ${
+                        card.showVariation
+                          ? getVariacionColor(card.variacion || 0)
+                          : "text-gray-600"
+                      }`}
+                    >
+                      {card.showVariation && getVariacionIcon(card.variacion || 0)}
                       {card.change}
                     </span>
                   </div>
@@ -261,6 +314,115 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Gráficas */}
+        {chartsData && (
+          <>
+            {/* Ingresos Mensuales */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Ingresos Mensuales (Últimos 6 Meses)
+              </h2>
+              <IngresosChart data={chartsData.ingresos_mensuales} />
+            </div>
+
+            {/* Ventas vs Compras y Membresías por Estado */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Ventas vs Compras
+                </h2>
+                <VentasComprasChart data={chartsData.ventas_vs_compras} />
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Membresías por Estado
+                </h2>
+                <MembresiasEstadoChart data={chartsData.membresias_estado} />
+              </div>
+            </div>
+
+            {/* Tendencias de Clientes y Top Productos */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Tendencias de Nuevos Clientes
+                </h2>
+                <ClientesTendenciaChart data={chartsData.clientes_tendencia} />
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Top 5 Productos Más Vendidos (Últimos 30 días)
+                </h2>
+                {chartsData.top_productos.length > 0 ? (
+                  <TopProductosChart data={chartsData.top_productos} />
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-gray-500">
+                    No hay datos de productos vendidos
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Resumen Financiero */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Resumen Financiero del Mes
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
+                    <span className="text-xs text-gray-600">Ingresos</span>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-600">
+                    Bs.{" "}
+                    {chartsData.resumen_financiero.ingresos.toLocaleString(
+                      "es-BO"
+                    )}
+                  </p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <ShoppingCart className="h-5 w-5 text-red-600" />
+                    <span className="text-xs text-gray-600">Gastos</span>
+                  </div>
+                  <p className="text-2xl font-bold text-red-600">
+                    Bs.{" "}
+                    {chartsData.resumen_financiero.gastos.toLocaleString(
+                      "es-BO"
+                    )}
+                  </p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    <span className="text-xs text-gray-600">Ganancia Neta</span>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">
+                    Bs.{" "}
+                    {chartsData.resumen_financiero.ganancia_neta.toLocaleString(
+                      "es-BO"
+                    )}
+                  </p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <Package className="h-5 w-5 text-purple-600" />
+                    <span className="text-xs text-gray-600">
+                      Margen de Ganancia
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {chartsData.resumen_financiero.margen_ganancia.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Quick Actions */}
         <div className="bg-white p-6 rounded-lg shadow-sm">

@@ -170,6 +170,22 @@ export class HttpClient {
 
     return this.handleResponse<T>(response);
   }
+
+  /**
+   * GET request que retorna un Blob (para PDFs, imágenes, etc.)
+   */
+  async getBlob(endpoint: string): Promise<Blob> {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      await this.handleResponse(response); // Lanzar error si hay problema
+    }
+
+    return response.blob();
+  }
 }
 
 // Instancia global del cliente HTTP

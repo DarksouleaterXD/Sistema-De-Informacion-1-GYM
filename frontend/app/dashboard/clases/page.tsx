@@ -1,17 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Filter, Calendar, Clock, Users, Edit2, Trash2 } from 'lucide-react';
-import DashboardLayout from '@/components/layout/dashboard-layout';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import CreateEditClaseModal from '@/components/clases/CreateEditClaseModal';
-import DeleteClaseModal from '@/components/clases/DeleteClaseModal';
-import { getClases, Clase } from '@/lib/services/clase.service';
-import disciplinaService, { Disciplina } from '@/lib/services/disciplina.service';
+import { useState, useEffect, useCallback } from "react";
+import {
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  Clock,
+  Users,
+  Edit2,
+  Trash2,
+} from "lucide-react";
+import DashboardLayout from "@/components/layout/dashboard-layout";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import CreateEditClaseModal from "@/components/clases/CreateEditClaseModal";
+import DeleteClaseModal from "@/components/clases/DeleteClaseModal";
+import { getClases, getClaseById, Clase } from "@/lib/services/clase.service";
+import disciplinaService, {
+  Disciplina,
+} from "@/lib/services/disciplina.service";
 
 export default function ClasesPage() {
   return (
-    <ProtectedRoute requiredPermissions={['clase.view']}>
+    <ProtectedRoute requiredPermissions={["clase.view"]}>
       <DashboardLayout>
         <ClasesContent />
       </DashboardLayout>
@@ -23,12 +34,14 @@ function ClasesContent() {
   const [clases, setClases] = useState<Clase[]>([]);
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Filtros y paginación
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEstado, setSelectedEstado] = useState<string>('');
-  const [selectedDisciplina, setSelectedDisciplina] = useState<number | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEstado, setSelectedEstado] = useState<string>("");
+  const [selectedDisciplina, setSelectedDisciplina] = useState<
+    number | undefined
+  >(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -40,7 +53,7 @@ function ClasesContent() {
 
   const fetchClases = useCallback(async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await getClases(
@@ -54,8 +67,8 @@ function ClasesContent() {
       setClases(response.results);
       setTotalPages(Math.ceil(response.count / 10));
     } catch (err) {
-      console.error('Error cargando clases:', err);
-      setError('Error al cargar las clases');
+      console.error("Error cargando clases:", err);
+      setError("Error al cargar las clases");
     } finally {
       setLoading(false);
     }
@@ -66,7 +79,7 @@ function ClasesContent() {
       const response = await disciplinaService.getDisciplinas({ activa: true });
       setDisciplinas(response.results);
     } catch (err) {
-      console.error('Error cargando disciplinas:', err);
+      console.error("Error cargando disciplinas:", err);
     }
   };
 
@@ -93,9 +106,18 @@ function ClasesContent() {
     setCurrentPage(1);
   };
 
-  const handleEdit = (clase: Clase) => {
-    setSelectedClase(clase);
-    setShowEditModal(true);
+  const handleEdit = async (clase: Clase) => {
+    try {
+      // Obtener el detalle completo de la clase para tener todos los campos necesarios
+      const claseCompleta = await getClaseById(clase.id);
+      setSelectedClase(claseCompleta);
+      setShowEditModal(true);
+    } catch (err) {
+      console.error("Error cargando detalle de clase:", err);
+      alert(
+        "Error al cargar los datos de la clase. Por favor intente nuevamente."
+      );
+    }
   };
 
   const handleDelete = (clase: Clase) => {
@@ -109,19 +131,23 @@ function ClasesContent() {
 
   const getEstadoBadge = (estado: string) => {
     const badges = {
-      programada: 'bg-blue-100 text-blue-800',
-      en_progreso: 'bg-green-100 text-green-800',
-      completada: 'bg-gray-100 text-gray-800',
-      cancelada: 'bg-red-100 text-red-800',
+      programada: "bg-blue-100 text-blue-800",
+      en_curso: "bg-green-100 text-green-800",
+      finalizada: "bg-gray-100 text-gray-800",
+      cancelada: "bg-red-100 text-red-800",
     };
     const labels = {
-      programada: 'Programada',
-      en_progreso: 'En Progreso',
-      completada: 'Completada',
-      cancelada: 'Cancelada',
+      programada: "Programada",
+      en_curso: "En Curso",
+      finalizada: "Finalizada",
+      cancelada: "Cancelada",
     };
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${badges[estado as keyof typeof badges]}`}>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded-full ${
+          badges[estado as keyof typeof badges]
+        }`}
+      >
         {labels[estado as keyof typeof labels]}
       </span>
     );
@@ -132,8 +158,12 @@ function ClasesContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Programación de Clases</h1>
-          <p className="text-gray-600 mt-1">Gestiona el horario de clases del gimnasio</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Programación de Clases
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Gestiona el horario de clases del gimnasio
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -169,8 +199,8 @@ function ClasesContent() {
             >
               <option value="">Todos los estados</option>
               <option value="programada">Programada</option>
-              <option value="en_progreso">En Progreso</option>
-              <option value="completada">Completada</option>
+              <option value="en_curso">En Curso</option>
+              <option value="finalizada">Finalizada</option>
               <option value="cancelada">Cancelada</option>
             </select>
           </div>
@@ -179,7 +209,7 @@ function ClasesContent() {
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <select
-              value={selectedDisciplina || ''}
+              value={selectedDisciplina || ""}
               onChange={(e) => handleDisciplinaChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white text-gray-900"
             >
@@ -237,7 +267,9 @@ function ClasesContent() {
                   <h3 className="text-lg font-semibold text-gray-900">
                     {clase.disciplina_nombre}
                   </h3>
-                  <p className="text-sm text-gray-600">{clase.instructor_nombre}</p>
+                  <p className="text-sm text-gray-600">
+                    {clase.instructor_nombre}
+                  </p>
                 </div>
                 {getEstadoBadge(clase.estado)}
               </div>
@@ -247,11 +279,11 @@ function ClasesContent() {
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    {new Date(clase.fecha).toLocaleDateString('es-ES', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
+                    {new Date(clase.fecha).toLocaleDateString("es-ES", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
                     })}
                   </span>
                 </div>
@@ -266,12 +298,15 @@ function ClasesContent() {
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Users className="w-4 h-4" />
                   <span>
-                    {clase.cupo_maximo - (clase.cupos_disponibles || 0)} / {clase.cupo_maximo} inscritos
+                    {clase.cupo_maximo - (clase.cupos_disponibles || 0)} /{" "}
+                    {clase.cupo_maximo} inscritos
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <div className="w-4 h-4 flex items-center justify-center">📍</div>
+                  <div className="w-4 h-4 flex items-center justify-center">
+                    📍
+                  </div>
                   <span>{clase.salon_nombre}</span>
                 </div>
               </div>
@@ -312,7 +347,9 @@ function ClasesContent() {
             Página {currentPage} de {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
             disabled={currentPage === totalPages}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >

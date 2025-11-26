@@ -212,8 +212,9 @@ function ComprasPageContent() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                  <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">
@@ -224,6 +225,9 @@ function ComprasPageContent() {
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">
                         Fecha
+                      </th>
+                      <th className="text-center py-3 px-4 font-semibold text-gray-700">
+                        Cantidad
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">
                         Estado
@@ -259,6 +263,11 @@ function ComprasPageContent() {
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {formatDate(orden.fecha_orden)}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="text-sm font-medium text-gray-900">
+                            {orden.cantidad_items || 0} {orden.cantidad_items === 1 ? "item" : "items"}
+                          </span>
                         </td>
                         <td className="py-3 px-4">
                           {getEstadoBadge(orden.estado)}
@@ -315,6 +324,7 @@ function ComprasPageContent() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
 
               {/* Paginación */}

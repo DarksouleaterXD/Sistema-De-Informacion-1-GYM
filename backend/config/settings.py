@@ -35,7 +35,9 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 # ALLOWED_HOSTS: Puede configurarse mediante variable de entorno
 # Ejemplo: ALLOWED_HOSTS=localhost,127.0.0.1,51.57.78.32,tu-dominio.com
 default_hosts = "localhost,127.0.0.1,51.57.78.32"
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", default_hosts).split(",")]
+ALLOWED_HOSTS = [
+    host.strip() for host in os.environ.get("ALLOWED_HOSTS", default_hosts).split(",")
+]
 
 
 # Application definition
@@ -56,7 +58,6 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework_simplejwt.token_blacklist",  # para invalidar refresh en logout
     # Local apps
-  
     "apps.core",
     "apps.users",
     "apps.clients",
@@ -73,6 +74,7 @@ INSTALLED_APPS = [
     "apps.productos",
     "apps.ventas",
     "apps.compras",
+    "apps.reportes",
 ]
 
 MIDDLEWARE = [

@@ -3,7 +3,7 @@ Views para Productos
 CRUD completo con filtros, búsqueda y paginación
 """
 
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -124,6 +124,32 @@ class ProductoViewSet(viewsets.ModelViewSet):
         registrar_actualizacion(self.request, producto, modulo="Productos")
 
     def perform_destroy(self, instance):
+        """
+        Eliminar producto con validaciones previas
+
+        No se puede eliminar si tiene:
+        - Ventas asociadas (DetalleVenta)
+        - Órdenes de compra asociadas (ItemOrdenCompra)
+        """
+        from apps.ventas.models import DetalleVenta
+        from apps.compras.models import ItemOrdenCompra
+
+        # Verificar si tiene ventas asociadas
+        ventas_count = DetalleVenta.objects.filter(producto=instance).count()
+        if ventas_count > 0:
+            raise serializers.ValidationError(
+                f"No se puede eliminar el producto '{instance.nombre}' porque tiene {ventas_count} venta(s) asociada(s). "
+                "Considere cambiar el estado a 'DESCONTINUADO' en lugar de eliminar."
+            )
+
+        # Verificar si tiene órdenes de compra asociadas
+        compras_count = ItemOrdenCompra.objects.filter(producto=instance).count()
+        if compras_count > 0:
+            raise serializers.ValidationError(
+                f"No se puede eliminar el producto '{instance.nombre}' porque tiene {compras_count} orden(es) de compra asociada(s). "
+                "Considere cambiar el estado a 'DESCONTINUADO' en lugar de eliminar."
+            )
+
         registrar_eliminacion(self.request, instance, modulo="Productos")
         instance.delete()
 

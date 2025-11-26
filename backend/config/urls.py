@@ -56,6 +56,7 @@ from apps.proveedores.views import (
 )
 from rest_framework.routers import DefaultRouter
 from apps.asistencias.views import AsistenciaClaseViewSet
+from apps.core.views import DashboardChartsView
 
 # Router para ViewSets
 router = DefaultRouter()
@@ -150,6 +151,8 @@ urlpatterns = [
         name="membresia-detail",
     ),
     path("api/membresias/stats/", MembresiaStatsView.as_view(), name="membresia-stats"),
+    # Dashboard - Gráficas
+    path("api/dashboard/charts/", DashboardChartsView.as_view(), name="dashboard-charts"),
     # CU17: Consultar Estado/Vigencia de Membresía
     path(
         "api/membresias/consultar-estado/",
@@ -218,6 +221,8 @@ urlpatterns = [
     path("api/", include("apps.ventas.urls")),
     # Gestión de Compras
     path("api/", include("apps.compras.urls")),
+    # Gestión de Reportes
+    path("api/", include("apps.reportes.urls")),
     # CU29: Registrar Proveedor
     path(
         "api/proveedores/",

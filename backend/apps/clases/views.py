@@ -4,8 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from .models import Salon, Clase, InscripcionClase
 from .serializers import (
-    SalonSerializer, ClaseSerializer, ClaseListSerializer,
-    InscripcionClaseSerializer
+    SalonSerializer,
+    ClaseSerializer,
+    ClaseListSerializer,
+    InscripcionClaseSerializer,
 )
 from apps.audit.helpers import registrar_bitacora
 from apps.core.permissions import HasPermission, PermissionCodes
@@ -15,44 +17,45 @@ from apps.core.permissions import HasPermission, PermissionCodes
 # SALONES
 # ==========================================
 
+
 class SalonListCreateView(generics.ListCreateAPIView):
     """
     GET: Listar salones con búsqueda y filtros
     POST: Crear nuevo salón
     """
+
     permission_classes = [IsAuthenticated, HasPermission]
     required_permissions = [PermissionCodes.SALON_VIEW]
     serializer_class = SalonSerializer
 
     def get_queryset(self):
         queryset = Salon.objects.all()
-        
+
         # Búsqueda
-        search = self.request.query_params.get('search', None)
+        search = self.request.query_params.get("search", None)
         if search:
             queryset = queryset.filter(
-                Q(nombre__icontains=search) | 
-                Q(descripcion__icontains=search)
+                Q(nombre__icontains=search) | Q(descripcion__icontains=search)
             )
-        
+
         # Filtro por estado
-        activo = self.request.query_params.get('activo', None)
+        activo = self.request.query_params.get("activo", None)
         if activo is not None:
-            activo_bool = activo.lower() == 'true'
+            activo_bool = activo.lower() == "true"
             queryset = queryset.filter(activo=activo_bool)
-        
-        return queryset.order_by('nombre')
+
+        return queryset.order_by("nombre")
 
     def perform_create(self, serializer):
         salon = serializer.save()
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="SALONES",
             accion="CREAR",
-            descripcion=f"Creó el salón: {salon.nombre} (ID: {salon.id})"
+            descripcion=f"Creó el salón: {salon.nombre} (ID: {salon.id})",
         )
 
 
@@ -62,6 +65,7 @@ class SalonDetailView(generics.RetrieveUpdateDestroyAPIView):
     PUT/PATCH: Actualizar salón
     DELETE: Eliminar salón
     """
+
     permission_classes = [IsAuthenticated, HasPermission]
     required_permissions = [PermissionCodes.SALON_VIEW]
     queryset = Salon.objects.all()
@@ -69,28 +73,28 @@ class SalonDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         salon = serializer.save()
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="SALONES",
             accion="ACTUALIZAR",
-            descripcion=f"Actualizó el salón: {salon.nombre} (ID: {salon.id})"
+            descripcion=f"Actualizó el salón: {salon.nombre} (ID: {salon.id})",
         )
 
     def perform_destroy(self, instance):
         nombre = instance.nombre
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="SALONES",
             accion="ELIMINAR",
-            descripcion=f"Eliminó el salón: {nombre} (ID: {instance.id})"
+            descripcion=f"Eliminó el salón: {nombre} (ID: {instance.id})",
         )
-        
+
         instance.delete()
 
 
@@ -98,65 +102,69 @@ class SalonDetailView(generics.RetrieveUpdateDestroyAPIView):
 # CLASES (CU20)
 # ==========================================
 
+
 class ClaseListCreateView(generics.ListCreateAPIView):
     """
     CU20: Programar Clase
     GET: Listar clases con búsqueda y filtros
     POST: Crear nueva clase programada
     """
+
     permission_classes = [IsAuthenticated, HasPermission]
     required_permissions = [PermissionCodes.CLASE_VIEW]
-    
+
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.request.method == "GET":
             return ClaseListSerializer
         return ClaseSerializer
 
     def get_queryset(self):
-        queryset = Clase.objects.select_related('disciplina', 'instructor', 'salon').all()
-        
+        queryset = Clase.objects.select_related(
+            "disciplina", "instructor", "salon"
+        ).all()
+
         # Búsqueda
-        search = self.request.query_params.get('search', None)
+        search = self.request.query_params.get("search", None)
         if search:
             queryset = queryset.filter(
-                Q(disciplina__nombre__icontains=search) |
-                Q(instructor__first_name__icontains=search) |
-                Q(instructor__last_name__icontains=search) |
-                Q(salon__nombre__icontains=search)
+                Q(disciplina__nombre__icontains=search)
+                | Q(instructor__first_name__icontains=search)
+                | Q(instructor__last_name__icontains=search)
+                | Q(salon__nombre__icontains=search)
             )
-        
+
         # Filtro por estado
-        estado = self.request.query_params.get('estado', None)
+        estado = self.request.query_params.get("estado", None)
         if estado:
             queryset = queryset.filter(estado=estado)
-        
+
         # Filtro por fecha
-        fecha = self.request.query_params.get('fecha', None)
+        fecha = self.request.query_params.get("fecha", None)
         if fecha:
             queryset = queryset.filter(fecha=fecha)
-        
+
         # Filtro por disciplina
-        disciplina_id = self.request.query_params.get('disciplina', None)
+        disciplina_id = self.request.query_params.get("disciplina", None)
         if disciplina_id:
             queryset = queryset.filter(disciplina_id=disciplina_id)
-        
+
         # Filtro por instructor
-        instructor_id = self.request.query_params.get('instructor', None)
+        instructor_id = self.request.query_params.get("instructor", None)
         if instructor_id:
             queryset = queryset.filter(instructor_id=instructor_id)
-        
-        return queryset.order_by('-fecha', '-hora_inicio')
+
+        return queryset.order_by("-fecha", "-hora_inicio")
 
     def perform_create(self, serializer):
         clase = serializer.save()
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="CLASES",
             accion="PROGRAMAR",
-            descripcion=f"Programó clase de {clase.disciplina.nombre} para {clase.fecha} {clase.hora_inicio} (ID: {clase.id}, Instructor: {clase.instructor.get_full_name()}, Salón: {clase.salon.nombre})"
+            descripcion=f"Programó clase de {clase.disciplina.nombre} para {clase.fecha} {clase.hora_inicio} (ID: {clase.id}, Instructor: {clase.instructor.get_full_name()}, Salón: {clase.salon.nombre})",
         )
 
 
@@ -166,35 +174,74 @@ class ClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
     PUT/PATCH: Actualizar clase
     DELETE: Eliminar clase
     """
+
     permission_classes = [IsAuthenticated, HasPermission]
-    required_permissions = [PermissionCodes.CLASE_VIEW]
-    queryset = Clase.objects.select_related('disciplina', 'instructor', 'salon').all()
+    queryset = Clase.objects.select_related("disciplina", "instructor", "salon").all()
     serializer_class = ClaseSerializer
+
+    def get_required_permission(self):
+        """Retorna el permiso requerido según el método HTTP"""
+        if self.request.method == "GET":
+            return PermissionCodes.CLASE_VIEW
+        elif self.request.method in ["PUT", "PATCH"]:
+            return PermissionCodes.CLASE_EDIT
+        elif self.request.method == "DELETE":
+            return PermissionCodes.CLASE_DELETE
+        return PermissionCodes.CLASE_VIEW
+
+    @property
+    def required_permission(self):
+        """Propiedad para compatibilidad con HasPermission"""
+        return self.get_required_permission()
+
+    def update(self, request, *args, **kwargs):
+        """Override para agregar logging y mejor manejo de errores"""
+        import sys
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=False)
+
+        # Logging para debugging
+        print("=" * 80, file=sys.stderr)
+        print(f"📥 ACTUALIZANDO CLASE ID: {instance.id}", file=sys.stderr)
+        print(f"📥 DATOS RECIBIDOS: {request.data}", file=sys.stderr)
+        print(f"📥 USUARIO: {request.user}", file=sys.stderr)
+        sys.stderr.flush()
+
+        if not serializer.is_valid():
+            print(f"❌ ERRORES DE VALIDACIÓN: {serializer.errors}", file=sys.stderr)
+            sys.stderr.flush()
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
     def perform_update(self, serializer):
         clase = serializer.save()
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="CLASES",
             accion="EDITAR",
-            descripcion=f"Editó clase de {clase.disciplina.nombre} del {clase.fecha} (ID: {clase.id})"
+            descripcion=f"Editó clase de {clase.disciplina.nombre} del {clase.fecha} (ID: {clase.id})",
         )
 
     def perform_destroy(self, instance):
-        descripcion_clase = f"{instance.disciplina.nombre} - {instance.fecha} {instance.hora_inicio}"
-        
+        descripcion_clase = (
+            f"{instance.disciplina.nombre} - {instance.fecha} {instance.hora_inicio}"
+        )
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="CLASES",
             accion="ELIMINAR",
-            descripcion=f"Eliminó clase: {descripcion_clase} (ID: {instance.id})"
+            descripcion=f"Eliminó clase: {descripcion_clase} (ID: {instance.id})",
         )
-        
+
         instance.delete()
 
 
@@ -202,45 +249,47 @@ class ClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
 # INSCRIPCIONES A CLASES
 # ==========================================
 
+
 class InscripcionClaseListCreateView(generics.ListCreateAPIView):
     """
     GET: Listar inscripciones a clases
     POST: Inscribir cliente a clase
     """
+
     permission_classes = [IsAuthenticated, HasPermission]
     required_permissions = [PermissionCodes.INSCRIPCION_CLASE_VIEW]
     serializer_class = InscripcionClaseSerializer
 
     def get_queryset(self):
-        queryset = InscripcionClase.objects.select_related('clase', 'cliente').all()
-        
+        queryset = InscripcionClase.objects.select_related("clase", "cliente").all()
+
         # Filtro por clase
-        clase_id = self.request.query_params.get('clase', None)
+        clase_id = self.request.query_params.get("clase", None)
         if clase_id:
             queryset = queryset.filter(clase_id=clase_id)
-        
+
         # Filtro por cliente
-        cliente_id = self.request.query_params.get('cliente', None)
+        cliente_id = self.request.query_params.get("cliente", None)
         if cliente_id:
             queryset = queryset.filter(cliente_id=cliente_id)
-        
+
         # Filtro por estado
-        estado = self.request.query_params.get('estado', None)
+        estado = self.request.query_params.get("estado", None)
         if estado:
             queryset = queryset.filter(estado=estado)
-        
-        return queryset.order_by('-fecha_inscripcion')
+
+        return queryset.order_by("-fecha_inscripcion")
 
     def perform_create(self, serializer):
         inscripcion = serializer.save()
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="INSCRIPCIONES_CLASE",
             accion="INSCRIBIR",
-            descripcion=f"Inscribió a {inscripcion.cliente.nombre_completo} en clase de {inscripcion.clase.disciplina.nombre} (ID: {inscripcion.id}, Clase: {inscripcion.clase.fecha} {inscripcion.clase.hora_inicio})"
+            descripcion=f"Inscribió a {inscripcion.cliente.nombre_completo} en clase de {inscripcion.clase.disciplina.nombre} (ID: {inscripcion.id}, Clase: {inscripcion.clase.fecha} {inscripcion.clase.hora_inicio})",
         )
 
 
@@ -250,34 +299,35 @@ class InscripcionClaseDetailView(generics.RetrieveUpdateDestroyAPIView):
     PUT/PATCH: Actualizar inscripción (cambiar estado)
     DELETE: Eliminar inscripción
     """
+
     permission_classes = [IsAuthenticated, HasPermission]
     required_permissions = [PermissionCodes.INSCRIPCION_CLASE_VIEW]
-    queryset = InscripcionClase.objects.select_related('clase', 'cliente').all()
+    queryset = InscripcionClase.objects.select_related("clase", "cliente").all()
     serializer_class = InscripcionClaseSerializer
 
     def perform_update(self, serializer):
         inscripcion = serializer.save()
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="INSCRIPCIONES_CLASE",
             accion="ACTUALIZAR",
-            descripcion=f"Actualizó inscripción de {inscripcion.cliente.nombre_completo} - Estado: {inscripcion.get_estado_display()} (ID: {inscripcion.id})"
+            descripcion=f"Actualizó inscripción de {inscripcion.cliente.nombre_completo} - Estado: {inscripcion.get_estado_display()} (ID: {inscripcion.id})",
         )
 
     def perform_destroy(self, instance):
         cliente_nombre = instance.cliente.nombre_completo
         clase_info = f"{instance.clase.disciplina.nombre} - {instance.clase.fecha}"
-        
+
         # Auditoría
         registrar_bitacora(
             request=self.request,
             usuario=self.request.user,
             modulo="INSCRIPCIONES_CLASE",
             accion="CANCELAR",
-            descripcion=f"Canceló inscripción de {cliente_nombre} en {clase_info} (ID: {instance.id})"
+            descripcion=f"Canceló inscripción de {cliente_nombre} en {clase_info} (ID: {instance.id})",
         )
-        
+
         instance.delete()

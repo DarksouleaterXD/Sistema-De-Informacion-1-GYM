@@ -185,9 +185,19 @@ class ProductoCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Validaciones cruzadas"""
-        # Validar que el precio sea mayor que el costo
-        if "costo" in data and data.get("costo") and "precio" in data:
-            if data["precio"] < data["costo"]:
+        # Validar que el precio sea mayor que el costo (solo si costo está presente y es mayor a 0)
+        costo = data.get("costo")
+        precio = data.get("precio")
+
+        # Si costo es None, 0 o no está en data, usar el costo actual del producto (si existe)
+        if costo is None or costo == 0:
+            if self.instance and self.instance.costo:
+                costo = self.instance.costo
+            else:
+                costo = None
+
+        if costo and costo > 0 and precio:
+            if precio < costo:
                 raise serializers.ValidationError(
                     {"precio": "El precio de venta no puede ser menor que el costo."}
                 )

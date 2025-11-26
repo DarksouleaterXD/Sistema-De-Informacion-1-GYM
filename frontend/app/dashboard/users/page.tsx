@@ -508,8 +508,8 @@ function UsersPageContent() {
         {/* Modal Crear Usuario */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+              <div className="p-4 sm:p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">
                     Nuevo Usuario
@@ -526,7 +526,7 @@ function UsersPageContent() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Username *
@@ -743,8 +743,8 @@ function UsersPageContent() {
         {/* Modal Editar Usuario */}
         {showEditModal && selectedUser && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+              <div className="p-4 sm:p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">
                     Editar Usuario
@@ -764,9 +764,13 @@ function UsersPageContent() {
                 <div className="space-y-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">Username:</p>
-                    <p className="font-medium">{selectedUser.username}</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedUser.username}
+                    </p>
                     <p className="text-sm text-gray-600 mt-2">Email:</p>
-                    <p className="font-medium">{selectedUser.email}</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedUser.email}
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -955,8 +959,8 @@ function UsersPageContent() {
         {/* Modal Ver Detalle */}
         {showDetailModal && selectedUser && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+              <div className="p-4 sm:p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">
                     Detalle del Usuario

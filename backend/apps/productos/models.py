@@ -209,8 +209,8 @@ class Producto(TimeStampedModel):
         """Validaciones de negocio"""
         super().clean()
 
-        # Validar que el precio sea mayor que el costo
-        if self.costo and self.precio < self.costo:
+        # Validar que el precio sea mayor que el costo (solo si costo está presente y es mayor a 0)
+        if self.costo and self.costo > 0 and self.precio < self.costo:
             raise ValidationError(
                 {"precio": "El precio de venta no puede ser menor que el costo."}
             )
@@ -225,12 +225,15 @@ class Producto(TimeStampedModel):
 
     @property
     def precio_con_descuento(self):
-        """Calcula el precio con descuento si hay promoción vigente"""
-        if self.promocion and self.promocion.estado == "activa":
-            if self.promocion.tipo == "porcentaje":
-                descuento = self.precio * (self.promocion.valor / 100)
-            else:  # monto_fijo
-                descuento = self.promocion.valor
+        """
+        Calcula el precio con descuento si hay promoción vigente
+
+        NOTA: Las promociones están diseñadas principalmente para membresías.
+        Para productos, se usa el campo 'descuento' (porcentaje) de la promoción.
+        """
+        if self.promocion and self.promocion.esta_vigente:
+            # El modelo Promocion tiene 'descuento' como porcentaje (ej: 15.00 para 15%)
+            descuento = self.precio * (self.promocion.descuento / 100)
             return max(self.precio - descuento, 0)
         return self.precio
 
@@ -251,6 +254,7 @@ class Producto(TimeStampedModel):
         """Calcula los días hasta el vencimiento"""
         if self.fecha_vencimiento:
             from datetime import date
+
             delta = self.fecha_vencimiento - date.today()
             return delta.days
         return None
@@ -316,7 +320,7 @@ class MovimientoInventario(TimeStampedModel):
     # Relaciones
     producto = models.ForeignKey(
         Producto,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="movimientos",
         verbose_name="Producto",
     )

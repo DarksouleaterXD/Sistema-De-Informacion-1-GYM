@@ -43,6 +43,47 @@ export interface DashboardData {
   expiringMembresias: ExpiringMembresia[];
 }
 
+/**
+ * Datos para gráficas del dashboard
+ */
+export interface DashboardChartsData {
+  ingresos_mensuales: Array<{
+    mes: string;
+    ingresos: number;
+    membresias: number;
+    ventas: number;
+  }>;
+  ventas_vs_compras: Array<{
+    mes: string;
+    ventas: number;
+    compras: number;
+  }>;
+  membresias_estado: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  clientes_tendencia: Array<{
+    mes: string;
+    clientes: number;
+  }>;
+  top_productos: Array<{
+    nombre: string;
+    cantidad: number;
+  }>;
+  comparacion_mes: {
+    mes_actual: number;
+    mes_anterior: number;
+    variacion_porcentaje: number;
+  };
+  resumen_financiero: {
+    ingresos: number;
+    gastos: number;
+    ganancia_neta: number;
+    margen_ganancia: number;
+  };
+}
+
 class DashboardService {
   /**
    * Obtener todas las estadísticas del dashboard
@@ -175,6 +216,18 @@ class DashboardService {
     if (monto >= 500) return "Plan Anual";
     if (monto >= 150) return "Plan Trimestral";
     return "Plan Mensual";
+  }
+
+  /**
+   * Obtener datos para gráficas del dashboard
+   */
+  async getChartsData(): Promise<DashboardChartsData> {
+    try {
+      return await httpClient.get<DashboardChartsData>("/api/dashboard/charts/");
+    } catch (error) {
+      console.error("Error al obtener datos de gráficas:", error);
+      throw error;
+    }
   }
 
   /**

@@ -11,12 +11,15 @@ import {
   AlertTriangle,
   XCircle,
   Archive,
+  Download,
 } from "lucide-react";
 import { Card, Button, Input } from "@/components/ui";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PermissionCodes } from "@/lib/utils/permissions";
 import AjustarStockModal from "@/components/productos/AjustarStockModal";
 import inventarioService from "@/lib/services/inventario.service";
+import reporteService from "@/lib/services/reporte.service";
+import { httpClient } from "@/lib/config/http-client";
 import { Producto, AjustarStockResponse } from "@/lib/types";
 
 type ModalMode = "ajustar" | null;
@@ -28,13 +31,16 @@ function InventarioPageContent() {
   const [estadoFilter, setEstadoFilter] = useState<string>("");
   const [stockBajoFilter, setStockBajoFilter] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
-  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
+  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(
+    null
+  );
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 10,
     total: 0,
   });
   const [estadisticas, setEstadisticas] = useState<any>(null);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
 
   useEffect(() => {
     loadProductos();
@@ -75,7 +81,10 @@ function InventarioPageContent() {
       setPagination((prev) => ({ ...prev, total: response?.count || 0 }));
     } catch (error: any) {
       console.error("❌ Error al cargar productos:", error);
-      console.error("Detalles del error:", error.response?.data || error.message);
+      console.error(
+        "Detalles del error:",
+        error.response?.data || error.message
+      );
       setProductos([]);
     } finally {
       setLoading(false);
@@ -98,13 +107,19 @@ function InventarioPageContent() {
 
   const handleAjusteSuccess = async (response: AjustarStockResponse) => {
     if (!response || !response.producto || !response.ajuste) {
-      console.error('Respuesta inválida del servidor:', response);
-      alert('Error: Respuesta inválida del servidor');
+      console.error("Respuesta inválida del servidor:", response);
+      alert("Error: Respuesta inválida del servidor");
       return;
     }
 
     alert(
-      `✓ Ajuste realizado exitosamente\n\nProducto: ${response.producto.nombre}\nStock anterior: ${response.ajuste.stock_anterior}\nStock actual: ${response.ajuste.stock_actual}\nDiferencia: ${response.ajuste.diferencia > 0 ? "+" : ""}${response.ajuste.diferencia}`
+      `✓ Ajuste realizado exitosamente\n\nProducto: ${
+        response.producto.nombre
+      }\nStock anterior: ${response.ajuste.stock_anterior}\nStock actual: ${
+        response.ajuste.stock_actual
+      }\nDiferencia: ${response.ajuste.diferencia > 0 ? "+" : ""}${
+        response.ajuste.diferencia
+      }`
     );
     setModalMode(null);
     setSelectedProducto(null);
@@ -112,17 +127,73 @@ function InventarioPageContent() {
     loadEstadisticas();
   };
 
+  const handleDescargarPDF = async () => {
+    try {
+      setDownloadingPDF(true);
+
+      // Construir query string con los filtros actuales
+      const params = new URLSearchParams();
+      params.append("formato", "pdf");
+      if (searchTerm) {
+        params.append("search", searchTerm);
+      }
+      if (estadoFilter) {
+        params.append("estado", estadoFilter);
+      }
+      if (stockBajoFilter) {
+        params.append("stock_bajo", "true");
+      }
+
+      const queryString = params.toString();
+      const url = `/api/reportes/inventario/${
+        queryString ? `?${queryString}` : ""
+      }`;
+
+      const blob = await httpClient.getBlob(url);
+      const nombreArchivo = `inventario_${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      reporteService.descargarPDF(blob, nombreArchivo);
+    } catch (error: any) {
+      console.error("Error al descargar PDF:", error);
+      alert(
+        "Error al descargar el PDF: " + (error.message || "Error desconocido")
+      );
+    } finally {
+      setDownloadingPDF(false);
+    }
+  };
+
   const getEstadoBadge = (estado: string) => {
-    const badges: Record<string, { label: string; color: string; icon: any }> = {
-      ACTIVO: { label: "Activo", color: "bg-green-100 text-green-800", icon: CheckCircle },
-      INACTIVO: { label: "Inactivo", color: "bg-gray-100 text-gray-800", icon: XCircle },
-      AGOTADO: { label: "Agotado", color: "bg-red-100 text-red-800", icon: AlertTriangle },
-      DESCONTINUADO: { label: "Descontinuado", color: "bg-orange-100 text-orange-800", icon: Archive },
-    };
+    const badges: Record<string, { label: string; color: string; icon: any }> =
+      {
+        ACTIVO: {
+          label: "Activo",
+          color: "bg-green-100 text-green-800",
+          icon: CheckCircle,
+        },
+        INACTIVO: {
+          label: "Inactivo",
+          color: "bg-gray-100 text-gray-800",
+          icon: XCircle,
+        },
+        AGOTADO: {
+          label: "Agotado",
+          color: "bg-red-100 text-red-800",
+          icon: AlertTriangle,
+        },
+        DESCONTINUADO: {
+          label: "Descontinuado",
+          color: "bg-orange-100 text-orange-800",
+          icon: Archive,
+        },
+      };
     const badge = badges[estado] || badges.ACTIVO;
     const Icon = badge.icon;
     return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
+      <span
+        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}
+      >
         <Icon className="w-3 h-3" />
         {badge.label}
       </span>
@@ -134,13 +205,28 @@ function InventarioPageContent() {
   return (
     <div className="container mx-auto px-6 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Gestión de Inventario
-        </h1>
-        <p className="text-gray-600">
-          Ajuste de stock y control de inventario de productos
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Gestión de Inventario
+          </h1>
+          <p className="text-gray-600">
+            Ajuste de stock y control de inventario de productos
+          </p>
+        </div>
+        <Button
+          onClick={handleDescargarPDF}
+          disabled={downloadingPDF}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          {downloadingPDF ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          Descargar PDF
+        </Button>
       </div>
 
       {/* Estadísticas */}
@@ -149,7 +235,9 @@ function InventarioPageContent() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Productos</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Productos
+                </p>
                 <p className="text-3xl font-bold text-gray-800 mt-1">
                   {estadisticas.total_productos}
                 </p>
@@ -232,7 +320,7 @@ function InventarioPageContent() {
               onChange={(e) => {
                 const productoId = parseInt(e.target.value);
                 if (productoId) {
-                  const producto = productos.find(p => p.id === productoId);
+                  const producto = productos.find((p) => p.id === productoId);
                   if (producto) {
                     handleAjustar(producto);
                   }
@@ -243,7 +331,8 @@ function InventarioPageContent() {
               <option value="">Seleccione para ajustar...</option>
               {productos.map((producto) => (
                 <option key={producto.id} value={producto.id}>
-                  {producto.codigo} - {producto.nombre} (Stock: {producto.stock})
+                  {producto.codigo} - {producto.nombre} (Stock: {producto.stock}
+                  )
                 </option>
               ))}
             </select>
@@ -360,7 +449,9 @@ function InventarioPageContent() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{producto.codigo}</div>
+                        <div className="text-sm text-gray-900">
+                          {producto.codigo}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">

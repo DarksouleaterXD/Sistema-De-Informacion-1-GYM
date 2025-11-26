@@ -62,7 +62,7 @@ function ProductosPageContent() {
     categoria: 0,
     proveedor: null,
     precio: 0,
-    costo: 0,
+    costo: null,
     stock: 0,
     stock_minimo: 0,
     unidad_medida: "UNIDAD",
@@ -137,7 +137,7 @@ function ProductosPageContent() {
       categoria: categorias[0]?.id || 0,
       proveedor: null,
       precio: 0,
-      costo: 0,
+      costo: null,
       stock: 0,
       stock_minimo: 5,
       unidad_medida: "UNIDAD",
@@ -159,7 +159,7 @@ function ProductosPageContent() {
       categoria: producto.categoria,
       proveedor: producto.proveedor,
       precio: parseFloat(producto.precio),
-      costo: parseFloat(producto.costo),
+      costo: producto.costo ? parseFloat(producto.costo) : null,
       stock: producto.stock,
       stock_minimo: producto.stock_minimo,
       unidad_medida: producto.unidad_medida,
@@ -193,7 +193,20 @@ function ProductosPageContent() {
       loadProductos();
     } catch (error: any) {
       console.error("Error al eliminar producto:", error);
-      alert(error.response?.data?.detail || "Error al eliminar producto");
+      // Extraer mensaje de error del backend
+      let errorMessage = "Error al eliminar producto";
+      if (error.response?.data) {
+        if (error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (typeof error.response.data === "string") {
+          errorMessage = error.response.data;
+        } else if (error.response.data.non_field_errors) {
+          errorMessage = error.response.data.non_field_errors[0];
+        }
+      }
+      alert(errorMessage);
     }
   };
 
@@ -216,8 +229,21 @@ function ProductosPageContent() {
       errors.precio = "El precio debe ser mayor a 0";
     }
 
-    if (formData.costo < 0) {
+    if (
+      formData.costo !== null &&
+      formData.costo !== undefined &&
+      formData.costo < 0
+    ) {
       errors.costo = "El costo no puede ser negativo";
+    }
+
+    // Validar que precio sea mayor que costo (solo si costo está presente)
+    if (
+      formData.costo &&
+      formData.costo > 0 &&
+      formData.precio < formData.costo
+    ) {
+      errors.precio = "El precio de venta no puede ser menor que el costo";
     }
 
     if (formData.stock < 0) {
@@ -350,162 +376,169 @@ function ProductosPageContent() {
               No se encontraron productos
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Producto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Categoría
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Proveedor
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Precio
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {productos.map((producto) => (
-                    <tr key={producto.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          {producto.imagen_url ? (
-                            <img
-                              src={producto.imagen_url}
-                              alt={producto.nombre}
-                              className="w-12 h-12 object-cover rounded-lg mr-3"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display =
-                                  "none";
-                              }}
-                            />
-                          ) : (
-                            <Package className="w-5 h-5 text-gray-400 mr-3" />
-                          )}
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {producto.nombre}
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Producto
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Categoría
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Proveedor
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Precio
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Stock
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {productos.map((producto) => (
+                      <tr key={producto.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            {producto.imagen_url ? (
+                              <img
+                                src={producto.imagen_url}
+                                alt={producto.nombre}
+                                className="w-12 h-12 object-cover rounded-lg mr-3"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display =
+                                    "none";
+                                }}
+                              />
+                            ) : (
+                              <Package className="w-5 h-5 text-gray-400 mr-3" />
+                            )}
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {producto.nombre}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Código: {producto.codigo}
+                              </div>
                             </div>
-                            <div className="text-sm text-gray-500">
-                              Código: {producto.codigo}
-                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1">
-                          <Layers className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900">
-                            {producto.categoria_nombre}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {producto.proveedor_nombre || (
-                            <span className="text-gray-400">Sin proveedor</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
-                          <div className="font-medium text-gray-900">
-                            Bs. {parseFloat(producto.precio).toFixed(2)}
-                          </div>
-                          <div className="text-gray-500">
-                            Costo: Bs. {parseFloat(producto.costo).toFixed(2)}
-                          </div>
-                          {producto.promocion_nombre && (
-                            <div className="text-green-600 text-xs">
-                              {producto.promocion_nombre}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
-                          <div
-                            className={`font-medium ${
-                              producto.necesita_reposicion
-                                ? "text-red-600"
-                                : "text-gray-900"
-                            }`}
-                          >
-                            {producto.stock} {producto.unidad_medida_display}
-                          </div>
-                          <div className="text-gray-500 text-xs">
-                            Mín: {producto.stock_minimo}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            producto.estado === "ACTIVO"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {producto.estado === "ACTIVO" ? (
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                          ) : (
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                          )}
-                          {producto.estado_display}
-                        </span>
-                        {producto.necesita_reposicion && (
-                          <div className="mt-1">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                              <TrendingDown className="w-3 h-3 mr-1" />
-                              Bajo stock
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1">
+                            <Layers className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-900">
+                              {producto.categoria_nombre}
                             </span>
                           </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleStock(producto)}
-                            className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
-                            title="Actualizar stock"
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {producto.proveedor_nombre || (
+                              <span className="text-gray-400">
+                                Sin proveedor
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            <div className="font-medium text-gray-900">
+                              Bs. {parseFloat(producto.precio).toFixed(2)}
+                            </div>
+                            {producto.costo && (
+                              <div className="text-gray-500">
+                                Costo: Bs.{" "}
+                                {parseFloat(producto.costo).toFixed(2)}
+                              </div>
+                            )}
+                            {producto.promocion_nombre && (
+                              <div className="text-green-600 text-xs">
+                                {producto.promocion_nombre}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            <div
+                              className={`font-medium ${
+                                producto.necesita_reposicion
+                                  ? "text-red-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              {producto.stock} {producto.unidad_medida_display}
+                            </div>
+                            <div className="text-gray-500 text-xs">
+                              Mín: {producto.stock_minimo}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              producto.estado === "ACTIVO"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
                           >
-                            <ShoppingCart className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(producto)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
-                            title="Editar"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDelete(producto.id, producto.nombre)
-                            }
-                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                            {producto.estado === "ACTIVO" ? (
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                            ) : (
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                            )}
+                            {producto.estado_display}
+                          </span>
+                          {producto.necesita_reposicion && (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <TrendingDown className="w-3 h-3 mr-1" />
+                                Bajo stock
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right text-sm font-medium">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleStock(producto)}
+                              className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
+                              title="Actualizar stock"
+                            >
+                              <ShoppingCart className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(producto)}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              title="Editar"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDelete(producto.id, producto.nombre)
+                              }
+                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </Card>
@@ -550,8 +583,8 @@ function ProductosPageContent() {
       {/* Modal de Crear/Editar */}
       {(modalMode === "create" || modalMode === "edit") && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
+            <div className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {modalMode === "create"
@@ -567,7 +600,7 @@ function ProductosPageContent() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Nombre */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -789,22 +822,27 @@ function ProductosPageContent() {
                   {/* Costo */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Costo (Bs.) <span className="text-red-500">*</span>
+                      Costo (Bs.){" "}
+                      <span className="text-gray-400 text-xs">(Opcional)</span>
                     </label>
                     <Input
                       type="number"
                       step="0.01"
                       min="0"
-                      value={formData.costo || ""}
+                      value={
+                        formData.costo && formData.costo > 0
+                          ? formData.costo
+                          : ""
+                      }
                       onChange={(e) => {
                         const value =
                           e.target.value === ""
-                            ? 0
-                            : parseFloat(e.target.value) || 0;
+                            ? null
+                            : parseFloat(e.target.value) || null;
                         setFormData({ ...formData, costo: value });
                       }}
                       className={formErrors.costo ? "border-red-500" : ""}
-                      placeholder="0.00"
+                      placeholder="0.00 (opcional)"
                     />
                     {formErrors.costo && (
                       <p className="text-red-500 text-sm mt-1">

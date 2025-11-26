@@ -24,6 +24,7 @@ import membresiaService, {
   MembresiaCreate,
 } from "@/lib/services/membresia.service";
 import { clientService } from "@/lib/services/client.service";
+import { promocionService, Promocion } from "@/lib/services/promocion.service";
 import { Client, PlanMembresia } from "@/lib/types";
 import { Card, Button, Badge, Input } from "@/components/ui";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -34,7 +35,11 @@ function MembresiasPageContent() {
   const [membresias, setMembresias] = useState<MembresiaList[]>([]);
   const [stats, setStats] = useState<MembresiaStats | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
-  const [planes, setPlanes] = useState<PlanMembresia[]>([]); // ✨ NUEVO
+  const [planes, setPlanes] = useState<PlanMembresia[]>([]);
+  const [promociones, setPromociones] = useState<Promocion[]>([]);
+  const [promocionesSeleccionadas, setPromocionesSeleccionadas] = useState<
+    number[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("");
@@ -57,19 +62,21 @@ function MembresiasPageContent() {
   // Formulario
   const [formData, setFormData] = useState<MembresiaCreate>({
     cliente: 0,
-    plan: 0, // ✨ NUEVO campo requerido
+    plan: 0,
     monto: 0,
     metodo_de_pago: "efectivo",
-    estado: "activo", // ✅ CORREGIDO: minúsculas para coincidir con backend
+    estado: "activo",
     fecha_inicio: new Date().toISOString().split("T")[0],
     fecha_fin: "",
+    promociones: [],
   });
 
   useEffect(() => {
     fetchMembresias();
     fetchStats();
     fetchClients();
-    fetchPlanes(); // ✨ NUEVO
+    fetchPlanes();
+    fetchPromociones();
   }, [currentPage, estadoFilter]);
 
   const fetchMembresias = async () => {
@@ -117,6 +124,15 @@ function MembresiasPageContent() {
     }
   };
 
+  const fetchPromociones = async () => {
+    try {
+      const data = await promocionService.getAll({ activas: true });
+      setPromociones(data.filter((p) => p.esta_vigente));
+    } catch (error) {
+      console.error("Error al cargar promociones:", error);
+    }
+  };
+
   const handleSearch = () => {
     setCurrentPage(1);
     fetchMembresias();
@@ -152,7 +168,10 @@ function MembresiasPageContent() {
         return;
       }
 
-      await membresiaService.create(formData);
+      await membresiaService.create({
+        ...formData,
+        promociones: promocionesSeleccionadas,
+      });
       setShowCreateModal(false);
       resetForm();
       fetchMembresias();
@@ -201,6 +220,12 @@ function MembresiasPageContent() {
           ? "efectivo"
           : data.inscripcion?.metodo_de_pago || "efectivo";
 
+      // Extraer promociones si existen
+      const promocionesIds =
+        data.promociones && Array.isArray(data.promociones)
+          ? data.promociones.map((p) => (typeof p === "number" ? p : p.id))
+          : [];
+
       setFormData({
         cliente: clienteId,
         plan: planId,
@@ -209,7 +234,9 @@ function MembresiasPageContent() {
         estado: data.estado,
         fecha_inicio: data.fecha_inicio,
         fecha_fin: data.fecha_fin,
+        promociones: promocionesIds,
       });
+      setPromocionesSeleccionadas(promocionesIds);
       setShowEditModal(true);
     } catch (error) {
       console.error("Error al cargar membresía:", error);
@@ -229,6 +256,7 @@ function MembresiasPageContent() {
           | "suspendido",
         fecha_inicio: formData.fecha_inicio,
         fecha_fin: formData.fecha_fin,
+        promociones: promocionesSeleccionadas,
       });
       setShowEditModal(false);
       setSelectedMembresia(null);
@@ -261,17 +289,71 @@ function MembresiasPageContent() {
     setShowEstadoVigenciaModal(true);
   };
 
+  const getMontoBase = (): number => {
+    if (!formData.plan) return 0;
+    const plan = planes.find((p) => p.id === formData.plan);
+    return plan ? Number(plan.precio_base) : 0;
+  };
+
+  const calcularDescuentoTotal = (
+    promocionesIds: number[],
+    montoBase: number
+  ): number => {
+    if (promocionesIds.length === 0 || montoBase === 0) return 0;
+
+    const promocionesSeleccionadas = promociones.filter((p) =>
+      promocionesIds.includes(p.id)
+    );
+
+    // Calcular descuento acumulativo (suma de porcentajes)
+    const descuentoTotal = promocionesSeleccionadas.reduce(
+      (total, promo) => total + parseFloat(promo.descuento.toString()),
+      0
+    );
+
+    // Limitar a 100% máximo
+    const descuentoFinal = Math.min(descuentoTotal, 100);
+
+    // Calcular monto de descuento
+    return (montoBase * descuentoFinal) / 100;
+  };
+
+  const calcularMontoFinal = (
+    montoBase: number,
+    promocionesIds: number[]
+  ): number => {
+    const descuento = calcularDescuentoTotal(promocionesIds, montoBase);
+    return Math.max(0, montoBase - descuento);
+  };
+
   const resetForm = () => {
     setFormData({
       cliente: 0,
-      plan: 0, // ✨ NUEVO
+      plan: 0,
       monto: 0,
       metodo_de_pago: "efectivo",
-      estado: "activo", // ✅ CORREGIDO: minúsculas
+      estado: "activo",
       fecha_inicio: new Date().toISOString().split("T")[0],
       fecha_fin: "",
+      promociones: [],
     });
+    setPromocionesSeleccionadas([]);
   };
+
+  // Actualizar monto cuando cambian promociones o plan
+  useEffect(() => {
+    if (formData.plan) {
+      const montoBase = getMontoBase();
+      const montoFinal = calcularMontoFinal(
+        montoBase,
+        promocionesSeleccionadas
+      );
+      if (Math.abs(formData.monto - montoFinal) > 0.01) {
+        setFormData((prev) => ({ ...prev, monto: montoFinal }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [promocionesSeleccionadas, formData.plan]);
 
   const calculateFechaFin = (fechaInicio: string, dias: number) => {
     const fecha = new Date(fechaInicio);
@@ -634,12 +716,15 @@ function MembresiasPageContent() {
                       onChange={(e) => {
                         const planId = Number(e.target.value);
                         const plan = planes.find((p) => p.id === planId);
+                        const montoBase = plan ? Number(plan.precio_base) : 0;
+                        const montoFinal = calcularMontoFinal(
+                          montoBase,
+                          promocionesSeleccionadas
+                        );
                         setFormData({
                           ...formData,
                           plan: planId,
-                          monto: plan
-                            ? Number(plan.precio_base)
-                            : formData.monto,
+                          monto: montoFinal,
                           fecha_fin:
                             plan && formData.fecha_inicio
                               ? calculateFechaFin(
@@ -665,21 +750,47 @@ function MembresiasPageContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Monto (Bs.) *
+                        Monto Base (Bs.) *
+                      </label>
+                      <input
+                        type="number"
+                        value={getMontoBase()}
+                        readOnly
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                      />
+                      {promocionesSeleccionadas.length > 0 && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          Descuento: -Bs.{" "}
+                          {calcularDescuentoTotal(
+                            promocionesSeleccionadas,
+                            getMontoBase()
+                          ).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Monto Final (Bs.) *
                       </label>
                       <input
                         type="number"
                         value={formData.monto}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const nuevoMonto = Number(e.target.value);
                           setFormData({
                             ...formData,
-                            monto: Number(e.target.value),
-                          })
-                        }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                            monto: nuevoMonto,
+                          });
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 font-semibold"
                         required
                         min="0"
                       />
+                      {promocionesSeleccionadas.length > 0 && (
+                        <div className="mt-1 text-xs text-green-600 font-medium">
+                          Con descuento aplicado
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -702,6 +813,85 @@ function MembresiasPageContent() {
                         <option value="qr">QR</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Campo de Promociones */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Promociones{" "}
+                      <span className="text-gray-400 text-xs">(Opcional)</span>
+                    </label>
+                    <select
+                      multiple
+                      value={promocionesSeleccionadas.map(String)}
+                      onChange={(e) => {
+                        const selected = Array.from(
+                          e.target.selectedOptions,
+                          (option) => Number(option.value)
+                        );
+                        setPromocionesSeleccionadas(selected);
+                        const montoBase = getMontoBase();
+                        const montoFinal = calcularMontoFinal(
+                          montoBase,
+                          selected
+                        );
+                        setFormData((prev) => ({ ...prev, monto: montoFinal }));
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 min-h-[100px]"
+                      size={Math.min(promociones.length || 1, 4)}
+                    >
+                      {promociones.length === 0 ? (
+                        <option disabled>
+                          No hay promociones vigentes disponibles
+                        </option>
+                      ) : (
+                        promociones.map((promo) => (
+                          <option key={promo.id} value={promo.id}>
+                            {promo.nombre} - {promo.descuento}% descuento
+                            {promo.meses > 0 && ` (${promo.meses} meses)`}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Mantén presionado Ctrl (o Cmd en Mac) para seleccionar
+                      múltiples promociones
+                    </p>
+                    {promocionesSeleccionadas.length > 0 && (
+                      <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
+                        <p className="text-xs font-medium text-purple-700 mb-1">
+                          Promociones seleccionadas:
+                        </p>
+                        <ul className="text-xs text-purple-600 space-y-1">
+                          {promocionesSeleccionadas.map((promoId) => {
+                            const promo = promociones.find(
+                              (p) => p.id === promoId
+                            );
+                            return promo ? (
+                              <li key={promoId}>
+                                • {promo.nombre} (-{promo.descuento}%)
+                              </li>
+                            ) : null;
+                          })}
+                        </ul>
+                        <p className="text-xs font-semibold text-purple-700 mt-2">
+                          Descuento total:{" "}
+                          {promocionesSeleccionadas
+                            .reduce(
+                              (total, id) =>
+                                total +
+                                parseFloat(
+                                  promociones
+                                    .find((p) => p.id === id)
+                                    ?.descuento.toString() || "0"
+                                ),
+                              0
+                            )
+                            .toFixed(2)}
+                          %
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -941,6 +1131,63 @@ function MembresiasPageContent() {
                       <option value="suspendido">Suspendido</option>
                       <option value="vencido">Vencido</option>
                     </select>
+                  </div>
+
+                  {/* Campo de Promociones en Edición */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Promociones{" "}
+                      <span className="text-gray-400 text-xs">(Opcional)</span>
+                    </label>
+                    <select
+                      multiple
+                      value={promocionesSeleccionadas.map(String)}
+                      onChange={(e) => {
+                        const selected = Array.from(
+                          e.target.selectedOptions,
+                          (option) => Number(option.value)
+                        );
+                        setPromocionesSeleccionadas(selected);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 min-h-[100px]"
+                      size={Math.min(promociones.length || 1, 4)}
+                    >
+                      {promociones.length === 0 ? (
+                        <option disabled>
+                          No hay promociones vigentes disponibles
+                        </option>
+                      ) : (
+                        promociones.map((promo) => (
+                          <option key={promo.id} value={promo.id}>
+                            {promo.nombre} - {promo.descuento}% descuento
+                            {promo.meses > 0 && ` (${promo.meses} meses)`}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Mantén presionado Ctrl (o Cmd en Mac) para seleccionar
+                      múltiples promociones
+                    </p>
+                    {promocionesSeleccionadas.length > 0 && (
+                      <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
+                        <p className="text-xs font-medium text-purple-700 mb-1">
+                          Promociones seleccionadas:
+                        </p>
+                        <ul className="text-xs text-purple-600 space-y-1">
+                          {promocionesSeleccionadas.map((promoId) => {
+                            const promo = promociones.find(
+                              (p) => p.id === promoId
+                            );
+                            return promo ? (
+                              <li key={promoId}>
+                                • {promo.nombre} (-{promo.descuento}%)
+                              </li>
+                            ) : null;
+                          })}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
 

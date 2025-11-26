@@ -93,3 +93,28 @@ textarea:disabled {
   background-color: rgb(243, 244, 246) !important;
   /* bg-gray-100 */
 }
+
+/* Utilidades para responsividad */
+/* Tablas responsivas - scroll horizontal en móvil */
+.responsive-table-container {
+  @apply overflow-x-auto -mx-4 sm:mx-0;
+}
+
+.responsive-table-container table {
+  @apply min-w-full;
+}
+
+/* Modales responsivos */
+.responsive-modal {
+  @apply w-full max-w-2xl mx-4 sm:mx-auto;
+}
+
+/* Grids responsivos para formularios */
+.responsive-form-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+/* Padding responsivo para contenedores */
+.responsive-container {
+  @apply px-4 sm:px-6 lg:px-8;
+}
