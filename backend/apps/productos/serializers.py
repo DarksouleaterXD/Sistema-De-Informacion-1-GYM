@@ -158,3 +158,47 @@ class ActualizarStockSerializer(serializers.Serializer):
         if value <= 0:
             raise serializers.ValidationError("La cantidad debe ser mayor a 0.")
         return value
+
+
+class MovimientoInventarioSerializer(serializers.ModelSerializer):
+    """Serializer para movimientos de inventario"""
+    
+    producto_nombre = serializers.CharField(source='producto.nombre', read_only=True)
+    producto_codigo = serializers.CharField(source='producto.codigo', read_only=True)
+    usuario_nombre = serializers.CharField(source='usuario.get_full_name', read_only=True)
+    tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
+    
+    class Meta:
+        from .models import MovimientoInventario
+        model = MovimientoInventario
+        fields = [
+            'id', 'producto', 'producto_nombre', 'producto_codigo',
+            'usuario', 'usuario_nombre', 'tipo', 'tipo_display',
+            'cantidad', 'cantidad_anterior', 'cantidad_nueva',
+            'motivo', 'referencia', 'created_at'
+        ]
+        read_only_fields = ['usuario', 'cantidad_anterior', 'cantidad_nueva', 'created_at']
+
+
+class AjustarStockSerializer(serializers.Serializer):
+    """Serializer para ajustar stock de un producto"""
+    
+    producto_id = serializers.IntegerField(required=True)
+    cantidad_real = serializers.IntegerField(min_value=0, required=True)
+    motivo = serializers.CharField(max_length=500, required=True)
+    referencia = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    
+    def validate_producto_id(self, value):
+        """Validar que el producto exista"""
+        from .models import Producto
+        try:
+            Producto.objects.get(id=value)
+        except Producto.DoesNotExist:
+            raise serializers.ValidationError("El producto no existe.")
+        return value
+    
+    def validate_motivo(self, value):
+        """Validar que el motivo no esté vacío"""
+        if not value.strip():
+            raise serializers.ValidationError("El motivo es obligatorio.")
+        return value.strip()

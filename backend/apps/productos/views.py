@@ -9,12 +9,14 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 
-from .models import Producto
+from .models import Producto, MovimientoInventario
 from .serializers import (
     ProductoListSerializer,
     ProductoDetailSerializer,
     ProductoCreateUpdateSerializer,
-    ActualizarStockSerializer
+    ActualizarStockSerializer,
+    MovimientoInventarioSerializer,
+    AjustarStockSerializer
 )
 from apps.core.permissions import HasPermission
 from apps.audit.helpers import registrar_creacion, registrar_actualizacion, registrar_eliminacion
@@ -216,3 +218,147 @@ class ProductoViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=False, methods=['post'], url_path='ajustar-stock')
+    def ajustar_stock(self, request):
+        """
+        Ajustar stock de un producto - CU Ajuste de Inventario
+        
+        Permite corregir diferencias entre inventario físico y registrado.
+        Calcula automáticamente la diferencia y genera movimiento de tipo AJUSTE.
+        
+        POST /api/productos/ajustar-stock/
+        Body: {
+            "producto_id": 1,
+            "cantidad_real": 50,
+            "motivo": "Ajuste por inventario físico - Faltante detectado en revisión mensual",
+            "referencia": "INV-2024-001"
+        }
+        """
+        serializer = AjustarStockSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        producto_id = serializer.validated_data['producto_id']
+        cantidad_real = serializer.validated_data['cantidad_real']
+        motivo = serializer.validated_data['motivo']
+        referencia = serializer.validated_data.get('referencia', '')
+        
+        try:
+            producto = Producto.objects.get(id=producto_id)
+            
+            # Guardar stock anterior
+            stock_anterior = producto.stock
+            
+            # Calcular diferencia
+            diferencia = cantidad_real - stock_anterior
+            
+            # Si no hay diferencia, no hacer nada
+            if diferencia == 0:
+                return Response({
+                    'message': 'El stock registrado coincide con el stock físico. No se requiere ajuste.',
+                    'stock_actual': stock_anterior,
+                    'cantidad_real': cantidad_real,
+                    'diferencia': 0
+                }, status=status.HTTP_200_OK)
+            
+            # Actualizar stock directamente
+            producto.stock = cantidad_real
+            
+            # Actualizar estado según stock
+            if producto.stock == 0:
+                producto.estado = Producto.ESTADO_AGOTADO
+            elif producto.estado == Producto.ESTADO_AGOTADO and producto.stock > 0:
+                producto.estado = Producto.ESTADO_ACTIVO
+            
+            producto.modificado_por = request.user
+            producto.save()
+            
+            # Crear movimiento de inventario
+            movimiento = MovimientoInventario.objects.create(
+                producto=producto,
+                usuario=request.user,
+                tipo=MovimientoInventario.TIPO_AJUSTE,
+                cantidad=abs(diferencia),
+                cantidad_anterior=stock_anterior,
+                cantidad_nueva=cantidad_real,
+                motivo=motivo,
+                referencia=referencia
+            )
+            
+            # Registrar en auditoría
+            registrar_actualizacion(
+                request, 
+                producto, 
+                modulo="Inventario"
+            )
+            
+            return Response({
+                'message': 'Ajuste de inventario realizado exitosamente',
+                'producto': {
+                    'id': producto.id,
+                    'nombre': producto.nombre,
+                    'codigo': producto.codigo
+                },
+                'ajuste': {
+                    'stock_anterior': stock_anterior,
+                    'stock_actual': cantidad_real,
+                    'diferencia': diferencia,
+                    'tipo_ajuste': 'Positivo (Exceso)' if diferencia > 0 else 'Negativo (Faltante)',
+                    'motivo': motivo,
+                    'referencia': referencia
+                },
+                'movimiento_id': movimiento.id
+            }, status=status.HTTP_200_OK)
+            
+        except Producto.DoesNotExist:
+            return Response({
+                'error': 'Producto no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': f'Error al ajustar stock: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet para consultar movimientos de inventario (solo lectura)
+    
+    list: Listar todos los movimientos con filtros
+    retrieve: Ver detalle de un movimiento
+    
+    Filtros disponibles:
+    - producto: ID del producto
+    - tipo: ENTRADA, SALIDA, AJUSTE
+    - fecha_desde, fecha_hasta
+    """
+    queryset = MovimientoInventario.objects.select_related(
+        'producto', 'usuario'
+    ).all()
+    serializer_class = MovimientoInventarioSerializer
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permissions = {
+        'list': ['productos.view'],
+        'retrieve': ['productos.view'],
+    }
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['producto', 'tipo', 'usuario']
+    search_fields = ['producto__nombre', 'producto__codigo', 'motivo', 'referencia']
+    ordering_fields = ['created_at', 'tipo']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filtro por rango de fechas
+        fecha_desde = self.request.query_params.get('fecha_desde', None)
+        fecha_hasta = self.request.query_params.get('fecha_hasta', None)
+        
+        if fecha_desde:
+            queryset = queryset.filter(created_at__gte=fecha_desde)
+        if fecha_hasta:
+            queryset = queryset.filter(created_at__lte=fecha_hasta)
+        
+        return queryset
