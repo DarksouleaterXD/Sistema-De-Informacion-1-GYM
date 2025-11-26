@@ -26,10 +26,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push("/dashboard");
+      // No hacer router.push aquí, el contexto ya lo hace
+      // Esto evita doble redirección y problemas de carga
     } catch (err: any) {
       setError(err.message || "Credenciales inválidas");
-    } finally {
       setLoading(false);
     }
   };

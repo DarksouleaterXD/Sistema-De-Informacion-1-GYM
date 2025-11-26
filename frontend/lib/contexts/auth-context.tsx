@@ -19,7 +19,7 @@ import {
 // Helper para acceso seguro a localStorage (fix SSR)
 const safeLocalStorage = {
   getItem: (key: string): string | null => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     try {
       return localStorage.getItem(key);
     } catch {
@@ -27,21 +27,21 @@ const safeLocalStorage = {
     }
   },
   setItem: (key: string, value: string): void => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      console.warn('Error saving to localStorage:', error);
+      console.warn("Error saving to localStorage:", error);
     }
   },
   removeItem: (key: string): void => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.warn('Error removing from localStorage:', error);
+      console.warn("Error removing from localStorage:", error);
     }
-  }
+  },
 };
 
 interface Role {
@@ -128,17 +128,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Cargar permisos del usuario recién logueado
       const currentUser = await authService.getCurrentUser();
+      // Actualizar el usuario completo con permisos y roles
+      setUser(currentUser);
       setPermissions(currentUser.permissions || []);
       setRoles(currentUser.roles || []);
       setIsSuperuser(currentUser.is_superuser || false);
 
+      // Guardar usuario completo con permisos en localStorage
+      safeLocalStorage.setItem("user", JSON.stringify(currentUser));
       safeLocalStorage.setItem(
         "permissions",
         JSON.stringify(currentUser.permissions || [])
       );
-      safeLocalStorage.setItem("roles", JSON.stringify(currentUser.roles || []));
+      safeLocalStorage.setItem(
+        "roles",
+        JSON.stringify(currentUser.roles || [])
+      );
 
-      router.push("/dashboard");
+      // Resetear loading después de que todo esté cargado
+      setLoading(false);
+
+      // Usar replace en lugar de push para evitar problemas de historial
+      // El replace evita que el usuario pueda volver atrás al login
+      router.replace("/dashboard");
     } catch (error) {
       setLoading(false);
       throw error;
